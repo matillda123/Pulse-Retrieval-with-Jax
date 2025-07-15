@@ -101,18 +101,17 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_dispersed, signal_t, sig
     # vmap over population here -> only for small populations since memory will explode. 
     hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=in_axes)(pulse_t_dispersed, signal_t, signal_t_new, phase_matrix, measurement_info, full_or_diagonal)
 
+    hessian=jnp.sum(hessian_m, axis=1)
+    grad=jnp.sum(grad_m, axis=1)
+
     if full_or_diagonal=="full":
-        hessian=jnp.sum(hessian_m, axis=1)
-        grad=jnp.sum(grad_m, axis=1)
-        
         idx=jax.vmap(jnp.diag_indices_from)(hessian)
         hessian=jax.vmap(lambda x,y: x.at[y].add(lambda_lm*jnp.abs(x[y])))(hessian, idx)
 
         newton_direction=solve_linear_system(hessian, grad, newton_direction_prev, solver)
 
     elif full_or_diagonal=="diagonal":
-        newton_direction = grad_m/(hessian_m + lambda_lm*jnp.max(jnp.abs(hessian_m), axis=1)[:, jnp.newaxis, :])
-        newton_direction = jnp.sum(newton_direction, axis=1)
+        newton_direction = grad/(hessian + lambda_lm*jnp.max(jnp.abs(hessian), axis=1)[:, jnp.newaxis])
 
     else:
         print("something is wrong")
