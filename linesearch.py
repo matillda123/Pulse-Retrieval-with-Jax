@@ -14,14 +14,14 @@ def do_linesearch_step(condition, gamma, iteration, linesearch_info, measurement
     error_new=error_func(gamma, linesearch_info, measurement_info)
 
     # Armijio Condition
-    x=jnp.sign((error_new-error) - gamma*c1*pk_dot_gradient)
-    condition_one=jnp.real(1-(x+1)/2).astype(jnp.int16)
+    x = jnp.sign((error_new-error) - gamma*c1*pk_dot_gradient)
+    condition_one = jnp.real(1-(x+1)/2).astype(jnp.int16)
 
-    # 2nd Wolfe Condition
+    # Strong Wolfe Condition
     if descent_info.wolfe_linesearch==True:
         grad = grad_func(gamma, linesearch_info, measurement_info)
-        x = jnp.sign(jnp.real(jnp.vdot(pk, grad)) - c2*pk_dot_gradient)
-        condition_two = jnp.real((x+1)/2).astype(jnp.int16)
+        x = jnp.sign(jnp.abs(jnp.real(jnp.vdot(pk, grad))) - c2*jnp.abs(pk_dot_gradient)) # negative -> True
+        condition_two = jnp.real(1-(x+1)/2).astype(jnp.int16)
     else:
         condition_two = 1
 
@@ -39,6 +39,7 @@ def end_linesearch(condition, gamma, iteration_no, max_steps_linesearch):
 
 
 def do_linesearch(linesearch_info, measurement_info, descent_info, error_func, grad_func):
+    assert 0 < descent_info.c1 < descent_info.c2 < 1, "Constants for linesearch ar invalid"
     gamma, max_steps_linesearch = descent_info.gamma, descent_info.max_steps_linesearch
 
     condition=0

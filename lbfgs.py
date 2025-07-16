@@ -30,7 +30,7 @@ def do_lbfgs(grad_current, lbfgs_state, descent_info):
     y = grad_current - grad_prev
 
 
-    rho = 1/jnp.real(jnp.vecdot(y,s) + 1e-12)
+    rho = 1/jnp.real(jnp.vecdot(y,s) + 1e-14)
     rho = jnp.maximum(rho, 0) # ignore iterations with negative curvature
     alpha = jnp.zeros(m, dtype=jnp.complex64)
     

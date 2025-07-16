@@ -38,7 +38,6 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
         self.linalg_solver="lineax"
 
 
-
     def gradient_descent_Z_error_step(self, signal_t, signal_t_new, Z_error, descent_state, measurement_info, descent_info, pulse_or_gate):        
         use_hessian, use_conjugate_gradients = descent_info.use_hessian, descent_info.use_conjugate_gradients
 
