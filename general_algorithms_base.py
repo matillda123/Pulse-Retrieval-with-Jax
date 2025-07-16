@@ -80,6 +80,11 @@ class GeneralOptimization(AlgorithmsBASE):
         if self.doubleblind==True:
             subkey, population.gate = create_population_general(subkey, amp_type, phase_type, population.gate, population_size, no_funcs_amp, no_funcs_phase, 
                                                                 self.descent_info.measured_spectrum_is_provided.gate, self.measurement_info)
+            
+        if phase_type=="random":
+            phase_type="discrete"
+        if amp_type=="random":
+            amp_type="discrete"
         
         self.descent_info.population_size=population_size
         self.descent_info.phase_type=phase_type

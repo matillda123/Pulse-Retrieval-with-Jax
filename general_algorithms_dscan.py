@@ -1,7 +1,7 @@
 from BaseClasses import RetrievePulsesDSCAN
 from general_algorithms_base import DifferentialEvolutionBASE, EvosaxBASE, LSFBASE, AutoGradBASE
 
-from utilities import MyNamespace, do_ifft
+from utilities import MyNamespace, do_fft, do_ifft
 
 
 
@@ -46,6 +46,27 @@ class LSF(LSFBASE, RetrievePulsesDSCAN):
     def convert_population(self, population, measurement_info, descent_info):
         pulse_arr, gate_arr = self.get_pulses_f_from_population(population, measurement_info, descent_info)
         return MyNamespace(pulse=pulse_arr, gate=gate_arr)
+    
+
+    # These Two Methods should be used when attempting to do the dscan optimization with the pulses in the time domain
+    # -> weirdly it works even worse than doing it in the frequency domain
+    #
+    # def get_pulses_from_population(self, population, measurement_info, descent_info):
+    #     sk, rn = measurement_info.sk, measurement_info.rn
+    #     pulse_t_arr, gate_t_arr = population.pulse, population.gate
+    #     pulse_f_arr = do_fft(pulse_t_arr, sk, rn)
+
+    #     if measurement_info.doubleblind==True:
+    #         gate_f_arr = do_fft(gate_t_arr, sk, rn)
+    #     else:
+    #         gate_f_arr = None
+
+    #     return pulse_f_arr, gate_f_arr
+    
+
+    # def convert_population(self, population, measurement_info, descent_info):
+    #     pulse_arr, gate_arr = self.get_pulses_t_from_population(population, measurement_info, descent_info)
+    #     return MyNamespace(pulse=pulse_arr, gate=gate_arr)
         
 
     

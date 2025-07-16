@@ -187,12 +187,33 @@ def discrete_guess_amp(key, population, shape, measurement_info):
 
 
 
+
+
+def random_general_phase(key, population, shape, measurement_info):
+    key, subkey = jax.random.split(key, 2)
+    shape = (shape[0], jnp.size(measurement_info.frequency))
+    signal_f = random(subkey, shape)
+    population.phase = jnp.angle(signal_f)
+    return key, population
+
+
+def random_general_amp(key, population, shape, measurement_info):
+    key, subkey = jax.random.split(key, 2)
+    shape = (shape[0], jnp.size(measurement_info.frequency))
+    signal_f = random(subkey, shape)
+    population.amp = jnp.abs(signal_f)
+    return key, population
+
+
+
+
 def create_phase(key, phase_type, population, shape, measurement_info):
     phase_guess_func_dict = {"polynomial": polynomial_guess,
                                 "sinusoidal": sinusoidal_guess,
                                 "sigmoidal": sigmoidal_guess,
                                 "splines": spline_guess,
-                                "discrete": discrete_guess_phase}
+                                "discrete": discrete_guess_phase,
+                                "random": random_general_phase}
     
     key, population = phase_guess_func_dict[phase_type](key, population, shape, measurement_info)
     return key, population
@@ -202,7 +223,8 @@ def create_amp(key, amp_type, population, shape, measurement_info):
     amp_guess_func_dict = {"gaussian": gaussian_or_lorentzian_guess,
                             "lorentzian": gaussian_or_lorentzian_guess,
                             "splines": spline_guess,
-                            "discrete": discrete_guess_amp}
+                            "discrete": discrete_guess_amp,
+                            "random": random_general_amp}
     
     key, population = amp_guess_func_dict[amp_type](key, population, shape, measurement_info)
     return key, population

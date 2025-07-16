@@ -1,7 +1,7 @@
 from BaseClasses import RetrievePulsesFROG
 from general_algorithms_base import DifferentialEvolutionBASE, EvosaxBASE, LSFBASE, AutoGradBASE
 
-from utilities import MyNamespace, do_fft
+from utilities import MyNamespace, do_fft, do_ifft
 
 
 
@@ -46,6 +46,28 @@ class LSF(LSFBASE, RetrievePulsesFROG):
     def convert_population(self, population, measurement_info, descent_info):
         pulse_arr, gate_arr = self.get_pulses_t_from_population(population, measurement_info, descent_info)
         return MyNamespace(pulse=pulse_arr, gate=gate_arr)
+    
+
+
+    # These Two Methods should be used when attempting to do the frog optimization with the pulses in the frequency domain
+    # -> the optimization doesnt really work if these are used
+    #
+    # def get_pulses_from_population(self, population, measurement_info, descent_info):
+    #     sk, rn = measurement_info.sk, measurement_info.rn
+    #     pulse_f_arr, gate_f_arr = population.pulse, population.gate
+    #     pulse_t_arr = do_ifft(pulse_f_arr, sk, rn)
+
+    #     if measurement_info.doubleblind==True:
+    #         gate_t_arr = do_ifft(gate_f_arr, sk, rn)
+    #     else:
+    #         gate_t_arr = None
+    
+    #     return pulse_t_arr, gate_t_arr
+    
+
+    # def convert_population(self, population, measurement_info, descent_info):
+    #     pulse_arr, gate_arr = self.get_pulses_f_from_population(population, measurement_info, descent_info)
+    #     return MyNamespace(pulse=pulse_arr, gate=gate_arr)
         
 
     
