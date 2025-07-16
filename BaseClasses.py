@@ -9,7 +9,7 @@ import jax.numpy as jnp
 from jax.tree_util import Partial
 
 from utilities import MyNamespace, get_com, center_signal, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_trace, calculate_trace_error, project_onto_amplitude
-
+from create_population import create_population_classic
 
 
 
@@ -209,16 +209,9 @@ class AlgorithmsBASE:
 
 
 
-
-
-
-
-
-
-
 class RetrievePulses:
-    def __init__(self, nonlinear_method, seed=None):
-        super().__init__()
+    def __init__(self, nonlinear_method, *args, seed=None, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.child_class=None
         self.nonlinear_method=nonlinear_method
@@ -295,19 +288,6 @@ class RetrievePulses:
         return self.gate
     
 
-    def get_initial_amp_for_shg_thg(self, frequency, measured_trace, nonlinear_method):
-        mean_trace=jnp.mean(measured_trace, axis=0)
-        amp=jnp.sqrt(jnp.abs(mean_trace))*jnp.sign(mean_trace)
-
-        if nonlinear_method=="shg":
-            factor=2
-        elif nonlinear_method=="thg":
-            factor=3
-        else:
-            print("something went wrong")
-
-        amp=do_interpolation_1d(frequency, frequency/factor, amp)
-        return amp
     
 
 
@@ -315,54 +295,15 @@ class RetrievePulses:
         print("refactor this and only generate gate when doubleblind is true")
 
         self.key, subkey = jax.random.split(self.key, 2)
-        key1, key2, key3, key4 = jax.random.split(subkey, 4)
+        pulse_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
 
-        if self.nonlinear_method=="shg" or self.nonlinear_method=="thg":
-            amp=self.get_initial_amp_for_shg_thg(self.frequency, self.measured_trace, self.nonlinear_method)
+        if self.doubleblind==True:
+            self.key, subkey = jax.random.split(self.key, 2)
+            gate_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
         else:
-            mean_trace=jnp.mean(self.measured_trace, axis=0)
-            amp=jnp.sqrt(jnp.abs(mean_trace))*jnp.sign(mean_trace)
-
-        amp=amp/jnp.linalg.norm(amp)
-
-
-        shape=(population_size, jnp.size(self.frequency))
-
-        if guess_type=="random":
-            pulse_f_arr = jax.random.uniform(key1, shape, minval=-1, maxval=1) + 1j*jax.random.uniform(key2, shape, minval=-1, maxval=1)
-            gate_f_arr = jax.random.uniform(key3, shape, minval=-1, maxval=1) + 1j*jax.random.uniform(key4, shape, minval=-1, maxval=1)
-
-        elif guess_type=="random_phase":
-            phase_pulse = jax.random.uniform(key1, shape, minval=-jnp.pi, maxval=jnp.pi)
-            phase_gate = jax.random.uniform(key2, shape, minval=-jnp.pi, maxval=jnp.pi)
-
-            amp_pulse = amp + jax.random.uniform(key3, shape, minval=-0.05, maxval=0.05)
-            amp_gate = amp + jax.random.uniform(key4, shape, minval=-0.05, maxval=0.05)
-
-            pulse_f_arr = amp_pulse*jnp.exp(1j*phase_pulse)
-            gate_f_arr = amp_gate*jnp.exp(1j*phase_gate)
-
-        elif guess_type=="constant":
-            pulse_f_arr = jnp.outer(jnp.ones(shape), jax.random.uniform(key1, (population_size, ), minval=-1, maxval=1) + 1j*jax.random.uniform(key2, (population_size, ), minval=-1, maxval=1))
-            gate_f_arr = jnp.outer(jnp.ones(shape), jax.random.uniform(key3, (population_size, ), minval=-1, maxval=1) + 1j*jax.random.uniform(key4, (population_size, ), minval=-1, maxval=1))
-            
-        elif guess_type=="constant_phase":
-            phase_pulse = jax.random.uniform(key1, (population_size, ), minval=-jnp.pi, maxval=jnp.pi)
-            phase_gate = jax.random.uniform(key2, (population_size, ), minval=-jnp.pi, maxval=jnp.pi)
-
-            amp_pulse = amp + jax.random.uniform(key3, shape, minval=-0.05, maxval=0.05)
-            amp_gate = amp + jax.random.uniform(key4, shape, minval=-0.05, maxval=0.05)
-
-            pulse_f_arr = amp_pulse*jnp.exp(1j*phase_pulse[:,jnp.newaxis])
-            gate_f_arr = amp_gate*jnp.exp(1j*phase_gate[:,jnp.newaxis])
-
-        elif guess_type=="doublepulse":
-            print("Not implemented. Is availabel as extranonlinear_method in RetrievePulsesFROG. Because it only works for frog and is not jax compatible.")
-        else:
-            print("not available")
+            gate_f_arr=None
 
         self.descent_info.population_size=population_size
-
         return pulse_f_arr, gate_f_arr
 
 
@@ -591,7 +532,11 @@ class RetrievePulsesFROG(RetrievePulses):
 
         sk, rn = self.sk, self.rn
         pulse_t_arr = do_ifft(pulse_f_arr, sk, rn)
-        gate_t_arr = do_ifft(gate_f_arr, sk, rn)
+
+        if self.measurement_info.doubleblind==True:
+            gate_t_arr = do_ifft(gate_f_arr, sk, rn)
+        else:
+            gate_t_arr = None
 
         population = MyNamespace(pulse=pulse_t_arr, gate=gate_t_arr)
         return population
@@ -599,7 +544,7 @@ class RetrievePulsesFROG(RetrievePulses):
 
 
     def create_initial_population_for_doublepulse(self, monochromatic_double_pulse=False, sigma=3, init_std=0.001):
-        print("make me a population")
+        print("make me a population and put me in create_population.py")
         pulse_f=get_double_pulse_initial_guess(self.tau_arr, self.frequency, self.measured_trace, monochromatic_double_pulse=monochromatic_double_pulse, 
                                                    sigma=sigma, init_std=init_std)
         

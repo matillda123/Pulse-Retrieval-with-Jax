@@ -9,6 +9,7 @@ import optimistix
 
 from utilities import scan_helper, get_com, optimistix_helper_loss_function, optimistix_helper_alternating_loss_function, scan_helper_equinox, MyNamespace, do_fft, do_ifft, calculate_trace, calculate_trace_error, loss_function_modifications, generate_random_continuous_function, do_interpolation_1d
 from BaseClasses import AlgorithmsBASE
+from create_population import create_population_general
 
 
 
@@ -56,6 +57,7 @@ def b_spline(control_points, x):
 
 
 
+
 class GeneralOptimization(AlgorithmsBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,178 +69,17 @@ class GeneralOptimization(AlgorithmsBASE):
         
 
     def create_initial_population(self, population_size, phase_type="polynomial", amp_type="gaussian", no_funcs_amp=5, no_funcs_phase=6):
-        print("make functions for each type, wait until this subproject seems to be really finalized")
         self.key, subkey = jax.random.split(self.key, 2)
 
         population=MyNamespace(pulse=MyNamespace(amp=None, phase=None), 
                                gate=MyNamespace(amp=None, phase=None))
         
-        shape = (population_size, no_funcs_phase)
-
-        if phase_type=="polynomial":
-            subkey, key1, key2 = jax.random.split(subkey, 3)
-
-            c_pulse = jax.random.uniform(key1, shape, minval=-1e3, maxval=1e3)
-            population.pulse.phase=c_pulse
-
-            if self.measurement_info.doubleblind==True:
-                c_gate = jax.random.uniform(key2, shape, minval=-1e3, maxval=1e3)
-                population.gate.phase=c_gate
-
-        elif phase_type=="sinusoidal":
-            keys = jax.random.split(subkey, 7)
-            subkey, keys = keys[0], keys[1:]
+        subkey, population.pulse = create_population_general(subkey, amp_type, phase_type, population.pulse, population_size, no_funcs_amp, no_funcs_phase, 
+                                                             self.descent_info.measured_spectrum_is_provided.pulse, self.measurement_info)
         
-            bmin=0.5/(2*np.max(self.frequency))
-            bmax=1/(2*np.max(self.frequency))
-
-            a_pulse = jax.random.uniform(keys[0], shape, minval=0, maxval=1)
-            b_pulse = jax.random.uniform(keys[1], shape, minval=bmin, maxval=bmax)
-            c_pulse = jax.random.uniform(keys[2], shape, minval=0, maxval=2*jnp.pi)
-
-            population.pulse.phase=MyNamespace(a=a_pulse, 
-                                                                b=b_pulse, 
-                                                                c=c_pulse)
-            
-            if self.measurement_info.doubleblind==True:
-                a_gate = jax.random.uniform(keys[3], shape, minval=0, maxval=1)
-                b_gate = jax.random.uniform(keys[4], shape, minval=bmin, maxval=bmax)
-                c_gate = jax.random.uniform(keys[5], shape, minval=0, maxval=2*jnp.pi)
-
-                population.gate.phase=MyNamespace(a=a_gate, 
-                                                                   b=b_gate, 
-                                                                   c=c_gate)
-                
-        elif phase_type=="sigmoidal":
-            subkey, key = jax.random.split(subkey, 2)
-            keys = jax.random.split(subkey, 6)
-
-            a=jax.random.uniform(keys[0], shape, minval=0, maxval=4*jnp.pi)
-            c=jax.random.uniform(keys[1], shape, minval=jnp.min(self.frequency), maxval=jnp.max(self.frequency))
-            k=jax.random.uniform(keys[2], shape, minval=-2, maxval=2)
-
-            population.pulse.phase=MyNamespace(a=a, c=c, k=k)
-
-            if self.measurement_info.doubleblind==True:
-                a=jax.random.uniform(keys[3], shape, minval=0, maxval=4*jnp.pi)
-                c=jax.random.uniform(keys[4], shape, minval=jnp.min(self.frequency), maxval=jnp.max(self.frequency))
-                k=jax.random.uniform(keys[5], shape, minval=-2, maxval=2)
-
-                population.gate.phase=MyNamespace(a=a, c=c, k=k)
-
-            
-        elif phase_type=="splines":
-            subkey, key1, key2=jax.random.split(subkey, 3)
-
-            N=jnp.size(self.frequency)
-            n=no_funcs_phase
-            nn = jnp.divide(N, jnp.linspace(1, jnp.ceil(N/n), int(jnp.ceil(N/n))))
-            n = int(nn[jnp.round(nn%1, 5)==0][-1])
-
-            c_pulse = jax.random.uniform(key1, (population_size, n), minval=-2*jnp.pi, maxval=2*jnp.pi)
-            population.pulse.phase=MyNamespace(c=c_pulse)
-
-            if self.measurement_info.doubleblind==True:
-                c_gate = jax.random.uniform(key2, (population_size, n), minval=-2*jnp.pi, maxval=2*jnp.pi)
-                population.gate.phase=MyNamespace(c=c_gate)
-
-            
-
-        elif phase_type=="discrete":
-            subkey, key1, key2 = jax.random.split(subkey, 3)
-
-            keys_pulse = jax.random.split(key1, population_size)
-            pulse_phase = jax.vmap(generate_random_continuous_function, in_axes=(0, None, None, None, None, None))(keys_pulse, no_funcs_phase, self.frequency, 
-                                                                                                                   -4*jnp.pi, 4*jnp.pi, jnp.ones(jnp.size(self.frequency)))
-
-            population.pulse.phase=pulse_phase
-
-            if self.measurement_info.doubleblind==True:
-                keys_gate = jax.random.split(key2, population_size)
-                gate_phase = jax.vmap(generate_random_continuous_function, in_axes=(0, None, None, None, None, None))(keys_gate, no_funcs_phase, self.frequency, 
-                                                                                                                      -4*jnp.pi, 4*jnp.pi, jnp.ones(jnp.size(self.frequency)))
-                population.gate.phase=gate_phase
-            
-
-
-        shape=(population_size, no_funcs_amp)
-
-        if self.descent_info.measured_spectrum_is_provided.pulse==False:
-            if amp_type=="gaussian":
-                subkey, key1, key2, key3 = jax.random.split(subkey, 4)
-                a=jax.random.uniform(key1, shape, minval=0, maxval=1)
-                b=jax.random.uniform(key2, shape, minval=1e-3, maxval=(np.max(self.frequency)-np.min(self.frequency))/3)
-                c=jax.random.uniform(key3, shape, minval=np.min(self.frequency), maxval=np.max(self.frequency))
-
-                population.pulse.amp=MyNamespace(a=a, b=b, c=c)
-
-
-            elif amp_type=="lorentzian":
-                subkey, key1, key2, key3 = jax.random.split(subkey, 4)
-                a=jax.random.uniform(key1, shape, minval=0, maxval=1)
-                b=jax.random.uniform(key2, shape, minval=1e-3, maxval=(np.max(self.frequency)-np.min(self.frequency))/3)
-                c=jax.random.uniform(key3, shape, minval=np.min(self.frequency), maxval=np.max(self.frequency))
-
-                population.pulse.amp=MyNamespace(a=a, b=b, c=c)
-
-            elif amp_type=="splines":
-                subkey, key=jax.random.split(subkey, 2)
-
-                N=jnp.size(self.frequency)
-                n=no_funcs_amp
-                nn = jnp.divide(N, jnp.linspace(1, jnp.ceil(N/n), int(jnp.ceil(N/n))))
-                n = int(nn[jnp.round(nn%1, 5)==0][-1])
-
-                c_pulse = jax.random.uniform(key, (population_size, n), minval=0, maxval=1)
-                population.pulse.amp=MyNamespace(c=c_pulse)
-
-            
-            elif amp_type=="discrete":
-                subkey, key1, key2, key3 = jax.random.split(subkey, 4)
-                a=jax.random.uniform(key1, shape, minval=0, maxval=1)
-                b=jax.random.uniform(key2, shape, minval=1e-3, maxval=(np.max(self.frequency)-np.min(self.frequency))/3)
-                c=jax.random.uniform(key3, shape, minval=np.min(self.frequency), maxval=np.max(self.frequency))
-
-                coefficients = MyNamespace(a=a, b=b, c=c)
-                population.pulse.amp=jax.vmap(self.gaussian_amplitude, in_axes=(0, None))(coefficients, self.measurement_info)
-
-
-        if self.descent_info.measured_spectrum_is_provided.gate==False and self.measurement_info.doubleblind==True:
-            if amp_type=="gaussian":
-                subkey, key1, key2, key3 = jax.random.split(subkey, 4)
-                a=jax.random.uniform(key1, shape, minval=0, maxval=1)
-                b=jax.random.uniform(key2, shape, minval=1e-3, maxval=(np.max(self.frequency)-np.min(self.frequency))/3)
-                c=jax.random.uniform(key3, shape, minval=np.min(self.frequency), maxval=np.max(self.frequency))
-
-                population.gate.amp=MyNamespace(a=a, b=b, c=c)
-
-            elif amp_type=="lorentzian":
-                subkey, key1, key2, key3 = jax.random.split(subkey, 4)
-                a=jax.random.uniform(key1, shape, minval=0, maxval=1)
-                b=jax.random.uniform(key2, shape, minval=1e-3, maxval=(np.max(self.frequency)-np.min(self.frequency))/3)
-                c=jax.random.uniform(key3, shape, minval=np.min(self.frequency), maxval=np.max(self.frequency))
-
-                population.gate.amp=MyNamespace(a=a, b=b, c=c)
-
-            elif amp_type=="splines":
-                subkey, key=jax.random.split(subkey, 2)
-
-                N=jnp.size(self.frequency)
-                n=no_funcs_amp
-                nn = jnp.divide(N, jnp.linspace(1, jnp.ceil(N/n), int(jnp.ceil(N/n))))
-                n = int(nn[jnp.round(nn%1, 5)==0][-1])
-
-                c_gate = jax.random.uniform(key, (population_size, n), minval=0, maxval=1)
-                population.gate.amp=MyNamespace(c=c_gate)
-
-            elif amp_type=="discrete":
-                subkey, key1, key2, key3 = jax.random.split(subkey, 4)
-                a=jax.random.uniform(key1, shape, minval=0, maxval=1)
-                b=jax.random.uniform(key2, shape, minval=1e-3, maxval=(np.max(self.frequency)-np.min(self.frequency))/3)
-                c=jax.random.uniform(key3, shape, minval=np.min(self.frequency), maxval=np.max(self.frequency))
-
-                coefficients = MyNamespace(a=a, b=b, c=c)
-                population.gate.amp=jax.vmap(self.gaussian_amplitude, in_axes=(0,None))(coefficients, self.measurement_info)
+        if self.doubleblind==True:
+            subkey, population.gate = create_population_general(subkey, amp_type, phase_type, population.gate, population_size, no_funcs_amp, no_funcs_phase, 
+                                                                self.descent_info.measured_spectrum_is_provided.gate, self.measurement_info)
         
         self.descent_info.population_size=population_size
         self.descent_info.phase_type=phase_type
