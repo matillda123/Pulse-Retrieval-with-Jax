@@ -6,7 +6,7 @@ from BaseClasses import RetrievePulsesDSCAN, AlgorithmsBASE
 from classic_algorithms_base import GeneralizedProjectionBASE, TimeDomainPtychographyBASE, COPRABASE
 
 
-from utilities import scan_helper, MyNamespace, do_fft, do_ifft, calculate_mu, calculate_S_prime, calculate_trace, calculate_trace_error, calculate_Z_error
+from utilities import scan_helper, MyNamespace, get_sk_rn, do_fft, do_ifft, calculate_mu, calculate_S_prime, calculate_trace, calculate_trace_error, calculate_Z_error
 
 
 from dscan_z_error_gradients import calculate_Z_gradient
@@ -146,22 +146,75 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, PIE_method="rPIE", **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 
-        self.PIE_method=PIE_method
+        self.PIE_method = PIE_method
 
 
 
 
-    def reverse_transform(self, signal, phase_matrix, measurement_info):
+    def reverse_transform_grad(self, signal, phase_matrix, measurement_info):
         sk, rn = measurement_info.sk, measurement_info.rn
         signal_f = do_fft(signal, sk, rn)
         signal_f = signal_f*jnp.exp(-1j*phase_matrix)
         signal = do_ifft(signal_f, sk, rn)
         return signal
+    
+
+    def reverse_transform_full_hessian(self, hessian_all_m, phase_matrix, measurement_info):
+        time, frequency = measurement_info.time, measurement_info.frequency
+    
+        frequency = frequency - (frequency[-1] + frequency[0])/2
+        N = jnp.size(frequency)
+        hessian_all_m = jnp.pad(hessian_all_m, ((0,0), (0,0), (N,N), (N,N))) 
+
+        frequency = jnp.linspace(jnp.min(frequency), jnp.max(frequency), 3*N)
+        time = jnp.fft.fftshift(jnp.fft.fftfreq(3*N, jnp.mean(jnp.diff(frequency))))
+        sk, rn = get_sk_rn(time, frequency)
+
+        # convert hessian to (N, m, n, n) -> frequency domain 
+        hessian_all_m = do_fft(hessian_all_m, sk, rn, axis=-1)
+        hessian_all_m = do_fft(hessian_all_m, sk, rn, axis=-2) 
+
+        phi_mn = -1*phase_matrix
+        phi = phi_mn[:,:,jnp.newaxis] - phi_mn[:,jnp.newaxis,:]
+        exp_arr = jnp.exp(1j*phi)
+        hessian_all_m = hessian_all_m * exp_arr[jnp.newaxis,:,:,:]
+
+        # convert hessian to (N, m, k, k) -> time domain 
+        hessian_all_m = do_ifft(hessian_all_m, sk, rn, axis=-1)
+        hessian_all_m = do_ifft(hessian_all_m, sk, rn, axis=-2) 
+        return hessian_all_m[:, :, N:2*N, N:2*N]
+    
+
+
+    def reverse_transform_diagonal_hessian(self, hessian_all_m, phase_matrix, measurement_info):
+        # # i think a backtransform is not needed since the transform matrix phi is zero for these entries
+
+        # time, frequency = measurement_info.time, measurement_info.frequency
+        # frequency = frequency - (frequency[-1] + frequency[0])/2
+        # N = jnp.size(frequency)
+        # hessian_all_m = jnp.pad(hessian_all_m, ((0,0), (0,0), (N,N))) 
+
+        # frequency = jnp.linspace(jnp.min(frequency), jnp.max(frequency), 3*N)
+        # time = jnp.fft.fftshift(jnp.fft.fftfreq(3*N, jnp.mean(jnp.diff(frequency))))
+        # sk, rn = get_sk_rn(time, frequency)
+
+        # # convert hessian to (N, m, n) -> frequency domain 
+        # hessian_all_m = do_fft(hessian_all_m, sk, rn, axis=-1)
+
+        # phi_mn = -1*phase_matrix
+        # phi = phi_mn[:,:,jnp.newaxis] - phi_mn[:,jnp.newaxis,:]
+        # exp_arr = jnp.exp(1j*phi)
+        # hessian_all_m = hessian_all_m * exp_arr[jnp.newaxis,:,:,:]
+
+        # # convert hessian to (N, m, k) -> time domain 
+        # hessian_all_m = do_ifft(hessian_all_m, sk, rn, axis=-1)
+        
+        return hessian_all_m
 
 
 
-    def update_population_local(self, population, signal_t, signal_t_new, phase_matrix, measurement_info, descent_info, pulse_or_gate):
-        alpha, beta, PIE_method = descent_info.alpha, descent_info.beta, descent_info.PIE_method
+    def update_population_local(self, population, signal_t, signal_t_new, phase_matrix, PIE_method, measurement_info, descent_info, pulse_or_gate):
+        alpha, beta = descent_info.alpha, descent_info.beta
         sk, rn = measurement_info.sk, measurement_info.rn
 
         difference_signal_t = signal_t_new - signal_t.signal_t
@@ -185,7 +238,7 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
         pulse_t=pulse_t + gamma*descent_direction
         pulse = do_fft(pulse_t, sk, rn)
 
-        individual = MyNamespace(pulse=pulse, gate=None)
+        individual = MyNamespace(pulse=pulse, gate=individual.gate)
         return individual
     
 
@@ -196,9 +249,9 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
 
 
 
-    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, measurement_info, descent_info, pulse_or_gate):
+    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, PIE_method, measurement_info, descent_info, pulse_or_gate):
         phase_matrix = measurement_info.phase_matrix
-        alpha, PIE_method = descent_info.alpha, descent_info.PIE_method
+        alpha = descent_info.alpha
         
         U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_disp, alpha, PIE_method)
         grad_all_m = -1*jnp.conjugate(signal_t.gate_disp)*(signal_t_new - signal_t.signal_t)
@@ -234,7 +287,7 @@ class COPRA(RetrievePulsesDSCAN, COPRABASE):
 
     def update_population_local(self, population, gamma, descent_direction, measurement_info, descent_info, pulse_or_gate):
         beta = descent_info.beta
-        population.pulse=population.pulse + beta*gamma[:,jnp.newaxis]*descent_direction
+        population.pulse = population.pulse + beta*gamma[:,jnp.newaxis]*descent_direction
         return population
 
 

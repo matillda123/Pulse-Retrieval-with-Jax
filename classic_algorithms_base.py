@@ -276,24 +276,26 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.use_global_step=False
-        self.use_hessian=False#"diagonal"
+        self.use_local_step = True
+        self.use_global_step = False
 
-        self.alpha=1
-        self.beta=1
+        self.use_hessian = False
+        self.lambda_lm = 1e-2
 
-        self.max_steps_linesearch=25
-        self.gamma=self.beta
+        self.alpha = 1
+        self.beta = 1
 
-        self.c1=1e-3
-        self.lambda_lm=1e-2
+        self.max_steps_linesearch = 25
+        self.gamma = self.beta
+
+        self.c1 = 1e-3
+        self.c2 = 0.9
+        self.delta_gamma = (0.5, 1.5)
+        self.wolfe_linesearch = False
+    
 
         self.linalg_solver = "lineax"
 
-
-        self.delta_gamma = (0.5, 1.5)
-        self.wolfe_linesearch = False
-        self.c2 = 0.9
 
 
 
@@ -313,13 +315,17 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         
         if PIE_method=="PIE":
             U = 1/(jnp.abs(probe_shifted)**2+alpha*jnp.max(jnp.abs(probe_shifted)**2))*jnp.abs(probe_shifted)/jnp.max(jnp.abs(probe_shifted))
+
         elif PIE_method=="ePIE":
             U = 1/jnp.max(jnp.abs(probe_shifted)**2)
             U = U*jnp.ones(jnp.shape(probe_shifted))
+
         elif PIE_method=="rPIE":
             U = 1/((1-alpha)*jnp.abs(probe_shifted)**2+alpha*jnp.max(jnp.abs(probe_shifted)**2))
+
         elif PIE_method=="gradient":
             U = jnp.ones(jnp.shape(probe_shifted))
+
         else:
             print(f"PIE_method={PIE_method} not defined.")
         
@@ -328,16 +334,17 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
 
     def do_local_iteration(self, descent_state, transform_arr_m, trace_line, measurement_info, descent_info):
+        PIE_method = descent_info.PIE_method.local_pie
         population = descent_state.population
         
         signal_t = jax.vmap(self.calculate_signal_t, in_axes=(0,0,None))(population, transform_arr_m, measurement_info)
         signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,None))(jnp.squeeze(signal_t.signal_t), trace_line, 1, measurement_info)
 
 
-        population = self.update_population_local(population, signal_t, signal_t_new, transform_arr_m, measurement_info, descent_info, "pulse")
+        population = self.update_population_local(population, signal_t, signal_t_new, transform_arr_m, PIE_method, measurement_info, descent_info, "pulse")
 
         if measurement_info.doubleblind==True:
-            population = self.update_population_local(population, signal_t, signal_t_new, transform_arr_m, measurement_info, descent_info, "gate")
+            population = self.update_population_local(population, signal_t, signal_t_new, transform_arr_m, PIE_method, measurement_info, descent_info, "gate")
 
         descent_state.population = population
         return descent_state, None
@@ -346,10 +353,6 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
 
 
-
-    def get_descent_direction(self, grad, U):
-        descent_direction=-1*jnp.sum(grad*U, axis=1)
-        return descent_direction
 
 
     def calculate_pk_dot_gradient(self, gradient_sum, descent_direction):
@@ -376,7 +379,8 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         individual = self.update_individual_global(individual, gamma, descent_direction, measurement_info, pulse_or_gate)
         signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
         signal_t_new = calculate_S_prime(signal_t.signal_t, measured_trace, 1, measurement_info)
-        grad_all_m,U = self.calculate_PIE_descent_direction(individual, signal_t, signal_t_new, measurement_info, descent_info, pulse_or_gate)
+        grad_all_m, U = self.calculate_PIE_descent_direction(individual, signal_t, signal_t_new, descent_info.PIE_method.global_pie, 
+                                                             measurement_info, descent_info, pulse_or_gate)
         return jnp.sum(grad_all_m, axis=1)
     
 
@@ -384,6 +388,7 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         measured_trace = measurement_info.measured_trace
         sk, rn = measurement_info.sk, measurement_info.rn
 
+        PIE_method = descent_info.PIE_method.global_pie
         use_hessian = descent_info.use_hessian
         population = descent_state.population
 
@@ -392,16 +397,17 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         signal_f = do_fft(signal_t.signal_t, sk, rn)
         pie_error = jax.vmap(self.calculate_PIE_error, in_axes=(0,None))(signal_f, measured_trace)
 
-        grad, U = self.calculate_PIE_descent_direction(population, signal_t, signal_t_new, measurement_info, descent_info, pulse_or_gate)
+        grad, U = self.calculate_PIE_descent_direction(population, signal_t, signal_t_new, PIE_method, measurement_info, descent_info, pulse_or_gate)
         gradient_sum = jnp.sum(grad, axis=1)
 
         
         if use_hessian!=False:
-            descent_direction = self.calculate_PIE_descent_direction_hessian(grad, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate)
+            descent_direction = self.calculate_PIE_descent_direction_hessian(grad*U, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate)
+
             setattr(descent_state.hessian_state.newton_direction_prev, pulse_or_gate, -1*descent_direction)
 
         else:
-            descent_direction = self.get_descent_direction(grad, U)
+            descent_direction = -1*jnp.sum(grad*U, axis=1)
 
 
         pk_dot_gradient = self.calculate_pk_dot_gradient(gradient_sum, descent_direction)
@@ -412,7 +418,8 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
         gamma = jax.vmap(do_linesearch, in_axes=(0, None, None, None, None))(linesearch_info, measurement_info, descent_info, 
                                                                              Partial(self.calc_error_for_linesearch, pulse_or_gate=pulse_or_gate),
-                                                                             Partial(self.calc_grad_for_linesearch, descent_info=descent_info, pulse_or_gate=pulse_or_gate),)
+                                                                             Partial(self.calc_grad_for_linesearch, descent_info=descent_info, 
+                                                                                     pulse_or_gate=pulse_or_gate),)
 
         descent_state.population = self.update_population_global(population, gamma, descent_direction, measurement_info, pulse_or_gate)
         return descent_state     
@@ -433,16 +440,20 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
 
     def step(self, descent_state, measurement_info, descent_info):
+        assert descent_info.use_local_step==True or descent_info.use_local_step==True, "Either local and/or global step has to be used."
+
         sk, rn = measurement_info.sk, measurement_info.rn
 
-        transform_arr, measured_trace, descent_state = self.shuffle_data_along_m(descent_state, measurement_info, descent_info)
+        if descent_info.use_local_step==True:
+            transform_arr, measured_trace, descent_state = self.shuffle_data_along_m(descent_state, measurement_info, descent_info)
 
-        local_iteration=Partial(self.do_local_iteration, measurement_info=measurement_info, descent_info=descent_info)
-        local_iteration=Partial(scan_helper, actual_function=local_iteration, number_of_args=1, number_of_xs=2)
+            local_iteration=Partial(self.do_local_iteration, measurement_info=measurement_info, descent_info=descent_info)
+            local_iteration=Partial(scan_helper, actual_function=local_iteration, number_of_args=1, number_of_xs=2)
 
-        descent_state, _ = jax.lax.scan(local_iteration, descent_state, (transform_arr, measured_trace))
+            descent_state, _ = jax.lax.scan(local_iteration, descent_state, (transform_arr, measured_trace))
 
-        if descent_info.use_global_step!=False:
+
+        if descent_info.use_global_step==True:
             descent_state=self.global_step(descent_state, measurement_info, descent_info)
 
 
@@ -463,32 +474,38 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         # basic parameters for PIE
         self.descent_info.alpha=self.alpha
         self.descent_info.beta=self.beta
-        self.descent_info.PIE_method=self.PIE_method
 
-        # parameters for optional global step
+        if len(self.PIE_method)==2:
+            PIE_method_local, PIE_method_global = self.PIE_method
+        else:
+            PIE_method_local, PIE_method_global = self.PIE_method, self.PIE_method
+
+        self.descent_info.PIE_method = MyNamespace(local_pie=PIE_method_local, global_pie=PIE_method_global)
+
+        self.descent_info.use_local_step=self.use_local_step
         self.descent_info.use_global_step=self.use_global_step
         self.descent_info.use_hessian=self.use_hessian
         self.descent_info.lambda_lm=self.lambda_lm
 
         # parameters for linesearch in global step
-        self.descent_info.c1=self.c1
-        self.descent_info.gamma=self.gamma
-        self.descent_info.delta_gamma=self.delta_gamma
-        self.descent_info.max_steps_linesearch=self.max_steps_linesearch
-
+        self.descent_info.c1 = self.c1
         self.descent_info.c2 = self.c2
+        self.descent_info.gamma = self.gamma
+        self.descent_info.delta_gamma = self.delta_gamma
+        self.descent_info.max_steps_linesearch = self.max_steps_linesearch
         self.descent_info.wolfe_linesearch = self.wolfe_linesearch
 
         # randomize local iterations with these 
-        self.descent_info.idx_arr=self.idx_arr
-        self.descent_info.linalg_solver=self.linalg_solver
+        self.descent_info.idx_arr = self.idx_arr
+        self.descent_info.linalg_solver = self.linalg_solver
 
-        descent_info=self.descent_info
+        descent_info = self.descent_info
+
 
         self.descent_state.key=self.key
         self.descent_state.population=population
 
-        self.descent_state.hessian_state=MyNamespace(newton_direction_prev=MyNamespace(pulse=None,gate=None))
+        self.descent_state.hessian_state=MyNamespace(newton_direction_prev=MyNamespace(pulse=None, gate=None))
         self.descent_state.hessian_state.newton_direction_prev.pulse = jnp.zeros(jnp.shape(population.pulse), dtype=jnp.complex64)
         if self.measurement_info.doubleblind==True:
             self.descent_state.hessian_state.newton_direction_prev.gate = jnp.zeros(jnp.shape(population.gate), dtype=jnp.complex64)

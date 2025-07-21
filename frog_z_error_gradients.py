@@ -27,9 +27,16 @@ def Z_gradient_sd(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, r
     return -2*grad
 
 
+
+
+
+
 def Z_gradient_xfrog_pulse(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
+    # gradient with respect to pulse, is probably the same for all nonlinear methods
     grad=do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     return -2*grad
+
+
 
 
 def Z_gradient_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
@@ -38,6 +45,8 @@ def Z_gradient_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_ar
     # maybe this should be changed ?
     grad=exp_arr*do_fft(deltaS*jnp.conjugate(pulse_t), sk, rn)
     return -2*grad
+
+
 
 
 
@@ -88,6 +97,7 @@ def Z_gradient_pg_ifrog_xfrog_pulse(deltaS, pulse_t, pulse_t_shifted, gate_shift
     term2=deltaS*jnp.abs(pulse_t+pulse_t_shifted)**2
     grad=do_fft(term1+2*term2, sk, rn)
     return -2*grad
+
 
 
 

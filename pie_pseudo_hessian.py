@@ -10,7 +10,7 @@ def PIE_get_pseudo_hessian_subelement(dummy, signal_f, measured_trace, D_arr_kj)
     return dummy + res, None
 
 
-def PIE_get_pseudo_hessian_element(probe_k, probe_j, time_k, time_j, omega, signal_f, measured_trace): # tauarr is very likely time 
+def PIE_get_pseudo_hessian_element(probe_k, probe_j, time_k, time_j, omega, signal_f, measured_trace):
     D_arr_kj=jnp.exp(1j*omega*(time_k-time_j))
 
     get_subelement=Partial(scan_helper, actual_function=PIE_get_pseudo_hessian_subelement, number_of_args=1, number_of_xs=3)
