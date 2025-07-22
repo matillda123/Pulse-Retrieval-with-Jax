@@ -197,7 +197,6 @@ def project_onto_amplitude(signal_f, measured_amplitude):
 
 
 
-
 def calculate_S_prime(signal_t, measured_trace, mu, measurement_info):
     sk, rn = measurement_info.sk, measurement_info.rn
     signal_f=do_fft(signal_t, sk, rn)
@@ -206,6 +205,9 @@ def calculate_S_prime(signal_t, measured_trace, mu, measurement_info):
 
     signal_t_new=do_ifft(signal_f_new, sk, rn)*1/(jnp.sqrt(mu)+1e-12)
     return signal_t_new
+
+
+
 
 
 
