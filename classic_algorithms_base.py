@@ -105,7 +105,7 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
 
 
 
-        descent_direction = descent_direction*(eta*descent_info.use_copra_style_step_scaling + 1*(1 - descent_info.use_copra_style_step_scaling))
+        descent_direction = descent_direction*(eta*descent_info.use_copra_style_step_scaling + 1*(1 - descent_info.use_copra_style_step_scaling))[:,jnp.newaxis]
 
 
         if descent_info.use_linesearch=="backtracking" or descent_info.use_linesearch=="wolfe":
@@ -515,7 +515,7 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         self.descent_info.gamma = self.gamma
         self.descent_info.delta_gamma = self.delta_gamma
         self.descent_info.max_steps_linesearch = self.max_steps_linesearch
-        self.descent_info.wolfe_linesearch = self.wolfe_linesearch
+        self.descent_info.use_linesearch = self.use_linesearch
 
         # randomize local iterations with these 
         self.descent_info.idx_arr = self.idx_arr
@@ -603,7 +603,7 @@ class COPRABASE(AlgorithmsBASE):
             
 
         grad_norm2 = jnp.sum(jnp.abs(descent_direction)**2)
-        max_grad_norm2 = getattr(descent_state.local.max_grad_norm, pulse_or_gate)
+        max_grad_norm2 = getattr(descent_state.local.max_grad_norm2, pulse_or_gate)
         max_grad_norm2 = jnp.greater(grad_norm2, max_grad_norm2)*grad_norm2 + jnp.greater(max_grad_norm2, grad_norm2)*max_grad_norm2
         setattr(descent_state.local.max_grad_norm2, pulse_or_gate, max_grad_norm2)
 
@@ -662,9 +662,9 @@ class COPRABASE(AlgorithmsBASE):
     def calc_Z_error_for_linesearch(self, gamma, linesearch_info, measurement_info, descent_info, pulse_or_gate):
         transform_arr = measurement_info.transform_arr
 
-        signal_t_new, eta, descent_direction = linesearch_info.signal_t_new, linesearch_info.eta, linesearch_info.descent_direction
+        signal_t_new, descent_direction = linesearch_info.signal_t_new, linesearch_info.descent_direction
 
-        individual = self.update_individual_global(linesearch_info.population, gamma, eta, descent_direction, measurement_info, descent_info, pulse_or_gate)
+        individual = self.update_individual_global(linesearch_info.population, gamma, descent_direction, measurement_info, descent_info, pulse_or_gate)
         signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
         error = calculate_Z_error(signal_t.signal_t, signal_t_new)
         return error
@@ -696,7 +696,7 @@ class COPRABASE(AlgorithmsBASE):
         Z_error = jax.vmap(calculate_Z_error, in_axes=(0,0))(signal_t.signal_t, signal_t_new)
         eta = Z_error/(jnp.sum(jnp.abs(descent_direction)**2, axis=1) + xi)
 
-        descent_direction = descent_direction*eta
+        descent_direction = descent_direction*eta[:,jnp.newaxis]
 
 
         if descent_info.use_linesearch=="backtracking" or descent_info.use_linesearch=="wolfe":
@@ -722,11 +722,11 @@ class COPRABASE(AlgorithmsBASE):
 
         descent_state=self.do_global_iteration(descent_state, measurement_info, descent_info, "pulse")
 
+        descent_state.population.pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(descent_state.population.pulse)
+
         if measurement_info.doubleblind==True:
             descent_state=self.do_global_iteration(descent_state, measurement_info, descent_info, "gate")
 
-
-        descent_state.population.pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(descent_state.population.pulse)
 
         signal_t=self.generate_signal_t(descent_state, measurement_info, descent_info)
         trace=calculate_trace(do_fft(signal_t.signal_t, sk, rn))
@@ -785,7 +785,7 @@ class COPRABASE(AlgorithmsBASE):
         self.descent_info.max_steps_linesearch=self.max_steps_linesearch
         self.descent_info.c1 = self.c1
         self.descent_info.c2 = self.c2
-        self.descent_info.wolfe_linesearch = self.wolfe_linesearch
+        self.descent_info.use_linesearch = self.use_linesearch
 
         # parameters for optional modifications -> damped pseudo-hessian Z-error, r-gradient for amplitude loss
         if type(self.use_hessian)==tuple or type(self.use_hessian)==list:

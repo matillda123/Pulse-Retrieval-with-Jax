@@ -6,34 +6,41 @@ from interpax import interp1d
 
 
 
+def flatten_MyNamespace(MyNamespace):
+    class_dict = MyNamespace.__dict__
+    data_keys = list(class_dict.keys())
+    data_values = list(class_dict.values())
+    return data_values, data_keys
 
 
-@jax.tree_util.register_pytree_node_class
+def unflatten_MyNamespace(aux_data, leaves):
+    custom_namespace_instance = MyNamespace(**dict(zip(aux_data, leaves)))
+    #custom_namespace_instance.__dict__ = dict(zip(aux_data, leaves))
+    return custom_namespace_instance
+
+
 class MyNamespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def tree_flatten(self):
-        class_dict=self.__dict__
-        data_keys=list(class_dict.keys())
-        data_values=list(class_dict.values())
-        
-        return data_values, data_keys
 
-
-    @classmethod
-    def tree_unflatten(cls, aux_data, leaves):
-        custom_namespace_instance = cls()
-        custom_namespace_instance.__dict__ = dict(zip(aux_data, leaves))
-        return custom_namespace_instance
+    def replace(self, **kwargs):
+        # works because keys in **kwargs overwrite equivalent keys in self.__dict__
+        new_dict = {**self.__dict__, **kwargs}
+        return MyNamespace(**new_dict)
     
+    def expand(self, **kwargs):
+        new_dict = {**self.__dict__, **kwargs}
+        return MyNamespace(**new_dict)
+    
+
 
     def __add__(self, other):
         if isinstance(other, MyNamespace):
             leaves1, treedef = jax.tree.flatten(self)
             leaves2, treedef = jax.tree.flatten(other)
 
-             # adding len() makes sure that both have trees have the same number of leaves
+            # adding len() implicitely ensures that both trees have the same number of leaves
             leaves_new = [leaves1[i] + leaves2[i] for i in range((len(leaves1) + len(leaves2))//2)]
             tree_new = jax.tree.unflatten(treedef, leaves_new)
         else:
@@ -69,6 +76,10 @@ class MyNamespace:
 
     def __sub__(self, other):
         return self.__add__((-1)*other)
+    
+
+
+jax.tree_util.register_pytree_node(MyNamespace, flatten_MyNamespace, unflatten_MyNamespace)
     
 
 
@@ -267,6 +278,7 @@ def solve_system_using_lineax_iteratively(A, b, x_prev, solver):
 def solve_linear_system(A, b, x_prev, solver):
 
     if solver=="scipy":
+        print("unclear if this is still correct with non stacked A and b")
         newton_direction=jax.scipy.linalg.solve(A, b[..., None], assume_a="her").squeeze(-1)
         return newton_direction
     

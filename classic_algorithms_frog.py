@@ -463,12 +463,12 @@ class COPRA(RetrievePulsesFROG, COPRABASE):
 
 
 
-    def update_individual_global(self, individual, gamma, eta, descent_direction, measurement_info, descent_info, pulse_or_gate):
+    def update_individual_global(self, individual, gamma, descent_direction, measurement_info, descent_info, pulse_or_gate):
         sk, rn = measurement_info.sk, measurement_info.rn
 
         signal = getattr(individual, pulse_or_gate)
         signal_f = do_fft(signal, sk, rn)
-        signal_f = signal_f + gamma*eta*descent_direction
+        signal_f = signal_f + gamma*descent_direction
         signal = do_ifft(signal_f, sk, rn)
 
         individual = MyNamespace(pulse=individual.pulse, gate=individual.gate)

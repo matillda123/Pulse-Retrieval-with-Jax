@@ -4,7 +4,7 @@ import jax
 from jax.tree_util import Partial
 
 
-from utilities import  MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_mu, calculate_trace
+from utilities import MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_mu, calculate_trace
 from linesearch import do_linesearch
 
 
@@ -46,7 +46,7 @@ def calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info)
 def calculate_r_gradient_intensity(signal_f, measured_trace, weights, sk, rn):
     trace = calculate_trace(signal_f)
     mu = calculate_mu(trace, measured_trace)
-    grad_r = -4*mu*do_ifft(signal_f*(measured_trace-mu*trace)*weights**2, sk, rn)
+    grad_r = -4*mu*do_ifft(signal_f*(measured_trace - mu*trace)*weights**2, sk, rn)
     return grad_r 
 
 
@@ -71,7 +71,7 @@ def calculate_r_gradient(signal_f, measurement_info, descent_info):
 
 
 def calculate_r_error(trace, measured_trace):
-    mu=calculate_mu(trace, measured_trace)
+    mu = calculate_mu(trace, measured_trace)
     return jnp.sum(jnp.abs(measured_trace - mu*trace)**2)
 
 
@@ -86,7 +86,6 @@ def calc_r_error_for_linesearch(gamma, linesearch_info, measurement_info, descen
     trace = calculate_trace(do_fft(signal_t_new, sk, rn))
     error = calculate_r_error(trace, measured_trace)
     return error
-
 
 
 def calc_r_grad_for_linesearch(gamma, linesearch_info, measurement_info, descent_info):
@@ -115,9 +114,6 @@ def calculate_S_prime_iterative_step(signal_t, measurement_info, descent_info):
     trace=calculate_trace(signal_f)
 
     gradient = calculate_r_gradient(signal_f, measurement_info, descent_info)
-
-    
-
     descent_direction = -1*gradient
 
     r_error = jax.vmap(calculate_r_error, in_axes=(0, None))(trace, measured_trace)
@@ -132,9 +128,10 @@ def calculate_S_prime_iterative_step(signal_t, measurement_info, descent_info):
         gamma = jax.vmap(do_linesearch, in_axes=(0,None,None,None,None))(linesearch_info, measurement_info, descent_info, 
                                                                             Partial(calc_r_error_for_linesearch, descent_info=descent_info),
                                                                             Partial(calc_r_grad_for_linesearch, descent_info=descent_info))
+    else:
+        gamma = jnp.ones(descent_info.population_size)*descent_info.gamma
         
     signal_t_new = signal_t.signal_t + gamma[:, jnp.newaxis, jnp.newaxis]*eta[:, jnp.newaxis, jnp.newaxis]*descent_direction
-
     return signal_t_new
 
 
