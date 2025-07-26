@@ -53,9 +53,10 @@ def PIE_get_pseudo_hessian_all_m(probe_all_m, signal_f, measurement_info, use_he
 
 
 def PIE_get_pseudo_newton_direction(grad, probe, signal_f, newton_direction_prev, measurement_info, descent_info, pulse_or_gate, reverse_transform):
-    use_hessian, lambda_lm, solver = descent_info.use_hessian, descent_info.lambda_lm, descent_info.linalg_solver
+    hessian = descent_info.hessian
+    full_or_diagonal, lambda_lm, solver = hessian.use_hessian, hessian.lambda_lm, hessian.linalg_solver
 
-    hessian_all_m=jax.vmap(PIE_get_pseudo_hessian_all_m, in_axes=(0,0,None,None))(probe, signal_f, measurement_info, use_hessian)
+    hessian_all_m=jax.vmap(PIE_get_pseudo_hessian_all_m, in_axes=(0,0,None,None))(probe, signal_f, measurement_info, full_or_diagonal)
 
     if pulse_or_gate=="gate":
         hessian_all_m = reverse_transform(hessian_all_m)
@@ -64,16 +65,16 @@ def PIE_get_pseudo_newton_direction(grad, probe, signal_f, newton_direction_prev
     grad = jnp.sum(grad, axis=1)
     hessian = jnp.sum(hessian_all_m, axis=1)
 
-    if use_hessian=="full":
+    if full_or_diagonal=="full":
         idx=jax.vmap(jnp.diag_indices_from)(hessian)
         hessian=jax.vmap(lambda x,y: x.at[y].add(lambda_lm*jnp.abs(x[y])))(hessian, idx)
 
         newton_direction=solve_linear_system(hessian, grad, newton_direction_prev, solver)
 
-    elif use_hessian=="diagonal":
+    elif full_or_diagonal=="diagonal":
         newton_direction=grad/(hessian + lambda_lm*jnp.max(jnp.abs(hessian), axis=1)[:,jnp.newaxis])
 
     else:
-        print(f"{use_hessian} not available. needs to be diagonal or full")
+        print(f"{full_or_diagonal} not available. needs to be diagonal or full")
 
     return -1*newton_direction

@@ -39,12 +39,26 @@ def Z_gradient_xfrog_pulse(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_a
 
 
 
-def Z_gradient_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
-    # gradient with respect to the whole gate-function, not the actual pulse that is used 
-    # in ifrog the gradient with respect to the actual pulse is used 
-    # maybe this should be changed ?
+
+
+def Z_gradient_shg_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
     grad=exp_arr*do_fft(deltaS*jnp.conjugate(pulse_t), sk, rn)
     return -2*grad
+
+
+def Z_gradient_thg_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
+    grad=exp_arr*do_fft(deltaS*jnp.conjugate(pulse_t*pulse_t_shifted), sk, rn)
+    return -4*grad
+
+
+def Z_gradient_pg_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
+    grad=exp_arr*do_fft(pulse_t_shifted*jnp.real(deltaS*jnp.conjugate(pulse_t)), sk, rn)
+    return -4*grad
+
+
+def Z_gradient_sd_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
+    grad=exp_arr*do_fft(deltaS*pulse_t*jnp.conjugate(pulse_t_shifted), sk, rn)
+    return -4*grad
 
 
 
@@ -173,7 +187,7 @@ def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, 
     deltaS = signal_t_new-signal_t
 
 
-    grad_func_ifrog_False_xfrog_gate={"shg": Z_gradient_xfrog_gate, "thg": Z_gradient_xfrog_gate, "pg": Z_gradient_xfrog_gate, "sd": Z_gradient_xfrog_gate}
+    grad_func_ifrog_False_xfrog_gate={"shg": Z_gradient_shg_xfrog_gate, "thg": Z_gradient_thg_xfrog_gate, "pg": Z_gradient_pg_xfrog_gate, "sd": Z_gradient_sd_xfrog_gate}
     grad_func_ifrog_True_xfrog_gate={"shg": Z_gradient_shg_ifrog_xfrog_gate, "thg": Z_gradient_thg_ifrog_xfrog_gate, "pg": Z_gradient_pg_ifrog_xfrog_gate}
     
     grad_func={False: grad_func_ifrog_False_xfrog_gate,

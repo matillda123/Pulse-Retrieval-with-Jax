@@ -1,8 +1,13 @@
 import jax.numpy as jnp
-import lineax as lx
 import jax
+from jax.tree_util import Partial
+
+import lineax as lx
 import equinox
+
 from interpax import interp1d
+
+
 
 
 
@@ -352,52 +357,34 @@ def center_signal(signal):
 
 
 
-def loss_function_modifications(trace_or_signal_t, measured_trace_or_signal_t_new, time_or_zarr, frequency, amplitude_or_intensity, use_fd_grad):
-    measured_trace_or_signal_t_new=measured_trace_or_signal_t_new/jnp.max(jnp.abs(measured_trace_or_signal_t_new))
-    trace_or_signal_t=trace_or_signal_t/jnp.max(jnp.abs(trace_or_signal_t))
+def loss_function_modifications(trace, measured_trace, time_or_zarr, frequency, amplitude_or_intensity, use_fd_grad):
+    measured_trace = measured_trace/jnp.max(jnp.abs(measured_trace))
+    trace = trace/jnp.max(jnp.abs(trace))
 
     if amplitude_or_intensity=="amplitude":
         # add small value since auto-diff of sqrt(0) is problematic
-        measured_trace_or_signal_t_new=jnp.sqrt(jnp.abs(measured_trace_or_signal_t_new) + 1e-9)*jnp.sign(measured_trace_or_signal_t_new)
-        trace_or_signal_t=jnp.sqrt(jnp.abs(trace_or_signal_t) + 1e-9)*jnp.sign(trace_or_signal_t)
+        measured_trace = jnp.sqrt(jnp.abs(measured_trace) + 1e-9)*jnp.sign(measured_trace)
+        trace = jnp.sqrt(jnp.abs(trace) + 1e-9)*jnp.sign(trace)
     elif amplitude_or_intensity=="intensity":
         pass
     elif type(amplitude_or_intensity)==int or type(amplitude_or_intensity)==float:
-        exp_val=amplitude_or_intensity
-        measured_trace_or_signal_t_new=(jnp.abs(measured_trace_or_signal_t_new) + 1e-9)**exp_val*jnp.sign(measured_trace_or_signal_t_new)
-        trace_or_signal_t=(jnp.abs(trace_or_signal_t) + 1e-9)**exp_val*jnp.sign(trace_or_signal_t)
+        exp_val = amplitude_or_intensity
+        measured_trace = (jnp.abs(measured_trace) + 1e-9)**exp_val*jnp.sign(measured_trace)
+        trace = (jnp.abs(trace) + 1e-9)**exp_val*jnp.sign(trace)
     else:
         print("something is wrong")
 
     if use_fd_grad!=False:
-        print("generalize me using scan")
-        # measured_0, _ = jax.lax.scan(lambda x: (Partial(jnp.gradient, axis=0)(x),None), measured_0, length=use_fd_grad)
-        # measured_1, _ = jax.lax.scan(lambda x: (Partial(jnp.gradient, axis=1)(x),None), measured_1, length=use_fd_grad)
+        measured_trace_0, _ = jax.lax.scan(lambda x,y: (Partial(jnp.gradient, axis=0)(x), None), measured_trace, length=use_fd_grad)
+        measured_trace_1, _ = jax.lax.scan(lambda x,y: (Partial(jnp.gradient, axis=1)(x), None), measured_trace, length=use_fd_grad)
 
-        # reconstructed_0, _ = jax.lax.scan(lambda x: (Partial(jnp.gradient, axis=0)(x),None), reconstructed_0, length=use_fd_grad)
-        # reconstructed_1, _ = jax.lax.scan(lambda x: (Partial(jnp.gradient, axis=1)(x),None), reconstructed_1, length=use_fd_grad)
+        trace_0, _ = jax.lax.scan(lambda x,y: (Partial(jnp.gradient, axis=0)(x), None), trace, length=use_fd_grad)
+        trace_1, _ = jax.lax.scan(lambda x,y: (Partial(jnp.gradient, axis=1)(x), None), trace, length=use_fd_grad)
 
-        # measured = measured_0 + measured_1
-        # reconstructed = reconstructed_0 + reconstructed_1
+        measured_trace = measured_trace_0 + measured_trace_1
+        trace = trace_0 + trace_1
 
-        measured_trace_or_signal_t_new_0=jnp.gradient(measured_trace_or_signal_t_new, time_or_zarr, axis=0)
-        measured_trace_or_signal_t_new_1=jnp.gradient(measured_trace_or_signal_t_new, frequency, axis=1)
-        
-        trace_or_signal_t_0=jnp.gradient(trace_or_signal_t, time_or_zarr, axis=0)
-        trace_or_signal_t_1=jnp.gradient(trace_or_signal_t, frequency, axis=1)
-
-        if use_fd_grad==2:
-            measured_trace_or_signal_t_new_0=jnp.gradient(measured_trace_or_signal_t_new_0, time_or_zarr, axis=0)
-            measured_trace_or_signal_t_new_1=jnp.gradient(measured_trace_or_signal_t_new_1, frequency, axis=1)
-            
-            trace_or_signal_t_0=jnp.gradient(trace_or_signal_t_0, time_or_zarr, axis=0)
-            trace_or_signal_t_1=jnp.gradient(trace_or_signal_t_1, frequency, axis=1)
-
-        measured_trace_or_signal_t_new = measured_trace_or_signal_t_new_0 + measured_trace_or_signal_t_new_1
-        trace_or_signal_t = trace_or_signal_t_0 + trace_or_signal_t_1
-        
-
-    return trace_or_signal_t, measured_trace_or_signal_t_new
+    return trace, measured_trace
 
 
 

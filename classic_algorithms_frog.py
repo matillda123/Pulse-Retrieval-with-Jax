@@ -169,47 +169,15 @@ class GeneralizedProjection(RetrievePulsesFROG, GeneralizedProjectionBASE):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog=xfrog, **kwargs)
 
 
-
-    # def calc_Z_error_for_linesearch(self, gamma, linesearch_info, measurement_info, pulse_or_gate):
-    #     population, descent_direction, signal_t_new = linesearch_info.population, linesearch_info.descent_direction, linesearch_info.signal_t_new
-    #     pulse = population.pulse
-    #     gate = population.gate
-
-    #     transform_arr = measurement_info.transform_arr
-    #     sk, rn = measurement_info.sk, measurement_info.rn
-
-    #     # if pulse_or_gate=="pulse":
-    #     #     pulse_f=do_fft(pulse, sk, rn)
-    #     #     pulse_f=pulse_f+gamma*descent_direction
-    #     #     pulse=do_ifft(pulse_f, sk, rn)
-
-    #     # elif pulse_or_gate=="gate":
-    #     #     gate=do_fft(gate, sk, rn)
-    #     #     gate=gate+gamma*descent_direction
-    #     #     gate=do_ifft(gate, sk, rn)
-
-    #     # individual = MyNamespace(pulse=pulse, gate=gate)
-
-    #     individual = self.update_population(population, gamma, descent_direction, measurement_info, pulse_or_gate)
-
-    #     signal_t=self.calculate_signal_t(individual, transform_arr, measurement_info)
-    #     Z_error_new=calculate_Z_error(signal_t.signal_t, signal_t_new)
-    #     return Z_error_new
     
 
     def calc_Z_grad_for_linesearch(self, gamma, linesearch_info, measurement_info, pulse_or_gate):
         individual, descent_direction, signal_t_new = linesearch_info.population, linesearch_info.descent_direction, linesearch_info.signal_t_new
 
         tau_arr = measurement_info.tau_arr
-        sk, rn = measurement_info.sk, measurement_info.rn
-        measured_trace = measurement_info.measured_trace
 
         individual = self.update_individual(individual, gamma, descent_direction, measurement_info, pulse_or_gate)
         signal_t=self.calculate_signal_t(individual, tau_arr, measurement_info)
-        trace = calculate_trace(do_fft(signal_t.signal_t, sk, rn))
-        mu = calculate_mu(trace, measured_trace)
-        signal_t_new = calculate_S_prime(signal_t.signal_t, measured_trace, mu, measurement_info)
-
         grad = calculate_Z_gradient(signal_t.signal_t, signal_t_new, individual.pulse, signal_t.pulse_t_shifted, 
                                     signal_t.gate_shifted, tau_arr, measurement_info, pulse_or_gate)
         return jnp.sum(grad, axis=0) 
@@ -224,7 +192,8 @@ class GeneralizedProjection(RetrievePulsesFROG, GeneralizedProjectionBASE):
 
     def calculate_Z_error_newton_direction(self, grad, signal_t_new, signal_t, tau_arr, descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate):
         newton_direction = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_shifted, signal_t.gate_shifted, signal_t.signal_t, signal_t_new, tau_arr, 
-                                                               descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate)
+                                                               descent_state, measurement_info, descent_info.hessian, use_hessian, pulse_or_gate,
+                                                               in_axes=(0,0,0,0,0,None,None,None,None))
         return newton_direction
 
 
@@ -326,6 +295,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
         elif nonlinear_method=="pg":
             grad = jnp.conjugate(gate_pulse_shifted)
         elif nonlinear_method=="sd":
+            print("check again if this is really correct")
             grad = 2*jnp.conjugate(gate_pulse_shifted)
         else:
             print("somethong is wrong")
@@ -335,7 +305,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
 
 
     def update_population_local(self, population, signal_t, signal_t_new, tau, PIE_method, measurement_info, descent_info, pulse_or_gate):
-        alpha, beta = descent_info.alpha, descent_info.beta
+        alpha, gamma = descent_info.alpha, descent_info.gamma
 
         pulse = population.pulse
         gate = population.gate
@@ -346,7 +316,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
         if pulse_or_gate=="pulse":
             grad = -1*jnp.conjugate(gate_shifted)*difference_signal_t
             U = self.get_PIE_weights(gate_shifted, alpha, PIE_method)
-            population.pulse = pulse - beta*U*grad
+            population.pulse = pulse - gamma*U*grad
 
         elif pulse_or_gate=="gate":
             grad = -1*jnp.conjugate(pulse)*difference_signal_t
@@ -355,23 +325,23 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
             grad = self.modify_grad_for_gate_pulse(grad, jnp.squeeze(signal_t.gate_pulse_shifted), measurement_info.nonlinear_method)
 
             descent_direction = self.reverse_transform_grad(U*grad, tau, measurement_info, local=True)
-            population.gate = gate - beta*descent_direction
+            population.gate = gate - gamma*descent_direction
 
         return population
     
 
 
-    def update_individual_global(self, individual, beta, eta, descent_direction, measurement_info, pulse_or_gate):
+    def update_individual_global(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         signal = getattr(individual, pulse_or_gate)
-        signal = signal + eta*beta*descent_direction
+        signal = signal + gamma*descent_direction
 
         individual = MyNamespace(pulse=individual.pulse, gate=individual.gate)
         setattr(individual, pulse_or_gate, signal)
         return individual
 
 
-    def update_population_global(self, population, beta, eta, descent_direction, measurement_info, pulse_or_gate):
-        population = jax.vmap(self.update_individual_global, in_axes=(0,0,0,0,None,None))(population, beta, eta, descent_direction, measurement_info, pulse_or_gate)
+    def update_population_global(self, population, gamma, descent_direction, measurement_info, pulse_or_gate):
+        population = jax.vmap(self.update_individual_global, in_axes=(0,0,0,None,None))(population, gamma, descent_direction, measurement_info, pulse_or_gate)
         return population
 
 
@@ -402,7 +372,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
 
 
     def calculate_PIE_descent_direction_hessian(self, grad, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate):
-        newton_direction_prev = getattr(descent_state.hessian_state.newton_direction_prev, pulse_or_gate)
+        newton_direction_prev = getattr(descent_state.hessian.newton_direction_prev, pulse_or_gate)
 
         if pulse_or_gate=="pulse":
             probe = signal_t.gate_shifted
@@ -413,9 +383,9 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
             probe = jnp.conjugate(probe)
 
         
-        if descent_info.use_hessian=="diagonal":
+        if descent_info.hessian.use_hessian=="diagonal":
             reverse_transform_hessian = self.reverse_transform_diagonal_hessian
-        elif descent_info.use_hessian=="full":
+        elif descent_info.hessian.use_hessian=="full":
             reverse_transform_hessian = self.reverse_transform_full_hessian
         else:
             print("something is very wrong if you can read this")
@@ -497,7 +467,7 @@ class COPRA(RetrievePulsesFROG, COPRABASE):
             in_axes=(0,0,0,0,0,None,None,None,None)
 
         newton_direction = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_shifted, signal_t.gate_shifted, signal_t.signal_t, signal_t_new, tau_arr,
-                                                               descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate, in_axes=in_axes)
+                                                               descent_state, measurement_info, descent_info.hessian, use_hessian, pulse_or_gate, in_axes=in_axes)
         return newton_direction
             
     

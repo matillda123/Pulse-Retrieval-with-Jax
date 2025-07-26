@@ -54,6 +54,10 @@ def calc_Z_error_pseudo_hessian_subelement_sd(dummy_element, pulse_t, pulse_t_sh
 
 
 
+
+
+
+
 def calc_Z_error_pseudo_hessian_subelement_xfrog_pulse(dummy_element, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=0.5*jnp.abs(gate_shifted_m)**2
     Vzz_k=0
@@ -64,15 +68,45 @@ def calc_Z_error_pseudo_hessian_subelement_xfrog_pulse(dummy_element, pulse_t, p
 
 
 
-def calc_Z_error_pseudo_hessian_subelement_xfrog_gate(dummy_element, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
-    # hessian with respect to the whole gate and not just the pulse that becomes the gate
 
+
+def calc_Z_error_pseudo_hessian_subelement_shg_xfrog_gate(dummy_element, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=0.5*jnp.conjugate(exp_arr_mn)*exp_arr_mp*jnp.abs(pulse_t)**2
     Vzz_k=0
     Hzz_k=Uzz_k-Vzz_k
 
     res=D_arr_pn*Hzz_k
     return dummy_element + res, None
+
+
+def calc_Z_error_pseudo_hessian_subelement_thg_xfrog_gate(dummy_element, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+    Uzz_k=2*jnp.conjugate(exp_arr_mn)*exp_arr_mp*jnp.abs(pulse_t)**2*jnp.abs(pulse_t_shifted_m)**2
+    Vzz_k=0
+    Hzz_k=Uzz_k-Vzz_k
+
+    res=D_arr_pn*Hzz_k
+    return dummy_element + res, None
+
+
+def calc_Z_error_pseudo_hessian_subelement_pg_xfrog_gate(dummy_element, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+    Uzz_k=0.5*jnp.conjugate(exp_arr_mn)*exp_arr_mp*jnp.abs(pulse_t)**2*jnp.abs(pulse_t_shifted_m)**2
+    Vzz_k=jnp.real((signal_t_new_m-signal_t_m)*jnp.conjugate(pulse_t))*jnp.conjugate(exp_arr_mn)*exp_arr_mp
+    Hzz_k=Uzz_k-Vzz_k
+
+    res=D_arr_pn*Hzz_k
+    return dummy_element + res, None
+
+
+def calc_Z_error_pseudo_hessian_subelement_sd_xfrog_gate(dummy_element, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+    Uzz_k=2*jnp.conjugate(exp_arr_mn)*exp_arr_mp*jnp.abs(pulse_t)**2*jnp.abs(pulse_t_shifted_m)**2
+    Vzz_k=0
+    Hzz_k=Uzz_k-Vzz_k
+
+    res=D_arr_pn*Hzz_k
+    return dummy_element + res, None
+
+
+
 
 
 
@@ -195,10 +229,10 @@ def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, om
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
     
-    hess_func_ifrog_False_xfrog_gate={"shg": calc_Z_error_pseudo_hessian_subelement_xfrog_gate, 
-                                       "thg": calc_Z_error_pseudo_hessian_subelement_xfrog_gate, 
-                                       "pg": calc_Z_error_pseudo_hessian_subelement_xfrog_gate, 
-                                       "sd": calc_Z_error_pseudo_hessian_subelement_xfrog_gate}
+    hess_func_ifrog_False_xfrog_gate={"shg": calc_Z_error_pseudo_hessian_subelement_shg_xfrog_gate, 
+                                       "thg": calc_Z_error_pseudo_hessian_subelement_thg_xfrog_gate, 
+                                       "pg": calc_Z_error_pseudo_hessian_subelement_pg_xfrog_gate, 
+                                       "sd": calc_Z_error_pseudo_hessian_subelement_sd_xfrog_gate}
     
     
     hess_func_ifrog_True_xfrog_gate={"shg": calc_Z_error_pseudo_hessian_subelement_shg_ifrog_xfrog_gate,
@@ -259,13 +293,13 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t, pulse_t_shifted, gate_shifted, si
 
 
 
-def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_shifted, gate_shifted, signal_t, signal_t_new, tau_arr, descent_state, measurement_info, descent_info, full_or_diagonal, pulse_or_gate,
-                                        in_axes=None):
-    lambda_lm = descent_info.lambda_lm
-    solver = descent_info.linalg_solver
+def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_shifted, gate_shifted, signal_t, signal_t_new, tau_arr, descent_state, measurement_info, hessian, 
+                                        full_or_diagonal, pulse_or_gate, in_axes=None):
+    lambda_lm = hessian.lambda_lm
+    solver = hessian.linalg_solver
 
     pulse_t_arr = descent_state.population.pulse
-    newton_direction_prev = getattr(descent_state.hessian_state.newton_direction_prev, pulse_or_gate)
+    newton_direction_prev = getattr(descent_state.hessian.newton_direction_prev, pulse_or_gate)
 
     # vmap over population here -> only for small populations since memory will explode. 
     hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=in_axes)(pulse_t_arr, pulse_t_shifted, gate_shifted, signal_t, signal_t_new, 

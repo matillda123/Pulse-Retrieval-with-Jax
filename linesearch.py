@@ -5,8 +5,13 @@ from utilities import while_loop_helper
 
 
 
-def do_linesearch_step(condition, gamma, iteration, linesearch_info, measurement_info, descent_info, error_func, grad_func):
-    c1, c2, delta_gamma = descent_info.c1, descent_info.c2, descent_info.delta_gamma
+# possible other linesearches
+# bisection based on error-value -> e.g. like LSF algorihtm
+
+
+
+def do_linesearch_step(condition, gamma, iteration, linesearch_info, measurement_info, linesearch_params, error_func, grad_func):
+    c1, c2, delta_gamma = linesearch_params.c1, linesearch_params.c2, linesearch_params.delta_gamma
     pk_dot_gradient, pk, error = linesearch_info.pk_dot_gradient, linesearch_info.pk, linesearch_info.error
 
     delta_gamma_1, delta_gamma_2 = delta_gamma
@@ -14,12 +19,12 @@ def do_linesearch_step(condition, gamma, iteration, linesearch_info, measurement
     error_new = error_func(gamma, linesearch_info, measurement_info)
 
     # Armijio Condition
-    if descent_info.use_linesearch=="backtracking" or descent_info.use_linesearch=="wolfe":
+    if linesearch_params.use_linesearch=="backtracking" or linesearch_params.use_linesearch=="wolfe":
         x = jnp.sign((error_new-error) - gamma*c1*pk_dot_gradient)
         condition_one = jnp.real(1-(x+1)/2).astype(jnp.int16)
 
     # Strong Wolfe Condition
-    if descent_info.use_linesearch=="wolfe":
+    if linesearch_params.use_linesearch=="wolfe":
         grad = grad_func(gamma, linesearch_info, measurement_info)
         x = jnp.sign(jnp.abs(jnp.real(jnp.vdot(pk, grad))) - c2*jnp.abs(pk_dot_gradient)) # negative -> True
         condition_two = jnp.real(1-(x+1)/2).astype(jnp.int16)
@@ -40,14 +45,14 @@ def end_linesearch(condition, gamma, iteration_no, max_steps_linesearch):
 
 
 def do_linesearch(linesearch_info, measurement_info, descent_info, error_func, grad_func):
-    assert 0 < descent_info.c1 < descent_info.c2 < 1, "Constants for linesearch ar invalid"
+    assert 0 < descent_info.linesearch_params.c1 < descent_info.linesearch_params.c2 < 1, "Constants for linesearch ar invalid"
 
-    gamma, max_steps_linesearch = descent_info.gamma, descent_info.max_steps_linesearch
+    gamma, max_steps_linesearch = descent_info.gamma, descent_info.linesearch_params.max_steps
 
     condition = 0
     current_step = 0
 
-    linesearch_step=Partial(do_linesearch_step, linesearch_info=linesearch_info, measurement_info=measurement_info, descent_info=descent_info, 
+    linesearch_step=Partial(do_linesearch_step, linesearch_info=linesearch_info, measurement_info=measurement_info, linesearch_params=descent_info.linesearch_params, 
                             error_func=error_func, grad_func=grad_func)
     linesearch_step=Partial(while_loop_helper, actual_function=linesearch_step, number_of_args=3)
 

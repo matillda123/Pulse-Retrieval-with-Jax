@@ -4,14 +4,8 @@ import jax
 from jax.tree_util import Partial
 
 
-from utilities import MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_mu, calculate_trace
+from utilities import scan_helper, MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_mu, calculate_trace
 from linesearch import do_linesearch
-
-
-
-
-
-
 
 
 
@@ -22,9 +16,9 @@ def calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info)
     sk, rn = measurement_info.sk, measurement_info.rn
     signal_f=do_fft(signal_t, sk, rn)
 
-    signal_f_new=project_onto_intensity(signal_f, measured_trace)
+    signal_f_new = project_onto_intensity(signal_f, measured_trace)
 
-    signal_t_new=do_ifft(signal_f_new, sk, rn)*1/(jnp.sqrt(mu)+1e-12)
+    signal_t_new = do_ifft(signal_f_new, sk, rn)*1/(jnp.sqrt(mu)+1e-12)
     return signal_t_new
 
 
@@ -37,101 +31,144 @@ def calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info)
 
 
 
+def calculate_r_hessian_diagonal_intensity(trace, measured_trace):
+    H_zz_diag = jnp.sum(2*trace - measured_trace, axis=-1)
+    return H_zz_diag
 
 
+def calculate_r_hessian_diagonal_amplitude(trace, measured_trace):
+    H_zz_diag = 1
+    return H_zz_diag
 
 
-
-
-def calculate_r_gradient_intensity(signal_f, measured_trace, weights, sk, rn):
+def calculate_r_hessian_diagonal(signal_f, measurement_info, descent_info):
     trace = calculate_trace(signal_f)
-    mu = calculate_mu(trace, measured_trace)
+    measured_trace = measurement_info.measured_trace
+
+    calc_r_hessian_diag_dict={"amplitude": calculate_r_hessian_diagonal_amplitude,
+                              "intensity": calculate_r_hessian_diagonal_intensity}
+    return calc_r_hessian_diag_dict[descent_info.S_prime_params.r_gradient](trace, measured_trace) # r_gradient is true here, no need for extra r_hessian with amp/int
+
+
+
+
+def calculate_r_gradient_intensity(signal_f, mu, measured_trace, weights, sk, rn):
+    trace = calculate_trace(signal_f)
     grad_r = -4*mu*do_ifft(signal_f*(measured_trace - mu*trace)*weights**2, sk, rn)
     return grad_r 
 
 
-def calculate_r_gradient_amplitude(signal_f, measured_trace, weights, sk, rn):
-    mu = jnp.sum(jnp.sqrt(measured_trace)*jnp.abs(signal_f))/jnp.sum(jnp.abs(signal_f)**2)
+def calculate_r_gradient_amplitude(signal_f, mu, measured_trace, weights, sk, rn):
     grad_r = -4*mu*do_ifft((jnp.sqrt(measured_trace)*jnp.exp(1j*jnp.angle(signal_f))-mu*signal_f)*weights, sk, rn)
     return grad_r
 
 
 
-def calculate_r_gradient(signal_f, measurement_info, descent_info):
+def calculate_r_gradient(signal_f, mu, measurement_info, descent_info):
     measured_trace, sk, rn = measurement_info.measured_trace, measurement_info.sk, measurement_info.rn
-    weights = descent_info.weights
+    weights = descent_info.S_prime_params.weights
 
-    calc_r_grad_dict={"amplitude":calculate_r_gradient_amplitude,
+    calc_r_grad_dict={"amplitude": calculate_r_gradient_amplitude,
                       "intensity": calculate_r_gradient_intensity}
-    calc_r_grad = jax.vmap(calc_r_grad_dict[descent_info.r_gradient], in_axes=(0,None,None,None,None))
-    gradient = calc_r_grad(signal_f, measured_trace, weights, sk, rn)
-
+    
+    gradient = calc_r_grad_dict[descent_info.S_prime_params.r_gradient](signal_f, mu, measured_trace, weights, sk, rn)
     return gradient
 
 
+def calculate_r_descent_direction(signal_f, mu, measurement_info, descent_info):
+    gradient = calculate_r_gradient(signal_f, mu, measurement_info, descent_info)
 
-def calculate_r_error(trace, measured_trace):
-    mu = calculate_mu(trace, measured_trace)
+    if descent_info.S_prime_params.r_hessian!=False:
+        hessian_diag = calculate_r_hessian_diagonal(signal_f, measurement_info, descent_info)
+        descent_direction = -1*gradient/(hessian_diag[:,jnp.newaxis] + 1e-12)
+    else:
+        descent_direction = -1*gradient
+        
+    return descent_direction, gradient
+
+
+
+def calculate_r_error_intensity(trace, measured_trace, mu):
     return jnp.sum(jnp.abs(measured_trace - mu*trace)**2)
+
+
+def calculate_r_error_amplitude(trace, measured_trace, mu):
+    return jnp.sum(jnp.abs(jnp.sign(measured_trace)*jnp.sqrt(jnp.abs(measured_trace)) - mu*jnp.sqrt(trace))**2)
+
+
+def calculate_r_error(trace, measured_trace, mu, descent_info):
+    r_error_dict={"intensity": calculate_r_error_intensity,
+                  "amplitude": calculate_r_error_amplitude}
+    r_error=r_error_dict[descent_info.S_prime_params.r_gradient](trace, measured_trace, mu)
+    return r_error
 
 
 
 def calc_r_error_for_linesearch(gamma, linesearch_info, measurement_info, descent_info):
     measured_trace, sk, rn = measurement_info.measured_trace, measurement_info.sk, measurement_info.rn 
     
-    descent_direction, eta = linesearch_info.descent_direction, linesearch_info.eta
+    descent_direction, eta, mu = linesearch_info.descent_direction, linesearch_info.eta, linesearch_info.mu
     signal_t = linesearch_info.signal_t
 
-    signal_t_new = signal_t.signal_t + gamma*eta*descent_direction
+    signal_t_new = signal_t + gamma*eta*descent_direction
     trace = calculate_trace(do_fft(signal_t_new, sk, rn))
-    error = calculate_r_error(trace, measured_trace)
+    error = calculate_r_error(trace, measured_trace, mu, descent_info)
     return error
 
 
 def calc_r_grad_for_linesearch(gamma, linesearch_info, measurement_info, descent_info):
     measured_trace, sk, rn = measurement_info.measured_trace, measurement_info.sk, measurement_info.rn 
-    weights = descent_info.weights
+    weights = descent_info.S_prime_params.weights
     
-    descent_direction, eta = linesearch_info.descent_direction, linesearch_info.eta
+    descent_direction, eta, mu = linesearch_info.descent_direction, linesearch_info.eta, linesearch_info.mu
     signal_t = linesearch_info.signal_t
 
-    signal_t_new = signal_t.signal_t + gamma*eta*descent_direction
+    signal_t_new = signal_t + gamma*eta*descent_direction
     signal_f = do_fft(signal_t_new, sk, rn)
 
     calc_r_grad_dict={"amplitude": calculate_r_gradient_amplitude,
                       "intensity": calculate_r_gradient_intensity}
-    gradient = calc_r_grad_dict[descent_info.r_gradient](signal_f, measured_trace, weights, sk, rn)
+    gradient = calc_r_grad_dict[descent_info.S_prime_params.r_gradient](signal_f, mu, measured_trace, weights, sk, rn)
 
     return gradient
 
 
 
-def calculate_S_prime_iterative_step(signal_t, measurement_info, descent_info):
-    sk, rn, measured_trace = measurement_info.sk, measurement_info.rn, measurement_info.measured_trace
+def calculate_S_prime_iterative_step(signal_t, measured_trace, mu, measurement_info, descent_info):
+    sk, rn = measurement_info.sk, measurement_info.rn
     xi = descent_info.xi
 
-    signal_f=do_fft(signal_t.signal_t, sk, rn)
+    signal_f=do_fft(signal_t, sk, rn)
     trace=calculate_trace(signal_f)
 
-    gradient = calculate_r_gradient(signal_f, measurement_info, descent_info)
-    descent_direction = -1*gradient
+    descent_direction, gradient = calculate_r_descent_direction(signal_f, mu, measurement_info, descent_info)
 
-    r_error = jax.vmap(calculate_r_error, in_axes=(0, None))(trace, measured_trace)
-    eta = r_error/(jnp.sum(jnp.abs(descent_direction)**2, axis=(1, 2)) + xi)
+    r_error = calculate_r_error(trace, measured_trace, mu, descent_info)
+    eta = r_error/(jnp.sum(jnp.abs(descent_direction)**2) + xi)
 
 
-    if descent_info.use_linesearch=="backtracking" or descent_info.use_linesearch=="wolfe":
-        pk_dot_gradient = jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, gradient)        
-        linesearch_info=MyNamespace(signal_t=signal_t, descent_direction=descent_direction, error=r_error, 
-                                    pk_dot_gradient=pk_dot_gradient, pk=descent_direction, eta=eta)
+    if descent_info.linesearch_params.use_linesearch=="backtracking" or descent_info.linesearch_params.use_linesearch=="wolfe":
+        pk_dot_gradient = jnp.sum(jnp.real(jnp.vecdot(descent_direction, gradient)))
+        linesearch_info = MyNamespace(signal_t=signal_t, descent_direction=descent_direction, error=r_error, 
+                                    pk_dot_gradient=pk_dot_gradient, pk=descent_direction, eta=eta, mu=mu)
         
-        gamma = jax.vmap(do_linesearch, in_axes=(0,None,None,None,None))(linesearch_info, measurement_info, descent_info, 
-                                                                            Partial(calc_r_error_for_linesearch, descent_info=descent_info),
-                                                                            Partial(calc_r_grad_for_linesearch, descent_info=descent_info))
+        gamma = do_linesearch(linesearch_info, measurement_info, descent_info, 
+                              Partial(calc_r_error_for_linesearch, descent_info=descent_info), 
+                              Partial(calc_r_grad_for_linesearch, descent_info=descent_info))
     else:
-        gamma = jnp.ones(descent_info.population_size)*descent_info.gamma
+        gamma = descent_info.gamma
         
-    signal_t_new = signal_t.signal_t + gamma[:, jnp.newaxis, jnp.newaxis]*eta[:, jnp.newaxis, jnp.newaxis]*descent_direction
+    signal_t_new = signal_t + gamma*eta*descent_direction
+    return signal_t_new, None
+
+
+def calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, descent_info, number_of_iterations):
+    if number_of_iterations==1:
+        signal_t_new, _ = calculate_S_prime_iterative_step(signal_t, measured_trace, mu, measurement_info, descent_info)
+    else:
+        step = Partial(calculate_S_prime_iterative_step, measured_trace=measured_trace, mu=mu, measurement_info=measurement_info, descent_info=descent_info)
+        do_step = Partial(scan_helper, actual_function=step, number_of_args=1, number_of_xs=0)
+        signal_t_new, _ = jax.lax.scan(do_step, signal_t, length=number_of_iterations)
     return signal_t_new
 
 
@@ -142,12 +179,11 @@ def calculate_S_prime_iterative_step(signal_t, measurement_info, descent_info):
 def calculate_S_prime(signal_t, measured_trace, mu, measurement_info, descent_info, method="projection"):
 
     if method=="projection":
-        # this one needs to be vmapped over
         signal_t_new = calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info)
 
-    elif method=="iteratively":
-        # this one is not made to be vmapped over 
-        signal_t_new = calculate_S_prime_iterative_step(signal_t, measurement_info, descent_info)
+    elif method=="iteration":
+        number_of_iterations = descent_info.S_prime_params.number_of_iterations
+        signal_t_new = calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, descent_info, number_of_iterations)
 
     else:
         print("something is wrong")

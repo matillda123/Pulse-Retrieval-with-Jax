@@ -19,10 +19,10 @@ def forward_loop(r, i, alpha, rho, s, y):
     return r, None
 
 
-def do_lbfgs(grad_current, lbfgs_state, descent_info):
+def do_lbfgs(grad_current, lbfgs_state, hessian):
     grad_prev, newton_direction_prev, step_size_prev = lbfgs_state.grad_prev, lbfgs_state.newton_direction_prev, lbfgs_state.step_size_prev
 
-    m = descent_info.lbfgs_memory
+    m = hessian.lbfgs_memory
     m_backward = jnp.arange(0,m,1)
     m_forward = jnp.arange(m,0,-1)
 
@@ -52,7 +52,7 @@ def do_lbfgs(grad_current, lbfgs_state, descent_info):
 # -> e.g. as one does in doubleblind frog or with the global optimizations in TDP and copra 
 # -> not worth generalizing to other algorithms  
 def get_pseudo_newton_direction(grad, lbfgs_state, descent_info):
-    newton_direction = jax.vmap(do_lbfgs, in_axes=(0,0,None))(grad, lbfgs_state, descent_info)
+    newton_direction = jax.vmap(do_lbfgs, in_axes=(0,0,None))(grad, lbfgs_state, descent_info.hessian)
 
     grad_arr = lbfgs_state.grad_prev
     grad_arr = grad_arr.at[:,1:].set(grad_arr[:,:-1])

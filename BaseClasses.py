@@ -48,11 +48,9 @@ class AlgorithmsBASE:
         carry, do_scan = self.initialize_run(init_vals)
         carry, error_arr = jax.lax.scan(do_scan, carry, length=no_iterations)
         
-        if len(jnp.shape(error_arr))>=3:
-            print("this is not necessary if all error_arrs are treated correctly")
-            error_arr = jnp.squeeze(error_arr).T
+        error_arr = jnp.squeeze(error_arr)
 
-        final_result = self.post_process(carry, jnp.array(error_arr).T)
+        final_result = self.post_process(carry, error_arr)
         return final_result
     
 
@@ -596,11 +594,11 @@ class RetrievePulsesFROG(RetrievePulses):
         pulse_t_shifted=self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
 
         if xfrog==True:
-            gate_pulse_shifted=self.calculate_shifted_signal(measurement_info.xfrog_gate, frequency, tau_arr, time)
-            gate_shifted=calculate_gate(gate_pulse_shifted, frogmethod)
+            gate_pulse_shifted =self.calculate_shifted_signal(measurement_info.xfrog_gate, frequency, tau_arr, time)
+            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
 
         elif doubleblind==True:
-            gate_pulse_shifted=self.calculate_shifted_signal(gate, frequency, tau_arr, time)
+            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency, tau_arr, time)
             gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
 
         else:

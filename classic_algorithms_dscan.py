@@ -91,20 +91,7 @@ class GeneralizedProjection(RetrievePulsesDSCAN, GeneralizedProjectionBASE):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 
-
-
-    # def calc_Z_error_for_linesearch(self, gamma, linesearch_info, measurement_info, pulse_or_gate):
-    #     descent_direction, signal_t_new = linesearch_info.descent_direction, linesearch_info.signal_t_new
-    #     phase_matrix = measurement_info.phase_matrix
-
-    #     pulse = linesearch_info.population.pulse + gamma*descent_direction
-        
-    #     individual = MyNamespace(pulse=pulse, gate=None)
-    #     signal_t = self.calculate_signal_t(individual, phase_matrix, measurement_info)
-    #     Z_error_new=calculate_Z_error(signal_t.signal_t, signal_t_new)
-    #     return Z_error_new
     
-
 
     def calc_Z_grad_for_linesearch(self, gamma, linesearch_info, measurement_info, pulse_or_gate):
         descent_direction, signal_t_new = linesearch_info.descent_direction, linesearch_info.signal_t_new
@@ -127,7 +114,7 @@ class GeneralizedProjection(RetrievePulsesDSCAN, GeneralizedProjectionBASE):
 
     def calculate_Z_error_newton_direction(self, grad, signal_t_new, signal_t, phase_matrix, descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate):
         newton_direction = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, 
-                                                               descent_state, measurement_info, descent_info, use_hessian)
+                                                               descent_state, measurement_info, descent_info.hessian, use_hessian, in_axes=(0,0,0,None,None,None))
         return newton_direction
 
 
@@ -135,6 +122,7 @@ class GeneralizedProjection(RetrievePulsesDSCAN, GeneralizedProjectionBASE):
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         individual.pulse = individual.pulse + gamma*descent_direction
         return individual
+
 
 
 
@@ -214,36 +202,36 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
 
 
     def update_population_local(self, population, signal_t, signal_t_new, phase_matrix, PIE_method, measurement_info, descent_info, pulse_or_gate):
-        alpha, beta = descent_info.alpha, descent_info.beta
+        alpha, gamma = descent_info.alpha, descent_info.gamma
         sk, rn = measurement_info.sk, measurement_info.rn
 
         difference_signal_t = signal_t_new - signal_t.signal_t
         grad = -1*jnp.conjugate(signal_t.gate_disp)*difference_signal_t
         U = self.get_PIE_weights(signal_t.gate_disp, alpha, PIE_method)
 
-        descent_direction = self.reverse_transform(U*grad, phase_matrix, measurement_info)
+        descent_direction = self.reverse_transform_grad(U*grad, phase_matrix, measurement_info)
 
         pulse_t = do_ifft(population.pulse, sk, rn)
-        pulse_t = pulse_t - beta*descent_direction
+        pulse_t = pulse_t - gamma*descent_direction
         population.pulse = do_fft(pulse_t, sk, rn)
         return population
 
 
 
 
-    def update_individual_global(self, individual, beta, eta, descent_direction, measurement_info, pulse_or_gate):
+    def update_individual_global(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         sk, rn = measurement_info.sk, measurement_info.rn
         
         pulse_t=do_ifft(individual.pulse, sk, rn)
-        pulse_t=pulse_t + eta*beta*descent_direction
+        pulse_t=pulse_t + gamma*descent_direction
         pulse = do_fft(pulse_t, sk, rn)
 
         individual = MyNamespace(pulse=pulse, gate=individual.gate)
         return individual
     
 
-    def update_population_global(self, population, beta, eta, descent_direction, measurement_info, pulse_or_gate):
-        population = jax.vmap(self.update_individual_global, in_axes=(0,0,0,0,None,None))(population, beta, eta, descent_direction, measurement_info, pulse_or_gate)
+    def update_population_global(self, population, gamma, descent_direction, measurement_info, pulse_or_gate):
+        population = jax.vmap(self.update_individual_global, in_axes=(0,0,0,None,None))(population, gamma, descent_direction, measurement_info, pulse_or_gate)
         return population
 
 
@@ -256,17 +244,24 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
         U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_disp, alpha, PIE_method)
         grad_all_m = -1*jnp.conjugate(signal_t.gate_disp)*(signal_t_new - signal_t.signal_t)
 
-        U = self.reverse_transform(U, phase_matrix, measurement_info)
-        grad_all_m = self.reverse_transform(grad_all_m, phase_matrix, measurement_info)
+        U = self.reverse_transform_grad(U, phase_matrix, measurement_info)
+        grad_all_m = self.reverse_transform_grad(grad_all_m, phase_matrix, measurement_info)
         return grad_all_m, U
 
 
 
     def calculate_PIE_descent_direction_hessian(self, grad, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate):
         signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        
-        reverse_transform = Partial(self.reverse_transform, phase_matrix=measurement_info.phase_matrix, measurement_info=measurement_info)
-        newton_direction_prev = descent_state.hessian_state.newton_direction_prev.pulse
+
+        if descent_info.hessian.use_hessian=="diagonal":
+            reverse_transform_hessian = self.reverse_transform_diagonal_hessian
+        elif descent_info.hessian.use_hessian=="full":
+            reverse_transform_hessian = self.reverse_transform_full_hessian
+        else:
+            print("something is very wrong if you can read this")
+
+        reverse_transform = Partial(reverse_transform_hessian, phase_matrix=measurement_info.phase_matrix, measurement_info=measurement_info)
+        newton_direction_prev = descent_state.hessian.newton_direction_prev.pulse
         descent_direction = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_f, newton_direction_prev, 
                                                             measurement_info, descent_info, "gate", reverse_transform)
         return descent_direction
@@ -292,8 +287,8 @@ class COPRA(RetrievePulsesDSCAN, COPRABASE):
 
 
 
-    def update_individual_global(self, individual, alpha, eta, descent_direction, measurement_info, descent_info, pulse_or_gate):
-        individual.pulse = individual.pulse + alpha*eta*descent_direction
+    def update_individual_global(self, individual, alpha, descent_direction, measurement_info, descent_info, pulse_or_gate):
+        individual.pulse = individual.pulse + alpha*descent_direction
         return individual
 
 
@@ -323,7 +318,7 @@ class COPRA(RetrievePulsesDSCAN, COPRABASE):
             signal_t = signal_t.signal_t
         
         newton_direction = get_pseudo_newton_direction_Z_error(grad, pulse_t_disp, signal_t, signal_t_new, phase_matrix, 
-                                                               descent_state, measurement_info, descent_info, use_hessian, in_axes=in_axes)
+                                                               descent_state, measurement_info, descent_info.hessian, use_hessian, in_axes=in_axes)
         return newton_direction
             
     
