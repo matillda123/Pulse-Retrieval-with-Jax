@@ -25,6 +25,9 @@ def unflatten_MyNamespace(aux_data, leaves):
 
 
 class MyNamespace:
+    # "it should be doable to let this inherit from equinox.module"
+    # then add things like init, replace, expand and maybe math stuff -> should be fine since replace and expand return new objects
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -37,6 +40,30 @@ class MyNamespace:
     def expand(self, **kwargs):
         new_dict = {**self.__dict__, **kwargs}
         return MyNamespace(**new_dict)
+    
+
+    def __repr__(self):
+        mydict = self.__dict__
+        keys = mydict.keys()
+
+        myoutput=[]
+        for key in keys:
+            value = mydict[key]
+
+            if type(value)==MyNamespace:
+                myoutput.append([key, value.__repr__()])
+
+            elif type(value)==str or type(value)==bool:
+                myoutput.append([key, value])
+                
+            else:
+                try:
+                    myoutput.append([key, jnp.shape(value)]) 
+                except:
+                    myoutput.append([key, value])
+                    
+        return f"{myoutput}"
+        
     
 
 

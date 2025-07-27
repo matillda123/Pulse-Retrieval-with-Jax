@@ -267,14 +267,18 @@ class MakeFROGTrace(RetrievePulsesFROG):
         signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_t, gate=self.gate), time, measurement_info)
         signal_f=do_fft(signal_t.signal_t, self.sk, self.rn)
         trace=np.abs(signal_f)**2
+
+        self.time=time
+        self.frequency=frequency
+        self.trace = trace
             
-        time, frequency, trace, frequency_spectrum, spectrum = self.interpolate_trace(time, frequency, trace.T, pulse_f, N=N, scale_time_range=scale_time_range, 
+        time, frequency, trace, frequency_spectrum, spectrum = self.interpolate_trace(time, frequency, trace, pulse_f, N=N, scale_time_range=scale_time_range, 
                                                                                       interpolate_fft_conform=interpolate_fft_conform, cut_off_val=cut_off_val, 
                                                                                       frequency_range=frequency_range)
 
-        trace=trace.T/np.max(trace)
-        spectrum=spectrum/np.max(spectrum)
-        return time, frequency, trace, frequency_spectrum, spectrum
+        trace = trace/np.max(trace)
+        spectrum = spectrum/np.max(spectrum)
+        return time, frequency, trace.T, frequency_spectrum, spectrum
     
 
     def interpolate_trace(self, time, frequency, trace, pulse_f, N=256, scale_time_range=1, interpolate_fft_conform=True, cut_off_val=0.001, frequency_range=None):
@@ -287,49 +291,42 @@ class MakeFROGTrace(RetrievePulsesFROG):
         idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
 
 
-        time_zoom=time[idx_1_min:idx_1_max]
-        frequency_zoom=frequency[idx_0_min:idx_0_max]
-        trace_new=trace[:, idx_1_min:idx_1_max]
+        time_zoom=time[idx_0_min:idx_0_max]
+        frequency_zoom=frequency[idx_1_min:idx_1_max]
 
         if frequency_range!=None:
             fmin, fmax = frequency_range
         else:
             fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
-            deltaf=fmax-fmin
-            fmin=fmin-deltaf/2
-            fmax=fmax+deltaf/2
+            deltaf = fmax - fmin
+            fmin = fmin - deltaf/2
+            fmax = fmax + deltaf/2
 
         if interpolate_fft_conform==True:
             central_f=(fmin+fmax)/2
-            df=1/((time_zoom[-1]-time_zoom[0])*scale_time_range)
+            df=1/np.abs((time_zoom[-1]-time_zoom[0])*scale_time_range)
 
             frequency_min=central_f-df*N/2
             frequency_max=central_f+df*N/2
 
-            frequency_interpolate=np.arange(frequency_min, frequency_max, df)
+            frequency_interpolate=np.linspace(frequency_min, frequency_max, N)
             time_interpolate=np.fft.fftshift(np.fft.fftfreq(len(frequency_interpolate), df))
 
-        elif interpolate_fft_conform==False:
-            frequency_interpolate=np.linspace(fmin, fmax, N)
-
-            t_middle=(time_zoom[0]+time_zoom[-1])/2
-            Delta_t=(time_zoom[-1]-time_zoom[0])*scale_time_range
-            time_interpolate=np.linspace(t_middle-Delta_t/2,t_middle+Delta_t/2, N)
-
         else:
-            print("Something went wrong")
+            frequency_interpolate = np.linspace(fmin, fmax, N)
 
+            t_central = (time_zoom[0]+time_zoom[-1])/2
+            Delta_t = np.abs(time_zoom[-1]-time_zoom[0])*scale_time_range
+            time_interpolate = np.linspace(t_central-Delta_t/2, t_central+Delta_t/2, N)
+        
 
-        temp=[]
-        for line in np.transpose(trace):
-            line_interpolate=do_interpolation_1d(frequency_interpolate, frequency, line)
-            temp.append(line_interpolate)
+        trace_interpolate_freq = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_interpolate, frequency, trace)
+        trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, time, trace_interpolate_freq)
 
-        trace_interpolate=[]
-        for line in np.transpose(temp):
-            line_interpolate=do_interpolation_1d(time_interpolate, time, line)
-            trace_interpolate.append(line_interpolate)
-
+        if self.nonlinear_method=="sd":
+            frequency_interpolate = -1*frequency_interpolate
+            trace_interpolate = np.flip(trace_interpolate, axis=0)
+        
 
         spectrum=jnp.abs(pulse_f)**2
         spectrum=spectrum/jnp.max(spectrum)
@@ -338,12 +335,14 @@ class MakeFROGTrace(RetrievePulsesFROG):
         idx_1 = np.sort(idx)[0]
         idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
         
-        frequency_zoom=frequency[idx_1_min:idx_1_max]
-        frequency_interpolate_spectrum=np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
+        frequency_zoom = frequency[idx_1_min:idx_1_max]
+        frequency_interpolate_spectrum = np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
         
-        spectrum=do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
+        spectrum = do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
 
         return time_interpolate, frequency_interpolate, np.abs(trace_interpolate), frequency_interpolate_spectrum, spectrum
+
+
 
 
     def plot_trace(self, time, pulse_t, frequency, pulse_f, time_trace, frequency_trace, trace, frequency_spectrum, spectrum):
@@ -425,16 +424,22 @@ class MakeDScanTrace(RetrievePulsesDSCAN):
         signal_f = do_fft(signal_t.signal_t, self.sk, self.rn)
         trace=jnp.abs(signal_f)**2
 
-        if nonlinear_method=="sd":
-            frequency = -1 * jnp.flip(frequency)
-            trace=jnp.flip(trace, axis=1)
 
-        frequency, trace, frequency_spectrum, spectrum = self.interpolate_trace(frequency, trace, pulse_f, N=N, cut_off_val=cut_off_val, frequency_range=frequency_range)
+        self.z_arr=z_arr
+        self.frequency=frequency
+        self.phase_matrix=phase_matrix
+        self.signal_t = signal_t
+        self.signal_f = signal_f
+        self.trace = trace
+
+        frequency, trace, frequency_spectrum, spectrum = self.interpolate_trace(frequency, trace, pulse_f, N=N, cut_off_val=cut_off_val, 
+                                                                                frequency_range=frequency_range)
 
         trace=trace/np.max(trace)
         spectrum=spectrum/np.max(spectrum)
         return frequency, trace, frequency_spectrum, spectrum
     
+
 
 
     def interpolate_trace(self, frequency, trace, pulse_f, N=256, cut_off_val=0.001, frequency_range=None):
@@ -459,21 +464,22 @@ class MakeDScanTrace(RetrievePulsesDSCAN):
 
         trace_interpolate=jax.vmap(do_interpolation_1d, in_axes=(None, None, 0))(frequency_interpolate, frequency, trace)
 
+        if self.nonlinear_method=="sd":
+            frequency_interpolate = -1*frequency_interpolate
+            trace_interpolate = np.flip(trace_interpolate, axis=1)
+
 
         spectrum=jnp.abs(pulse_f)**2
         spectrum=spectrum/jnp.max(spectrum)
 
-        idx_1=np.where(spectrum>1e-5)
-        idx_1 = np.sort(idx_1)[0]
+        idx=np.where(spectrum>1e-5)
+        idx_1 = np.sort(idx)[0]
         idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
-
-        if self.nonlinear_method=="sd":
-            frequency = -1 * jnp.flip(frequency)
-
-        frequency_zoom=frequency[idx_1_min:idx_1_max]
-        frequency_interpolate_spectrum=np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
-
-        spectrum=do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
+        
+        frequency_zoom = frequency[idx_1_min:idx_1_max]
+        frequency_interpolate_spectrum = np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
+        
+        spectrum = do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
 
         return frequency_interpolate, np.abs(trace_interpolate), frequency_interpolate_spectrum, spectrum
 

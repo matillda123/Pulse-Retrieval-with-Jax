@@ -773,7 +773,7 @@ class RetrievePulsesDSCAN(RetrievePulses):
         pulse = individual.pulse
 
         pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info)
-        # pulse_t_disp = jax.vmap(center_signal)(pulse_t_disp)
+        #pulse_t_disp = jax.vmap(center_signal)(pulse_t_disp)
         gate_disp = calculate_gate(pulse_t_disp, measurement_info.nonlinear_method)
         signal_t = pulse_t_disp*gate_disp
 
