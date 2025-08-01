@@ -218,6 +218,7 @@ class GeneralizedProjection(RetrievePulsesFROG, GeneralizedProjectionBASE):
 class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, PIE_method="rPIE", xfrog=False, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog=xfrog, **kwargs)
+        assert self.ifrog==False, "Dont use ifrog with PIE. its not meant or made for that"
 
         self.PIE_method=PIE_method
 
