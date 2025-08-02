@@ -215,6 +215,28 @@ def calculate_gate(pulse_t, method):
     elif method == "sd":
         gate = jnp.conjugate(pulse_t)**2
 
+    else:
+        print("not_implemented")
+    return gate
+
+
+
+def calculate_gate_with_Real_Fields(pulse_t, method):
+    assert method!="tg", "For TG, depending on the definition either pg or sd needs to be used."
+
+    if method=="shg":
+        gate = jnp.real(pulse_t)
+
+    elif method=="thg":
+        gate = jnp.real(pulse_t)**2
+
+    elif method=="pg":
+        gate=jnp.abs(pulse_t)**2
+
+    elif method=="sd":
+        print("not sure if this can work")
+    else:
+        print("not_implemented")
     return gate
 
 

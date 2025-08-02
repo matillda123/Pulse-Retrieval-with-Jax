@@ -185,7 +185,7 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
            step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
            step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
 
-           descent_state = tree_at(lambda x: getattr(x.lbfgs, pulse_or_gate).lbfgs_state.step_sizeprev, descent_state, step_size_arr)
+           descent_state = tree_at(lambda x: getattr(x.lbfgs, pulse_or_gate).step_sizeprev, descent_state, step_size_arr)
 
         population = self.update_population(population, gamma, descent_direction, measurement_info, pulse_or_gate) 
         descent_state = tree_at(lambda x: x.population, descent_state, population)
@@ -360,7 +360,7 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
             U = U*jnp.ones(jnp.shape(probe_shifted))
 
         elif PIE_method=="rPIE":
-            U = 1/((1-alpha)*jnp.abs(probe_shifted)**2+alpha*jnp.max(jnp.abs(probe_shifted)**2))
+            U = 1/((1-alpha)*jnp.abs(probe_shifted)**2 + alpha*jnp.max(jnp.abs(probe_shifted)**2))
 
         elif PIE_method==None:
             U = jnp.ones(jnp.shape(probe_shifted))
@@ -504,7 +504,7 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
            step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
            step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
 
-           descent_state = tree_at(lambda x: getattr(x.lbfgs, pulse_or_gate).lbfgs_state.step_size_prev, descent_state, step_size_arr)
+           descent_state = tree_at(lambda x: getattr(x.lbfgs, pulse_or_gate).step_size_prev, descent_state, step_size_arr)
 
 
         population = self.update_population_global(population, gamma, descent_direction, measurement_info, pulse_or_gate)

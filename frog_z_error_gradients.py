@@ -32,7 +32,7 @@ def Z_gradient_sd(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, r
 
 
 def Z_gradient_xfrog_pulse(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn):
-    # gradient with respect to pulse, is probably the same for all nonlinear methods
+    # gradient with respect to pulse, is the same for all nonlinear methods
     grad=do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     return -2*grad
 
@@ -140,6 +140,21 @@ def Z_gradient_pg_ifrog_xfrog_gate(deltaS, pulse_t, pulse_t_shifted, gate_shifte
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def calculate_Z_gradient_pulse(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info):
     frequency, sk, rn = measurement_info.frequency, measurement_info.sk, measurement_info.rn
     xfrog, doubleblind, ifrog, frogmethod = measurement_info.xfrog, measurement_info.doubleblind, measurement_info.ifrog, measurement_info.nonlinear_method
@@ -177,6 +192,10 @@ def calculate_Z_gradient_pulse(signal_t, signal_t_new, pulse_t, pulse_t_shifted,
 
 
 
+
+
+
+
 def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info):
     frequency, sk, rn = measurement_info.frequency, measurement_info.sk, measurement_info.rn
     ifrog, frogmethod = measurement_info.ifrog, measurement_info.nonlinear_method
@@ -187,14 +206,29 @@ def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, 
     deltaS = signal_t_new-signal_t
 
 
-    grad_func_ifrog_False_xfrog_gate={"shg": Z_gradient_shg_xfrog_gate, "thg": Z_gradient_thg_xfrog_gate, "pg": Z_gradient_pg_xfrog_gate, "sd": Z_gradient_sd_xfrog_gate}
-    grad_func_ifrog_True_xfrog_gate={"shg": Z_gradient_shg_ifrog_xfrog_gate, "thg": Z_gradient_thg_ifrog_xfrog_gate, "pg": Z_gradient_pg_ifrog_xfrog_gate}
+    grad_func_ifrog_False_xfrog_gate={"shg": Z_gradient_shg_xfrog_gate, 
+                                      "thg": Z_gradient_thg_xfrog_gate, 
+                                      "pg": Z_gradient_pg_xfrog_gate, 
+                                      "sd": Z_gradient_sd_xfrog_gate}
+    
+    grad_func_ifrog_True_xfrog_gate={"shg": Z_gradient_shg_ifrog_xfrog_gate, 
+                                     "thg": Z_gradient_thg_ifrog_xfrog_gate, 
+                                     "pg": Z_gradient_pg_ifrog_xfrog_gate}
     
     grad_func={False: grad_func_ifrog_False_xfrog_gate,
                True: grad_func_ifrog_True_xfrog_gate}
     
     grad=grad_func[ifrog][frogmethod](deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn)
     return grad
+
+
+
+
+
+
+
+
+
 
 
 

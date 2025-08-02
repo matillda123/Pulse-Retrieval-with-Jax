@@ -9,7 +9,7 @@ import jax.numpy as jnp
 from jax.tree_util import Partial
 from equinox import tree_at
 
-from utilities import MyNamespace, get_com, center_signal, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_trace, calculate_trace_error, project_onto_amplitude, run_scan
+from utilities import MyNamespace, get_com, center_signal, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_gate_with_Real_Fields, calculate_trace, calculate_trace_error, project_onto_amplitude, run_scan
 from create_population import create_population_classic
 
 
@@ -748,7 +748,7 @@ class RetrievePulsesDSCAN(RetrievePulses):
 
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.z_arr, self.measurement_info)
         self.transform_arr = self.phase_matrix
-        self.idx_arr=jnp.arange(jnp.shape(self.transform_arr)[0])   
+        self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
 
         self.measurement_info = self.measurement_info.expand(phase_matrix = self.phase_matrix,
                                                              transform_arr = self.transform_arr,
@@ -864,13 +864,70 @@ class RetrievePulsesDSCAN(RetrievePulses):
 
 
 
-class RetrievePulsesFROGwithRealFields(RetrievePulses):
-    pass
+
+class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 
-class RetrievePulsesDSCANwithRealFields(RetrievePulses):
-    pass
+    def calculate_signal_t(self, individual, tau_arr, measurement_info):
+        time, frequency = measurement_info.time, measurement_info.frequency
+        xfrog, doubleblind, ifrog = measurement_info.xfrog, measurement_info.doubleblind, measurement_info.ifrog
+        frogmethod = measurement_info.nonlinear_method
+
+        pulse, gate = individual.pulse, individual.gate
+
+
+        pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
+
+        if xfrog==True:
+            gate_pulse_shifted = self.calculate_shifted_signal(measurement_info.xfrog_gate, frequency, tau_arr, time)
+            gate_shifted = calculate_gate_with_Real_Fields(gate_pulse_shifted, frogmethod)
+
+        elif doubleblind==True:
+            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency, tau_arr, time)
+            gate_shifted = calculate_gate_with_Real_Fields(gate_pulse_shifted, frogmethod)
+
+        else:
+            gate_pulse_shifted = None
+            gate_shifted = calculate_gate_with_Real_Fields(pulse_t_shifted, frogmethod)
+
+
+        if ifrog==True and xfrog==False and doubleblind==False:
+            signal_t = jnp.real(pulse + pulse_t_shifted)*calculate_gate_with_Real_Fields(pulse + pulse_t_shifted, frogmethod)
+        elif ifrog==True:
+            signal_t = jnp.real(pulse + gate_pulse_shifted)*calculate_gate_with_Real_Fields(pulse + gate_pulse_shifted, frogmethod)
+        else:
+            signal_t = jnp.real(pulse)*gate_shifted
+            
+
+        signal_t = MyNamespace(signal_t = signal_t, 
+                               pulse_t_shifted = pulse_t_shifted, 
+                               gate_shifted = gate_shifted, 
+                               gate_pulse_shifted = gate_pulse_shifted)
+        return signal_t
+
+
+
+
+
+class RetrievePulsesDSCANwithRealFields(RetrievePulsesDSCAN):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+
+    def calculate_signal_t(self, individual, phase_matrix, measurement_info):
+        pulse = individual.pulse
+
+        pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info)
+        gate_disp = calculate_gate_with_Real_Fields(pulse_t_disp, measurement_info.nonlinear_method)
+        signal_t = jnp.real(pulse_t_disp)*gate_disp
+
+        signal_t = MyNamespace(signal_t = signal_t, 
+                               pulse_t_disp = pulse_t_disp, 
+                               gate_disp = gate_disp)
+        return signal_t
 
 
 
