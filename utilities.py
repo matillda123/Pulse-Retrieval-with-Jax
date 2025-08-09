@@ -147,8 +147,14 @@ def while_loop_helper(carry, actual_function, number_of_args):
 
 
 
-def optimistix_helper_loss_function(input, dummy, function):
-    error=function(input)
+def optimistix_helper_loss_function(input, args, function, no_of_args):
+    if no_of_args==0:
+        error=function(input)
+    elif no_of_args==1:
+        error=function(input, args)
+    else:
+        print("didnt take care of this case")
+
     return error, error
 
 

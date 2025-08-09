@@ -79,5 +79,5 @@ def PIE_get_pseudo_newton_direction(grad, probe, signal_f, newton_direction_prev
     else:
         print(f"{full_or_diagonal} not available. needs to be diagonal or full")
 
-    hessian = MyNamespace(hessian=hessian, newton_direction_prev=newton_direction)
+    hessian = MyNamespace(newton_direction_prev=newton_direction, hessian=hessian)
     return -1*newton_direction, hessian

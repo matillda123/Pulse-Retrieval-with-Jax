@@ -178,54 +178,72 @@ class MakePulse:
 
 
     def generate_frog_trace_and_spectrum(self, time, frequency, pulse_t, pulse_f, nonlinear_method, N=256, scale_time_range=1, plot_stuff=True, 
-                                    xfrog=False, gate=(None, None), ifrog=False, interpolate_fft_conform=True, cut_off_val=0.001, frequency_range=None):
+                                    xfrog=False, gate=(None, None), ifrog=False, interpolate_fft_conform=True, cut_off_val=0.001, frequency_range=None, 
+                                    real_fields=False):
         
-        self.maketrace=MakeFROGTrace(xfrog=xfrog, ifrog=ifrog)
+        if real_fields==True:
+            self.maketrace=MakeFROGTraceReal(xfrog=xfrog, ifrog=ifrog)
+        else:
+            self.maketrace=MakeFROGTrace(xfrog=xfrog, ifrog=ifrog)
+
+
         if xfrog==True:
             frequency_gate, gate_f = gate
-            gate=self.maketrace.get_gate_pulse(frequency_gate, gate_f, time, frequency)
+            gate = self.maketrace.get_gate_pulse(frequency_gate, gate_f, time, frequency)
 
-        time_trace, frequency_trace, trace, frequency_spectrum, spectrum=self.maketrace.generate_trace(time, frequency, pulse_t, pulse_f, nonlinear_method=nonlinear_method, 
+        time_trace, frequency_trace, trace, spectra = self.maketrace.generate_trace(time, frequency, pulse_t, pulse_f, nonlinear_method=nonlinear_method, 
                                                                               N=N, scale_time_range=scale_time_range, interpolate_fft_conform=interpolate_fft_conform,
                                                                               cut_off_val=cut_off_val, frequency_range=frequency_range)
 
         if plot_stuff==True:
-            self.maketrace.plot_trace(time, pulse_t, frequency, pulse_f, time_trace, frequency_trace, trace, frequency_spectrum, spectrum)
+            self.maketrace.plot_trace(time, pulse_t, frequency, pulse_f, time_trace, frequency_trace, trace, spectra)
 
-        return time_trace, frequency_trace, trace, frequency_spectrum, spectrum
+        return time_trace, frequency_trace, trace, spectra
     
 
-
-
-
-
-
-
-    def precompensate_pulse_for_dscan(self, time, frequency, pulse_t, GDD, TOD, central_f):
-        sk, rn = get_sk_rn(time, frequency)
-        pulse_f = do_fft(pulse_t, sk, rn)
-        phase_func=0.5*GDD*(frequency-central_f)**2+1/6*TOD*(frequency-central_f)**3
-        pulse_f=pulse_f*jnp.exp(1j*phase_func)
-        pulse_t=do_ifft(pulse_f, sk, rn)
-        return pulse_t, pulse_f
 
 
 
     def generate_dscan_trace_and_spectrum(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N=256, plot_stuff=True, 
-                                          cut_off_val=0.001, frequency_range=None):
+                                          cut_off_val=0.001, frequency_range=None, real_fields=False):
 
-        self.maketrace=MakeDScanTrace()
+        if real_fields==True:
+            self.maketrace=MakeDScanTraceReal()
+        else:
+            self.maketrace=MakeDScanTrace()
 
-        frequency_trace, trace, frequency_spectrum, spectrum=self.maketrace.generate_trace(z_arr, time, frequency, pulse_f, nonlinear_method, 
+        frequency_trace, trace, spectra = self.maketrace.generate_trace(z_arr, time, frequency, pulse_f, nonlinear_method, 
                                                                                            N=N, cut_off_val=cut_off_val, frequency_range=frequency_range)
             
 
         if plot_stuff==True:
-            self.maketrace.plot_trace(time, pulse_t, frequency, pulse_f, z_arr, frequency_trace, trace, frequency_spectrum, spectrum)
+            self.maketrace.plot_trace(time, pulse_t, frequency, pulse_f, z_arr, frequency_trace, trace, spectra)
 
-        return frequency_trace, trace, frequency_spectrum, spectrum
+        return frequency_trace, trace, spectra
     
 
+
+
+
+
+
+
+
+
+def interpolate_spectrum(frequency, pulse_f, N):
+    spectrum=jnp.abs(pulse_f)**2
+    spectrum=spectrum/jnp.max(spectrum)
+
+    idx=np.where(spectrum>1e-5)
+    idx_1 = np.sort(idx)[0]
+    idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
+    
+    frequency_zoom = frequency[idx_1_min:idx_1_max]
+    frequency_interpolate_spectrum = np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
+    
+    spectrum = do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
+    spectrum = spectrum/np.max(spectrum)
+    return frequency_interpolate_spectrum, spectrum
 
 
 
@@ -272,13 +290,12 @@ class MakeFROGTrace(RetrievePulsesFROG):
         self.frequency=frequency
         self.trace = trace
             
-        time, frequency, trace, frequency_spectrum, spectrum = self.interpolate_trace(time, frequency, trace, pulse_f, N=N, scale_time_range=scale_time_range, 
+        time, frequency, trace, spectra = self.interpolate_trace(time, frequency, trace, pulse_f, N=N, scale_time_range=scale_time_range, 
                                                                                       interpolate_fft_conform=interpolate_fft_conform, cut_off_val=cut_off_val, 
                                                                                       frequency_range=frequency_range)
 
         trace = trace/np.max(trace)
-        spectrum = spectrum/np.max(spectrum)
-        return time, frequency, trace.T, frequency_spectrum, spectrum
+        return time, frequency, trace.T, spectra
     
 
     def interpolate_trace(self, time, frequency, trace, pulse_f, N=256, scale_time_range=1, interpolate_fft_conform=True, cut_off_val=0.001, frequency_range=None):
@@ -328,24 +345,23 @@ class MakeFROGTrace(RetrievePulsesFROG):
             trace_interpolate = np.flip(trace_interpolate, axis=0)
         
 
-        spectrum=jnp.abs(pulse_f)**2
-        spectrum=spectrum/jnp.max(spectrum)
+        frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(frequency, pulse_f, N)
+        if self.xfrog==True:
+            gate_f=do_fft(self.gate, self.sk, self.rn)
+            frequency_gate_spectrum, spectrum_gate = interpolate_spectrum(frequency, gate_f, N)
+        else:
+            frequency_gate_spectrum, spectrum_gate = None, None
+        spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
+                              gate=(frequency_gate_spectrum, spectrum_gate))
 
-        idx=np.where(spectrum>1e-5)
-        idx_1 = np.sort(idx)[0]
-        idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
-        
-        frequency_zoom = frequency[idx_1_min:idx_1_max]
-        frequency_interpolate_spectrum = np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
-        
-        spectrum = do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
-
-        return time_interpolate, frequency_interpolate, np.abs(trace_interpolate), frequency_interpolate_spectrum, spectrum
+        return time_interpolate, frequency_interpolate, np.abs(trace_interpolate), spectra
+    
 
 
 
 
-    def plot_trace(self, time, pulse_t, frequency, pulse_f, time_trace, frequency_trace, trace, frequency_spectrum, spectrum):
+
+    def plot_trace(self, time, pulse_t, frequency, pulse_f, time_trace, frequency_trace, trace, spectra):
         
         fig=plt.figure(figsize=(18,8))
         ax1=plt.subplot(2,2,1)
@@ -372,7 +388,9 @@ class MakeFROGTrace(RetrievePulsesFROG):
 
 
         plt.subplot(2,2,3)
-        plt.plot(frequency_spectrum, spectrum, label="Spectrum")
+        plt.plot(spectra.pulse[0], spectra.pulse[1], label="Pulse Spectrum")
+        if self.xfrog==True:
+            plt.plot(spectra.gate[0], spectra.gate[1], label="Gatepulse Spectrum")
         plt.xlabel("Frequency [PHz]")
         plt.ylabel("Amplitude [arb. u.]")
         plt.legend()
@@ -432,12 +450,11 @@ class MakeDScanTrace(RetrievePulsesDSCAN):
         self.signal_f = signal_f
         self.trace = trace
 
-        frequency, trace, frequency_spectrum, spectrum = self.interpolate_trace(frequency, trace, pulse_f, N=N, cut_off_val=cut_off_val, 
+        frequency, trace, spectra = self.interpolate_trace(frequency, trace, pulse_f, N=N, cut_off_val=cut_off_val, 
                                                                                 frequency_range=frequency_range)
 
         trace=trace/np.max(trace)
-        spectrum=spectrum/np.max(spectrum)
-        return frequency, trace, frequency_spectrum, spectrum
+        return frequency, trace, spectra
     
 
 
@@ -468,24 +485,13 @@ class MakeDScanTrace(RetrievePulsesDSCAN):
             frequency_interpolate = -1*frequency_interpolate
             trace_interpolate = np.flip(trace_interpolate, axis=1)
 
-
-        spectrum=jnp.abs(pulse_f)**2
-        spectrum=spectrum/jnp.max(spectrum)
-
-        idx=np.where(spectrum>1e-5)
-        idx_1 = np.sort(idx)[0]
-        idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
+        frequency_interpolate_spectrum, spectrum = interpolate_spectrum(frequency, pulse_f, N)
+        spectra = MyNamespace(pulse=(frequency_interpolate_spectrum, spectrum), gate=None)
         
-        frequency_zoom = frequency[idx_1_min:idx_1_max]
-        frequency_interpolate_spectrum = np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
-        
-        spectrum = do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum)
-
-        return frequency_interpolate, np.abs(trace_interpolate), frequency_interpolate_spectrum, spectrum
+        return frequency_interpolate, np.abs(trace_interpolate), spectra
 
 
-
-    def plot_trace(self, time, pulse_t, frequency, pulse_f, z_arr, frequency_trace, trace, frequency_spectrum, spectrum):
+    def plot_trace(self, time, pulse_t, frequency, pulse_f, z_arr, frequency_trace, trace, spectra):
         
         fig=plt.figure(figsize=(18,8))
         ax1=plt.subplot(2,2,1)
@@ -512,7 +518,7 @@ class MakeDScanTrace(RetrievePulsesDSCAN):
 
 
         plt.subplot(2,2,3)
-        plt.plot(frequency_spectrum, spectrum, label="Spectrum")
+        plt.plot(spectra.pulse[0], spectra.pulse[1], label="Pulse Spectrum")
         plt.xlabel("Frequency [PHz]")
         plt.ylabel("Amplitude [arb. u.]")
         plt.legend()
@@ -522,3 +528,20 @@ class MakeDScanTrace(RetrievePulsesDSCAN):
         plt.xlabel("z [arb. u.]")
         plt.ylabel("Frequency [PHz]")
         plt.colorbar()
+
+
+
+
+
+
+
+class MakeFROGTraceReal(RetrievePulsesFROGwithRealFields, MakeFROGTrace):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+
+
+class MakeDScanTraceReal(RetrievePulsesDSCANwithRealFields, MakeDScanTrace):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

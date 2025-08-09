@@ -533,8 +533,8 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
 
         descent_state = self.do_global_step(signal_t, signal_t_new, descent_state, measurement_info, descent_info, "pulse")
-        population_pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(descent_state.population.pulse)
-        descent_state = tree_at(lambda x: x.population.pulse, descent_state, population_pulse)
+        #population_pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(descent_state.population.pulse)
+        #descent_state = tree_at(lambda x: x.population.pulse, descent_state, population_pulse)
 
         if measurement_info.doubleblind==True:
             descent_state = self.do_global_step(signal_t, signal_t_new, descent_state, measurement_info, descent_info, "gate")
@@ -591,7 +591,9 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
                                                      s_prime_params = s_prime_params,
 
                                                      xi = self.xi,
-                                                     adaptive_scaling = self.adaptive_scaling)
+                                                     adaptive_scaling = self.adaptive_scaling,
+                                                     
+                                                     idx_arr = self.idx_arr)
         
         descent_info = self.descent_info
 
@@ -908,7 +910,8 @@ class COPRABASE(AlgorithmsBASE):
                                                      linesearch_params = linesearch_params,
                                                      hessian = hessian,
                                                      s_prime_params = s_prime_params,
-                                                     adaptive_scaling = self.adaptive_scaling)
+                                                     adaptive_scaling = self.adaptive_scaling,
+                                                     idx_arr = self.idx_arr)
         descent_info=self.descent_info
 
 

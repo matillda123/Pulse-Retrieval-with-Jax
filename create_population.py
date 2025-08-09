@@ -100,7 +100,7 @@ def create_population_classic(key, population_size, guess_type, measurement_info
 def polynomial_guess(key, population, shape, measurement_info):
     key, subkey = jax.random.split(key, 2)
     c = jax.random.uniform(subkey, shape, minval=-1e3, maxval=1e3)
-    population = tree_at(lambda x: x.phase, population, c)
+    population = tree_at(lambda x: x.phase, population, c, is_leaf=lambda x: x is None)
     return key, population
 
 
@@ -116,7 +116,7 @@ def sinusoidal_guess(key, population, shape, measurement_info):
     b = jax.random.uniform(key2, shape, minval=bmin, maxval=bmax)
     c = jax.random.uniform(key3, shape, minval=0, maxval=2*jnp.pi)
 
-    population = tree_at(lambda x: x.phase, population, MyNamespace(a=a, b=b, c=c))
+    population = tree_at(lambda x: x.phase, population, MyNamespace(a=a, b=b, c=c), is_leaf=lambda x: x is None)
     return key, population
         
 
@@ -129,7 +129,7 @@ def sigmoidal_guess(key, population, shape, measurement_info):
     c=jax.random.uniform(key2, shape, minval=jnp.min(frequency), maxval=jnp.max(frequency))
     k=jax.random.uniform(key3, shape, minval=-2, maxval=2)
 
-    population = tree_at(lambda x: x.phase, population, MyNamespace(a=a, c=c, k=k))
+    population = tree_at(lambda x: x.phase, population, MyNamespace(a=a, c=c, k=k), is_leaf=lambda x: x is None)
     return key, population
 
 
@@ -142,7 +142,7 @@ def spline_guess(key, population, shape, measurement_info):
     n = int(nn[jnp.round(nn%1, 5)==0][-1])
 
     c = jax.random.uniform(subkey, (shape[0], n), minval=-2*jnp.pi, maxval=2*jnp.pi)
-    population = tree_at(lambda x: x.phase, population, MyNamespace(c=c))
+    population = tree_at(lambda x: x.phase, population, MyNamespace(c=c), is_leaf=lambda x: x is None)
     return key, population
     
 
@@ -153,7 +153,7 @@ def discrete_guess_phase(key, population, shape, measurement_info):
 
     phase = jax.vmap(generate_random_continuous_function, in_axes=(0, None, None, None, None, None))(keys, shape[1], frequency, 
                                                                                                         -4*jnp.pi, 4*jnp.pi, jnp.ones(jnp.size(frequency)))
-    population = tree_at(lambda x: x.phase, population, phase)
+    population = tree_at(lambda x: x.phase, population, phase, is_leaf=lambda x: x is None)
     return key, population
 
 
@@ -166,7 +166,7 @@ def gaussian_or_lorentzian_guess(key, population, shape, measurement_info):
     b = jax.random.uniform(key2, shape, minval=1e-3, maxval=(jnp.max(frequency)-jnp.min(frequency))/3)
     c = jax.random.uniform(key3, shape, minval=jnp.min(frequency), maxval=jnp.max(frequency))
     
-    population = tree_at(lambda x: x.amp, population, MyNamespace(a=a, b=b, c=c))
+    population = tree_at(lambda x: x.amp, population, MyNamespace(a=a, b=b, c=c), is_leaf=lambda x: x is None)
     return key, population
 
 
@@ -184,7 +184,7 @@ def discrete_guess_amp(key, population, shape, measurement_info):
     amp = amp + noise
     amp = amp/jnp.linalg.norm(amp)
 
-    population = tree_at(lambda x: x.amp, population, amp)
+    population = tree_at(lambda x: x.amp, population, amp, is_leaf=lambda x: x is None)
     return key, population
 
 
@@ -195,7 +195,7 @@ def random_general_phase(key, population, shape, measurement_info):
     key, subkey = jax.random.split(key, 2)
     shape = (shape[0], jnp.size(measurement_info.frequency))
     signal_f = random(subkey, shape)
-    population = tree_at(lambda x: x.phase, population, jnp.angle(signal_f))
+    population = tree_at(lambda x: x.phase, population, jnp.angle(signal_f), is_leaf=lambda x: x is None)
     return key, population
 
 
@@ -203,7 +203,7 @@ def random_general_amp(key, population, shape, measurement_info):
     key, subkey = jax.random.split(key, 2)
     shape = (shape[0], jnp.size(measurement_info.frequency))
     signal_f = random(subkey, shape)
-    population = tree_at(lambda x: x.amp, population, jnp.abs(signal_f))
+    population = tree_at(lambda x: x.amp, population, jnp.abs(signal_f), is_leaf=lambda x: x is None)
     return key, population
 
 

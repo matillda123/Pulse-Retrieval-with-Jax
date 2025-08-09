@@ -10,7 +10,7 @@ def get_nonlinear_CG_direction(descent_direction, cg, beta_parameter_version):
     beta=get_beta_parameter(-1*descent_direction, descent_direction_prev, CG_direction_prev, beta_parameter_version)
     CG_direction = descent_direction + beta*CG_direction_prev
 
-    cg = MyNamespace(descent_direction_prev = -1*descent_direction, CG_direction_prev=CG_direction)
+    cg = MyNamespace(CG_direction_prev=CG_direction, descent_direction_prev = -1*descent_direction)
     return CG_direction, cg
 
 

@@ -133,10 +133,10 @@ class GeneralizedProjection(RetrievePulsesDSCAN, GeneralizedProjectionBASE):
 
 
 class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
-    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, PIE_method="rPIE", **kwargs):
+    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, pie_method="rPIE", **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 
-        self.PIE_method = PIE_method
+        self.pie_method = pie_method
 
 
 
@@ -203,13 +203,13 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
 
 
 
-    def update_population_local(self, population, signal_t, signal_t_new, phase_matrix, PIE_method, measurement_info, descent_info, pulse_or_gate):
+    def update_population_local(self, population, signal_t, signal_t_new, phase_matrix, pie_method, measurement_info, descent_info, pulse_or_gate):
         alpha, gamma = descent_info.alpha, descent_info.gamma
         sk, rn = measurement_info.sk, measurement_info.rn
 
         difference_signal_t = signal_t_new - signal_t.signal_t
         grad = -1*jnp.conjugate(signal_t.gate_disp)*difference_signal_t
-        U = self.get_PIE_weights(signal_t.gate_disp, alpha, PIE_method)
+        U = self.get_PIE_weights(signal_t.gate_disp, alpha, pie_method)
 
         descent_direction = self.reverse_transform_grad(U*grad, phase_matrix, measurement_info)
 
@@ -240,11 +240,11 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
 
 
 
-    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, PIE_method, measurement_info, descent_info, pulse_or_gate):
+    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate):
         phase_matrix = measurement_info.phase_matrix
         alpha = descent_info.alpha
         
-        U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_disp, alpha, PIE_method)
+        U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_disp, alpha, pie_method)
         grad_all_m = -1*jnp.conjugate(signal_t.gate_disp)*(signal_t_new - signal_t.signal_t)
 
         U = self.reverse_transform_grad(U, phase_matrix, measurement_info)
@@ -264,7 +264,7 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
             print("something is very wrong if you can read this")
 
         reverse_transform = Partial(reverse_transform_hessian, phase_matrix=measurement_info.phase_matrix, measurement_info=measurement_info)
-        newton_direction_prev = descent_state.hessian.newton_direction_prev.pulse
+        newton_direction_prev = descent_state.hessian.pulse.newton_direction_prev
         descent_direction, hessian = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_f, newton_direction_prev, 
                                                                      measurement_info, descent_info, "gate", reverse_transform)
         return descent_direction, hessian

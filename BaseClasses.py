@@ -430,16 +430,8 @@ class RetrievePulses:
     def post_process_center_pulse_and_gate(self, pulse_t, gate_t):
         sk, rn = self.measurement_info.sk, self.measurement_info.rn
 
-        N=jnp.size(pulse_t)
-        idx_arr=jnp.arange(N)
-        com_1=jnp.argmax(jnp.abs(pulse_t))
-        pulse_t=jnp.roll(pulse_t, -(com_1-N//2))
-
-        com_2=get_com(jnp.abs(pulse_t), idx_arr)
-        pulse_t=jnp.roll(pulse_t, -(com_2-N//2))
-
-        shift_total=-(com_1+com_2-N)
-        gate_t=jnp.roll(gate_t, shift_total)
+        pulse_t = center_signal(pulse_t)
+        gate_t = center_signal(gate_t)
 
         pulse_f=do_fft(pulse_t, sk, rn)
         gate_f=do_fft(gate_t, sk, rn)
@@ -454,6 +446,7 @@ class RetrievePulses:
 
         pulse_t, gate_t, pulse_f, gate_f = self.post_process_get_pulse_and_gate(descent_state, self.measurement_info, self.descent_info)
         pulse_t, gate_t, pulse_f, gate_f = self.post_process_center_pulse_and_gate(pulse_t, gate_t)
+        #pulse_t, gate_t = self.post_process_center_pulse_and_gate(pulse_t, gate_t)
 
         measured_trace = self.measurement_info.measured_trace
         measured_trace = measured_trace/jnp.linalg.norm(measured_trace)

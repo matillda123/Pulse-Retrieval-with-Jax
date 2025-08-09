@@ -8,7 +8,7 @@ from equinox import tree_at
 import equinox
 import optimistix
 
-from utilities import scan_helper, get_com, optimistix_helper_loss_function, optimistix_helper_alternating_loss_function, scan_helper_equinox, MyNamespace, do_fft, do_ifft, calculate_trace, calculate_trace_error, loss_function_modifications, generate_random_continuous_function, do_interpolation_1d
+from utilities import scan_helper, get_com, optimistix_helper_loss_function, scan_helper_equinox, MyNamespace, do_fft, do_ifft, calculate_trace, calculate_trace_error, loss_function_modifications, generate_random_continuous_function, do_interpolation_1d
 from BaseClasses import AlgorithmsBASE
 from create_population import create_population_general
 
@@ -82,7 +82,7 @@ class GeneralOptimization(AlgorithmsBASE):
         if self.doubleblind==True:
             subkey, population_gate = create_population_general(subkey, amp_type, phase_type, population.gate, population_size, no_funcs_amp, no_funcs_phase, 
                                                                 self.descent_info.measured_spectrum_is_provided.gate, self.measurement_info)
-            population = tree_at(lambda x: x.gate, population, population_gate)
+            population = tree_at(lambda x: x.gate, population, population_gate, is_leaf=lambda x: x is None)
             
         if phase_type=="random":
             phase_type = "discrete"
@@ -316,13 +316,13 @@ class GeneralOptimization(AlgorithmsBASE):
         if self.descent_info.measured_spectrum_is_provided.pulse==True:
             spectrum = self.measurement_info.spectral_amplitude.pulse
             idx = get_com(spectrum, jnp.arange(jnp.size(spectrum)))
-            self.measurement_info = tree_at(lambda x: x.central_f.pulse, self.measurement_info, self.frequency[int(idx)])
+            self.measurement_info = tree_at(lambda x: x.central_f.pulse, self.measurement_info, self.frequency[int(idx)], is_leaf=lambda x: x is None)
 
 
         if self.descent_info.measured_spectrum_is_provided.gate==True:
             spectrum = self.measurement_info.spectral_amplitude.gate
             idx = get_com(spectrum, jnp.arange(jnp.size(spectrum)))
-            self.measurement_info = tree_at(lambda x: x.central_f.gate, self.measurement_info, self.frequency[int(idx)])
+            self.measurement_info = tree_at(lambda x: x.central_f.gate, self.measurement_info, self.frequency[int(idx)], is_leaf=lambda x: x is None)
 
 
         self.descent_info = self.descent_info.expand(use_fd_grad = self.use_fd_grad,
@@ -347,7 +347,6 @@ class GeneralOptimization(AlgorithmsBASE):
 
     def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
         idx = self.get_idx_best_individual(descent_state)
-
         individual = self.get_individual_from_idx(idx, descent_state.population)
 
         pulse_t = self.make_pulse_t_from_individual(individual, measurement_info, descent_info, "pulse")
@@ -533,7 +532,7 @@ class DifferentialEvolutionBASE(GeneralOptimization):
         error_max = jnp.max(error)
 
         descent_state = tree_at(lambda x: x.best_individual, descent_state, self.get_individual_from_idx(jnp.argmin(error), population))
-        return descent_state, (error_mean, error_min, error_max)
+        return descent_state, jnp.array([error_mean, error_min, error_max])
     
 
 
@@ -756,7 +755,7 @@ class EvosaxBASE(GeneralOptimization):
         population = self.merge_population_from_amp_and_phase(population_amp, population_phase)
         descent_state = tree_at(lambda x: x.population, descent_state, population)
 
-        errors = (jnp.mean(fitness), jnp.min(fitness), jnp.max(fitness))
+        errors = jnp.array([jnp.mean(fitness), jnp.min(fitness), jnp.max(fitness)])
         return descent_state, errors
     
 
@@ -812,7 +811,10 @@ class EvosaxBASE(GeneralOptimization):
                                                                           phase=solver_phase(population_size=population_size, solution=individual_phase)))
         descent_info=self.descent_info
 
-        state_amp, params_amp, self.key = self.initialize_evosax_solver(self.key, descent_info.solver.amp, population, individual_amp, "amp")
+        if descent_info.measured_spectrum_is_provided.pulse==False or descent_info.measured_spectrum_is_provided.gate==False:
+            state_amp, params_amp, self.key = self.initialize_evosax_solver(self.key, descent_info.solver.amp, population, individual_amp, "amp")
+        else:
+            state_amp, params_amp = None, None
         state_phase, params_phase, self.key = self.initialize_evosax_solver(self.key, descent_info.solver.phase, population, individual_phase, "phase")
         self.descent_state = self.descent_state.expand(evosax=MyNamespace(state=MyNamespace(amp=state_amp, phase=state_phase), 
                                                                           params=MyNamespace(amp=params_amp, phase=params_phase)), 
@@ -885,7 +887,7 @@ class LSFBASE(GeneralOptimization):
         d_pulse_im=self.get_random_values(key2, shape_pulse, -1, 1, descent_info)
         d = d_pulse_re + 1j*d_pulse_im
         direction_pulse = d/jnp.linalg.norm(d)
-        direction = tree_at(lambda x: x.pulse, direction, direction_pulse)
+        direction = tree_at(lambda x: x.pulse, direction, direction_pulse, is_leaf=lambda x: x is None)
 
         if measurement_info.doubleblind==True:
             key3, key4 = keys.gate
@@ -896,7 +898,7 @@ class LSFBASE(GeneralOptimization):
             d_gate_im=self.get_random_values(key4, shape_gate, -1, 1, descent_info)
             d=d_gate_re + 1j*d_gate_im
             direction_gate = d/jnp.linalg.norm(d)
-            direction = tree_at(lambda x: x.gate, direction, direction_gate)
+            direction = tree_at(lambda x: x.gate, direction, direction_gate, is_leaf=lambda x: x is None)
 
         return direction
 
@@ -1179,10 +1181,10 @@ class AutoDiffBASE(GeneralOptimization):
         individual_amp, individual_phase = self.split_population_in_amp_and_phase(individual)
 
         loss_function_amp=Partial(self.loss_function_amp, measurement_info=measurement_info, descent_info=descent_info)
-        loss_function_amp=Partial(optimistix_helper_loss_function, function=loss_function_amp)
+        loss_function_amp=Partial(optimistix_helper_loss_function, function=loss_function_amp, no_of_args=1)
         
         loss_function_phase=Partial(self.loss_function_phase, measurement_info=measurement_info, descent_info=descent_info)
-        loss_function_phase=Partial(optimistix_helper_loss_function, function=loss_function_phase)
+        loss_function_phase=Partial(optimistix_helper_loss_function, function=loss_function_phase, no_of_args=1)
 
 
         state_amp = solver.init(loss_function_amp, individual_amp, individual_phase, options, f_struct, aux_struct, tags)
@@ -1205,7 +1207,7 @@ class AutoDiffBASE(GeneralOptimization):
             solver=solver(rtol=1, atol=1)
 
         loss_function = Partial(self.loss_function, measurement_info=measurement_info, descent_info=descent_info)
-        loss_function = Partial(optimistix_helper_loss_function, function=loss_function)
+        loss_function = Partial(optimistix_helper_loss_function, function=loss_function, no_of_args=0)
 
         args = None
         options = dict()

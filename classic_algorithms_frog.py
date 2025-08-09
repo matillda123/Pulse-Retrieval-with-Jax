@@ -215,11 +215,11 @@ class GeneralizedProjection(RetrievePulsesFROG, GeneralizedProjectionBASE):
 
 
 class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, PIE_method="rPIE", xfrog=False, **kwargs):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, pie_method="rPIE", xfrog=False, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog=xfrog, **kwargs)
         assert self.ifrog==False, "Dont use ifrog with PIE. its not meant or made for that"
 
-        self.PIE_method=PIE_method
+        self.pie_method=pie_method
 
 
     def reverse_transform_grad(self, signal, tau_arr, measurement_info, local):
@@ -304,7 +304,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
         return grad_all_m
 
 
-    def update_population_local(self, population, signal_t, signal_t_new, tau, PIE_method, measurement_info, descent_info, pulse_or_gate):
+    def update_population_local(self, population, signal_t, signal_t_new, tau, pie_method, measurement_info, descent_info, pulse_or_gate):
         alpha, gamma = descent_info.alpha, descent_info.gamma
 
         pulse = population.pulse
@@ -315,13 +315,13 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
 
         if pulse_or_gate=="pulse":
             grad = -1*jnp.conjugate(gate_shifted)*difference_signal_t
-            U = self.get_PIE_weights(gate_shifted, alpha, PIE_method)
+            U = self.get_PIE_weights(gate_shifted, alpha, pie_method)
             pulse = pulse - gamma*U*grad
             population = tree_at(lambda x: x.pulse, population, pulse)
 
         elif pulse_or_gate=="gate":
             grad = -1*jnp.conjugate(pulse)*difference_signal_t
-            U = self.get_PIE_weights(pulse, alpha, PIE_method)
+            U = self.get_PIE_weights(pulse, alpha, pie_method)
 
             grad = self.modify_grad_for_gate_pulse(grad, jnp.squeeze(signal_t.gate_pulse_shifted), measurement_info.nonlinear_method)
 
@@ -348,19 +348,19 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
 
 
 
-    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, PIE_method, measurement_info, descent_info, pulse_or_gate):
+    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate):
         tau_arr = measurement_info.tau_arr
 
         alpha = descent_info.alpha
         difference_signal_t = signal_t_new - signal_t.signal_t
 
         if pulse_or_gate=="pulse":
-            U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_shifted, alpha, PIE_method)
+            U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_shifted, alpha, pie_method)
             grad_all_m = -1*jnp.conjugate(signal_t.gate_shifted)*difference_signal_t
 
         elif pulse_or_gate=="gate":
             pulse = jnp.broadcast_to(population.pulse[:,jnp.newaxis,:], jnp.shape(difference_signal_t))
-            U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(pulse, alpha, PIE_method)
+            U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(pulse, alpha, pie_method)
             grad_all_m = -1*jnp.conjugate(pulse)*difference_signal_t
 
             grad_all_m = self.modify_grad_for_gate_pulse(grad_all_m, signal_t.gate_pulse_shifted, measurement_info.nonlinear_method)
@@ -373,7 +373,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
 
 
     def calculate_PIE_descent_direction_hessian(self, grad, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate):
-        newton_direction_prev = getattr(descent_state.hessian.newton_direction_prev, pulse_or_gate)
+        newton_direction_prev = getattr(descent_state.hessian, pulse_or_gate).newton_direction_prev
 
         if pulse_or_gate=="pulse":
             probe = signal_t.gate_shifted
