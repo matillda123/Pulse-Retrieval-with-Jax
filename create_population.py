@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 import jax
+from jax.tree_util import Partial
 
 from equinox import tree_at
 
@@ -44,7 +45,7 @@ def random_phase(key, shape, amp):
 def constant(key, shape):
     key1, key2 = jax.random.split(key, 2)
     vals = jax.random.uniform(key1, (shape[0], ), minval=-1, maxval=1) + 1j*jax.random.uniform(key2, (shape[0], ), minval=-1, maxval=1)
-    signal = jnp.outer(jnp.ones(shape), vals)
+    signal = jnp.outer(vals, jnp.ones(shape[1]))
     return signal
 
 
@@ -191,18 +192,16 @@ def discrete_guess_amp(key, population, shape, measurement_info):
 
 
 
-def random_general_phase(key, population, shape, measurement_info):
+def general_phase(key, population, shape, measurement_info, phase_type):
     key, subkey = jax.random.split(key, 2)
-    shape = (shape[0], jnp.size(measurement_info.frequency))
-    signal_f = random(subkey, shape)
+    signal_f = create_population_classic(subkey, shape[0], phase_type, measurement_info)
     population = tree_at(lambda x: x.phase, population, jnp.angle(signal_f), is_leaf=lambda x: x is None)
     return key, population
 
 
-def random_general_amp(key, population, shape, measurement_info):
+def general_amp(key, population, shape, measurement_info, amp_type):
     key, subkey = jax.random.split(key, 2)
-    shape = (shape[0], jnp.size(measurement_info.frequency))
-    signal_f = random(subkey, shape)
+    signal_f = create_population_classic(subkey, shape[0], amp_type, measurement_info)
     population = tree_at(lambda x: x.amp, population, jnp.abs(signal_f), is_leaf=lambda x: x is None)
     return key, population
 
@@ -215,7 +214,10 @@ def create_phase(key, phase_type, population, shape, measurement_info):
                                 "sigmoidal": sigmoidal_guess,
                                 "splines": spline_guess,
                                 "discrete": discrete_guess_phase,
-                                "random": random_general_phase}
+                                "random": Partial(general_phase, phase_type="random"),
+                                "random_phase": Partial(general_phase, phase_type="random_phase"),
+                                "constant": Partial(general_phase, phase_type="constant"),
+                                "constant_phase": Partial(general_phase, phase_type="constant_phase")}
     
     key, population = phase_guess_func_dict[phase_type](key, population, shape, measurement_info)
     return key, population
@@ -226,7 +228,10 @@ def create_amp(key, amp_type, population, shape, measurement_info):
                             "lorentzian": gaussian_or_lorentzian_guess,
                             "splines": spline_guess,
                             "discrete": discrete_guess_amp,
-                            "random": random_general_amp}
+                            "random": Partial(general_amp, amp_type="random"),
+                            "random_phase": Partial(general_amp, amp_type="random_phase"),
+                            "constant": Partial(general_amp, amp_type="constant"),
+                            "constant_phase": Partial(general_amp, amp_type="constant_phase")}
     
     key, population = amp_guess_func_dict[amp_type](key, population, shape, measurement_info)
     return key, population

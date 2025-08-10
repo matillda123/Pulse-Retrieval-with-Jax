@@ -1,7 +1,9 @@
+import jax.numpy as jnp
+
 from BaseClasses import RetrievePulsesFROG, RetrievePulsesFROGwithRealFields
 from general_algorithms_base import DifferentialEvolutionBASE, EvosaxBASE, LSFBASE, AutoDiffBASE
 
-from utilities import MyNamespace, do_fft, do_ifft
+from utilities import MyNamespace, do_fft, do_ifft, project_onto_amplitude
 
 
 
@@ -43,6 +45,7 @@ class LSF(LSFBASE, RetrievePulsesFROG):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
 
 
+
     def get_pulses_from_population(self, population, measurement_info, descent_info):
         return population.pulse, population.gate
     
@@ -53,9 +56,9 @@ class LSF(LSFBASE, RetrievePulsesFROG):
     
 
 
-    # These Two Methods should be used when attempting to do the frog optimization with the pulses in the frequency domain
-    # -> the optimization doesnt really work if these are used
-    #
+    # #These Two Methods should be used when attempting to do the frog optimization with the pulses in the frequency domain
+    # #-> the optimization doesnt really work if these are used
+    
     # def get_pulses_from_population(self, population, measurement_info, descent_info):
     #     sk, rn = measurement_info.sk, measurement_info.rn
     #     pulse_f_arr, gate_f_arr = population.pulse, population.gate

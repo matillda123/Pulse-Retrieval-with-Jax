@@ -65,7 +65,7 @@ class GeneralOptimization(AlgorithmsBASE):
 
         self.use_fd_grad = False
         self.amplitude_or_intensity = "intensity"
-        self.error_metric = calculate_trace_error
+        self.error_metric = self.trace_error
 
         
 
@@ -84,10 +84,12 @@ class GeneralOptimization(AlgorithmsBASE):
                                                                 self.descent_info.measured_spectrum_is_provided.gate, self.measurement_info)
             population = tree_at(lambda x: x.gate, population, population_gate, is_leaf=lambda x: x is None)
             
-        if phase_type=="random":
+
+        classical_guess_types=["random", "random_phase", "constant", "constant_phase"]
+        if any([guess==phase_type for guess in classical_guess_types])==True:
             phase_type = "discrete"
             
-        if amp_type=="random":
+        if any([guess==amp_type for guess in classical_guess_types])==True:
             amp_type = "discrete"
         
         self.descent_info = self.descent_info.expand(population_size=population_size, phase_type=phase_type, amp_type=amp_type)
@@ -289,6 +291,11 @@ class GeneralOptimization(AlgorithmsBASE):
     
 
 
+
+
+    def trace_error(self, trace, measured_trace):
+        return jnp.mean(jnp.abs(trace - measured_trace)**2)
+    
 
     def calculate_error_individual(self, individual, measurement_info, descent_info):
         measured_trace = measurement_info.measured_trace
@@ -847,6 +854,8 @@ class LSFBASE(GeneralOptimization):
         self.random_direction_mode="random"
         self.no_points_for_continuous=5
 
+        self.boundary = 1 
+
     
 
 
@@ -914,10 +923,10 @@ class LSFBASE(GeneralOptimization):
 
 
 
-    def get_scalars(self, direction, signal):
-        # solve jnp.abs(signal + s*direction)**2 = 1
+    def get_scalars(self, direction, signal, descent_info):
+        # solve jnp.abs(signal + s*direction)**2 = jnp.abs(boundary)**2
         p = 2*jnp.real(signal*jnp.conjugate(direction))/(jnp.abs(direction)**2+1e-9)
-        q = (jnp.abs(signal)**2 - 1)/(jnp.abs(direction)**2+1e-9)
+        q = (jnp.abs(signal)**2 - jnp.abs(descent_info.boundary)**2)/(jnp.abs(direction)**2+1e-9)
 
         diskriminante = p**2/4 - q
         diskriminante = jnp.maximum(diskriminante, 0)
@@ -948,7 +957,7 @@ class LSFBASE(GeneralOptimization):
     def bisection_step(self, El, Er, population, measurement_info, descent_info, pulse_or_gate):
         Em = (El + Er)/2
         E_arr=jnp.array([El, Em, Er])
-
+        
         error_arr = jax.vmap(self.calculate_error, in_axes=(0, None, None, None, None))(E_arr, population, measurement_info, descent_info, pulse_or_gate)
 
         idx = jnp.argmax(error_arr, axis=0)
@@ -962,7 +971,7 @@ class LSFBASE(GeneralOptimization):
 
 
     def do_bisection_search(self, direction, population, measurement_info, descent_info, pulse_or_gate):
-        s1, s2 = self.get_scalars(direction, getattr(population, pulse_or_gate))
+        s1, s2 = self.get_scalars(direction, getattr(population, pulse_or_gate), descent_info)
 
         El = getattr(population, pulse_or_gate) + s1*direction
         Er = getattr(population, pulse_or_gate) + s2*direction
@@ -1043,7 +1052,8 @@ class LSFBASE(GeneralOptimization):
         
         self.descent_info = self.descent_info.expand(number_of_bisection_iterations = self.number_of_bisection_iterations,
                                                      no_points_for_continuous = self.no_points_for_continuous,
-                                                     random_direction_mode = self.random_direction_mode)
+                                                     random_direction_mode = self.random_direction_mode,
+                                                     boundary = self.boundary)
         descent_info=self.descent_info
 
 

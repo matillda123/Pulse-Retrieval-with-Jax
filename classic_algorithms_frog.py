@@ -119,19 +119,19 @@ class LSGPA(Vanilla):
 
         self.f0=0
 
-        self.lambda_lm = 1e-3
-        self.beta = 0.1
+        # self.lambda_lm = 1e-3
+        # self.beta = 0.1
 
         
 
 
     def update_pulse(self, pulse, signal_t_new, gate_shifted, measurement_info, descent_info):
-        pulse=jnp.sum(signal_t_new*jnp.conjugate(gate_shifted), axis=1)/(jnp.sum(jnp.abs(gate_shifted)**2, axis=1) + descent_info.lambda_lm)
+        pulse=jnp.sum(signal_t_new*jnp.conjugate(gate_shifted), axis=1)/(jnp.sum(jnp.abs(gate_shifted)**2, axis=1) + 1e-12)
         return pulse
     
     
     def update_gate(self, gate, signal_t_new, pulse_t_shifted, measurement_info, descent_info):
-        gate=jnp.sum(signal_t_new*jnp.conjugate(pulse_t_shifted), axis=1)/(jnp.sum(jnp.abs(pulse_t_shifted)**2, axis=1) + descent_info.lambda_lm)
+        gate=jnp.sum(signal_t_new*jnp.conjugate(pulse_t_shifted), axis=1)/(jnp.sum(jnp.abs(pulse_t_shifted)**2, axis=1) + 1e-12)
         return gate
         
 
@@ -295,7 +295,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
         elif nonlinear_method=="pg":
             grad = jnp.conjugate(gate_pulse_shifted)
         elif nonlinear_method=="sd":
-            print("check again if this is really correct")
+            print("check again if this is really correct, its not")
             grad = 2*jnp.conjugate(gate_pulse_shifted)
         else:
             print("somethong is wrong")
@@ -304,36 +304,43 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
         return grad_all_m
 
 
-    def update_population_local(self, population, signal_t, signal_t_new, tau, pie_method, measurement_info, descent_info, pulse_or_gate):
-        alpha, gamma = descent_info.alpha, descent_info.gamma
-
-        pulse = population.pulse
-        gate = population.gate
-
+    def get_PIE_descent_direction(self, signal_t, signal_t_new, tau, population, pie_method, measurement_info, descent_info, pulse_or_gate, local):
+        alpha = descent_info.alpha
         gate_shifted = jnp.squeeze(signal_t.gate_shifted)
         difference_signal_t = signal_t_new - jnp.squeeze(signal_t.signal_t)
 
         if pulse_or_gate=="pulse":
             grad = -1*jnp.conjugate(gate_shifted)*difference_signal_t
             U = self.get_PIE_weights(gate_shifted, alpha, pie_method)
-            pulse = pulse - gamma*U*grad
-            population = tree_at(lambda x: x.pulse, population, pulse)
-
+            
         elif pulse_or_gate=="gate":
+            pulse = population.pulse
             grad = -1*jnp.conjugate(pulse)*difference_signal_t
             U = self.get_PIE_weights(pulse, alpha, pie_method)
 
             grad = self.modify_grad_for_gate_pulse(grad, jnp.squeeze(signal_t.gate_pulse_shifted), measurement_info.nonlinear_method)
 
-            descent_direction = self.reverse_transform_grad(U*grad, tau, measurement_info, local=True)
-            gate = gate - gamma*descent_direction
-            population = tree_at(lambda x: x.gate, population, gate)
+            U = self.reverse_transform_grad(U, tau, measurement_info, local=local)
+            grad = self.reverse_transform_grad(grad, tau, measurement_info, local=local)
 
-        return population
+        return grad, U
+    
+    
+    def calculate_PIE_descent_direction_local(self, population, signal_t, signal_t_new, tau, pie_method, measurement_info, descent_info, pulse_or_gate):
+        grad, U = self.get_PIE_descent_direction(signal_t, signal_t_new, tau, population, pie_method, measurement_info, descent_info, pulse_or_gate, local=True)
+        return grad, U
+    
+
+    def calculate_PIE_descent_direction_global(self, population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate):
+        get_descent_direction = Partial(self.get_PIE_descent_direction, population=population, pie_method=pie_method, 
+                                        measurement_info=measurement_info, descent_info=descent_info, pulse_or_gate=pulse_or_gate, local=False)
+        
+        grad_all_m, U = jax.vmap(get_descent_direction, in_axes=(1,1,0), out_axes=(1,1))(signal_t, signal_t_new, measurement_info.tau_arr)
+        return grad_all_m, U
     
 
 
-    def update_individual_global(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
+    def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         signal = getattr(individual, pulse_or_gate)
         signal = signal + gamma*descent_direction
 
@@ -341,34 +348,7 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
         return individual
 
 
-    def update_population_global(self, population, gamma, descent_direction, measurement_info, pulse_or_gate):
-        population = jax.vmap(self.update_individual_global, in_axes=(0,0,0,None,None))(population, gamma, descent_direction, measurement_info, pulse_or_gate)
-        return population
 
-
-
-
-    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate):
-        tau_arr = measurement_info.tau_arr
-
-        alpha = descent_info.alpha
-        difference_signal_t = signal_t_new - signal_t.signal_t
-
-        if pulse_or_gate=="pulse":
-            U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_shifted, alpha, pie_method)
-            grad_all_m = -1*jnp.conjugate(signal_t.gate_shifted)*difference_signal_t
-
-        elif pulse_or_gate=="gate":
-            pulse = jnp.broadcast_to(population.pulse[:,jnp.newaxis,:], jnp.shape(difference_signal_t))
-            U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(pulse, alpha, pie_method)
-            grad_all_m = -1*jnp.conjugate(pulse)*difference_signal_t
-
-            grad_all_m = self.modify_grad_for_gate_pulse(grad_all_m, signal_t.gate_pulse_shifted, measurement_info.nonlinear_method)
-
-            U = self.reverse_transform_grad(U, tau_arr, measurement_info, local=False)
-            grad_all_m = self.reverse_transform_grad(grad_all_m, tau_arr, measurement_info, local=False)
-
-        return grad_all_m, U
 
 
 
@@ -384,9 +364,9 @@ class TimeDomainPtychography(RetrievePulsesFROG, TimeDomainPtychographyBASE):
             probe = jnp.conjugate(probe)
 
         
-        if descent_info.hessian.use_hessian=="diagonal":
+        if descent_info.hessian.global_hessian=="diagonal":
             reverse_transform_hessian = self.reverse_transform_diagonal_hessian
-        elif descent_info.hessian.use_hessian=="full":
+        elif descent_info.hessian.global_hessian=="full":
             reverse_transform_hessian = self.reverse_transform_full_hessian
         else:
             print("something is very wrong if you can read this")

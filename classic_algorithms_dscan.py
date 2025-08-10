@@ -147,7 +147,7 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
         signal_f = signal_f*jnp.exp(-1j*phase_matrix)
         signal = do_ifft(signal_f, sk, rn)
         return signal
-    
+
 
     def reverse_transform_full_hessian(self, hessian_all_m, phase_matrix, measurement_info):
         time, frequency = measurement_info.time, measurement_info.frequency
@@ -203,26 +203,34 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
 
 
 
-    def update_population_local(self, population, signal_t, signal_t_new, phase_matrix, pie_method, measurement_info, descent_info, pulse_or_gate):
-        alpha, gamma = descent_info.alpha, descent_info.gamma
-        sk, rn = measurement_info.sk, measurement_info.rn
+    def get_PIE_descent_direction(self, signal_t, signal_t_new, phase_matrix_m, population, pie_method, measurement_info, descent_info):
+        alpha = descent_info.alpha
 
-        difference_signal_t = signal_t_new - signal_t.signal_t
-        grad = -1*jnp.conjugate(signal_t.gate_disp)*difference_signal_t
-        U = self.get_PIE_weights(signal_t.gate_disp, alpha, pie_method)
+        gate_disp = jnp.squeeze(signal_t.gate_disp)
+        difference_signal_t = signal_t_new - jnp.squeeze(signal_t.signal_t)
+        grad = -1*jnp.conjugate(gate_disp)*difference_signal_t
+        U = self.get_PIE_weights(gate_disp, alpha, pie_method)
 
-        descent_direction = self.reverse_transform_grad(U*grad, phase_matrix, measurement_info)
+        U = self.reverse_transform_grad(U, phase_matrix_m, measurement_info)
+        grad = self.reverse_transform_grad(grad, phase_matrix_m, measurement_info)
+        return grad, U
+    
 
-        pulse_t = do_ifft(population.pulse, sk, rn)
-        pulse_t = pulse_t - gamma*descent_direction
-        pulse = do_fft(pulse_t, sk, rn)
-        population = tree_at(lambda x: x.pulse, population, pulse)
-        return population
+    def calculate_PIE_descent_direction_local(self, population, signal_t, signal_t_new, phase_matrix_m, pie_method, measurement_info, descent_info, pulse_or_gate):
+        grad, U = self.get_PIE_descent_direction(signal_t, signal_t_new, phase_matrix_m, population, pie_method, measurement_info, descent_info)
+        return grad, U
+    
+
+    def calculate_PIE_descent_direction_global(self, population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate):
+        phase_matrix = measurement_info.phase_matrix
+        get_descent_direction = Partial(self.get_PIE_descent_direction, population=population, pie_method=pie_method, measurement_info=measurement_info, descent_info=descent_info)
+        grad_all_m, U = jax.vmap(get_descent_direction, in_axes=(1,1,0), out_axes=(1,1))(signal_t, signal_t_new, phase_matrix)
+        return grad_all_m, U
 
 
 
 
-    def update_individual_global(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
+    def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         sk, rn = measurement_info.sk, measurement_info.rn
         
         pulse_t=do_ifft(individual.pulse, sk, rn)
@@ -232,33 +240,15 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
         individual = tree_at(lambda x: x.pulse, individual, pulse)
         return individual
     
-
-    def update_population_global(self, population, gamma, descent_direction, measurement_info, pulse_or_gate):
-        population = jax.vmap(self.update_individual_global, in_axes=(0,0,0,None,None))(population, gamma, descent_direction, measurement_info, pulse_or_gate)
-        return population
-
-
-
-
-    def calculate_PIE_descent_direction(self, population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate):
-        phase_matrix = measurement_info.phase_matrix
-        alpha = descent_info.alpha
-        
-        U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(signal_t.gate_disp, alpha, pie_method)
-        grad_all_m = -1*jnp.conjugate(signal_t.gate_disp)*(signal_t_new - signal_t.signal_t)
-
-        U = self.reverse_transform_grad(U, phase_matrix, measurement_info)
-        grad_all_m = self.reverse_transform_grad(grad_all_m, phase_matrix, measurement_info)
-        return grad_all_m, U
-
+    
 
 
     def calculate_PIE_descent_direction_hessian(self, grad, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate):
         signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
 
-        if descent_info.hessian.use_hessian=="diagonal":
+        if descent_info.hessian.global_hessian=="diagonal":
             reverse_transform_hessian = self.reverse_transform_diagonal_hessian
-        elif descent_info.hessian.use_hessian=="full":
+        elif descent_info.hessian.global_hessian=="full":
             reverse_transform_hessian = self.reverse_transform_full_hessian
         else:
             print("something is very wrong if you can read this")

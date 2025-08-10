@@ -109,8 +109,19 @@ jax.tree_util.register_pytree_node(MyNamespace, flatten_MyNamespace, unflatten_M
 
 
 # helper to effectively use jax.jit(jax.lax.scan)
-def run_scan(do_scan, carry, no_iterations):
+def run_scan_helper(do_scan, carry, no_iterations):
     return jax.lax.scan(do_scan, carry, length=no_iterations)
+
+
+def run_scan(do_scan, carry, no_iterations, use_jit):
+    if use_jit==True:
+        scan = jax.jit(run_scan_helper, static_argnames=("do_scan", "no_iterations"))
+        carry, error_arr = scan(do_scan, carry, no_iterations)
+    else:
+        carry, error_arr = jax.lax.scan(do_scan, carry, length=no_iterations)
+    
+    return carry, error_arr
+
 
 
 

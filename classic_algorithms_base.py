@@ -9,7 +9,7 @@ from linesearch import do_linesearch, adaptive_scaling_of_step
 from nonlinear_cg import get_nonlinear_CG_direction
 from lbfgs import get_pseudo_newton_direction
 
-from utilities import scan_helper, MyNamespace, do_fft, do_ifft, calculate_mu, calculate_trace, calculate_trace_error, calculate_Z_error
+from utilities import scan_helper, MyNamespace, do_fft, do_ifft, calculate_mu, calculate_trace, calculate_trace_error, calculate_Z_error, run_scan
 from BaseClasses import AlgorithmsBASE
 
 from update_signal import calculate_S_prime
@@ -81,6 +81,39 @@ def initialize_lbfgs(descent_state, measurement_info, descent_info):
 
 
 
+def initialize_linesearch_info(optimizer):
+    linesearch_params = MyNamespace(use_linesearch=optimizer.use_linesearch, 
+                                    c1=optimizer.c1, 
+                                    c2=optimizer.c2, 
+                                    max_steps=optimizer.max_steps_linesearch, 
+                                    delta_gamma=optimizer.delta_gamma)
+    return linesearch_params
+
+
+def initialize_S_prime_params(optimizer):
+    s_prime_params = MyNamespace(local_method=optimizer.r_local_method, 
+                                 global_method=optimizer.r_global_method, 
+                                 number_of_iterations=optimizer.r_no_iterations, 
+                                 r_gradient=optimizer.r_gradient, 
+                                 r_hessian=optimizer.r_hessian, 
+                                 weights=optimizer.r_weights)
+    return s_prime_params
+
+
+
+def initialize_hessian_info(optimizer):
+    hessian = MyNamespace(local_hessian=optimizer.local_hessian, 
+                        global_hessian=optimizer.global_hessian, 
+                        linalg_solver=optimizer.linalg_solver, 
+                        lambda_lm=optimizer.lambda_lm,
+                        lbfgs_memory=optimizer.lbfgs_memory)
+
+    return hessian
+
+
+
+
+
 
 
 
@@ -104,7 +137,8 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
         self.delta_gamma = (0.5, 1.5)
     
 
-        self.use_hessian = False
+        self.local_hessian = None
+        self.global_hessian = False
         self.lambda_lm = 1e-3
         self.lbfgs_memory = 10
         self.linalg_solver="lineax"
@@ -114,11 +148,12 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
 
         self.xi = 1e-9
 
-
+        self.r_local_method = None
         self.r_global_method = "projection"
         self.r_gradient = "intensity"
         self.r_hessian = False
         self.r_weights = 1
+        self.r_no_iterations = 1
 
 
 
@@ -150,12 +185,12 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
         gradient_sum = jnp.sum(grad, axis=1)
 
 
-        if hessian.use_hessian=="diagonal" or hessian.use_hessian=="full":
+        if hessian.global_hessian=="diagonal" or hessian.global_hessian=="full":
             descent_direction, hessian_state = self.calculate_Z_error_newton_direction(grad, signal_t_new, signal_t, transform_arr, descent_state, 
-                                                                                       measurement_info, descent_info, hessian.use_hessian, pulse_or_gate)
+                                                                                       measurement_info, descent_info, hessian.global_hessian, pulse_or_gate)
             descent_state = tree_at(lambda x: getattr(x.hessian, pulse_or_gate), descent_state, hessian_state)
 
-        elif hessian.use_hessian=="lbfgs":
+        elif hessian.global_hessian=="lbfgs":
             descent_direction, lbfgs_state = get_pseudo_newton_direction(gradient_sum, getattr(descent_state.lbfgs, pulse_or_gate), descent_info)
 
         else:
@@ -187,7 +222,7 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
 
 
 
-        if hessian.use_hessian=="lbfgs":
+        if hessian.global_hessian=="lbfgs":
            step_size_arr = lbfgs_state.step_size_prev
            step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
            step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
@@ -262,24 +297,10 @@ class GeneralizedProjectionBASE(AlgorithmsBASE):
     def initialize_run(self, population):
         measurement_info = self.measurement_info
 
-        
-        linesearch_params = MyNamespace(use_linesearch=self.use_linesearch, 
-                                        c1=self.c1, 
-                                        c2=self.c2, 
-                                        max_steps=self.max_steps_linesearch, 
-                                        delta_gamma=self.delta_gamma)
-        
-        s_prime_params = MyNamespace(local_method=None, 
-                                     global_method=self.r_global_method, 
-                                     number_of_iterations=1, 
-                                     r_gradient=self.r_gradient, 
-                                     r_hessian=self.r_hessian, 
-                                     weights=self.r_weights)
-        
-        hessian = MyNamespace(use_hessian=self.use_hessian, 
-                              lbfgs_memory=self.lbfgs_memory, 
-                              linalg_solver=self.linalg_solver, 
-                              lambda_lm=self.lambda_lm)
+
+        linesearch_params = initialize_linesearch_info(self)
+        hessian = initialize_hessian_info(self)
+        s_prime_params = initialize_S_prime_params(self)
 
         self.descent_info = self.descent_info.expand(gamma = self.gamma, 
                                                      no_steps_descent = self.no_steps_descent, 
@@ -328,8 +349,8 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
         self.name = "TimeDomainPtychography"
 
-
-        self.use_hessian = False
+        self.local_hessian = None
+        self.global_hessian = False
         self.lambda_lm = 1e-2
         self.lbfgs_memory = 10
         self.linalg_solver = "lineax"
@@ -349,11 +370,12 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
         self.xi=1e-9
 
-
+        self.r_local_method = "projection"
         self.r_global_method = "projection"
         self.r_gradient = "intensity"
         self.r_hessian = False
         self.r_weights = 1
+        self.r_no_iterations = 1
 
 
 
@@ -373,14 +395,14 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         """
         
         if pie_method=="PIE":
-            U = 1/(jnp.abs(probe_shifted)**2 + alpha*jnp.max(jnp.abs(probe_shifted)**2))*jnp.abs(probe_shifted)/jnp.max(jnp.abs(probe_shifted))
+            U = 1/(jnp.abs(probe_shifted)**2 + alpha*jnp.max(jnp.abs(probe_shifted)**2, axis=1)[:,jnp.newaxis])*jnp.abs(probe_shifted)/jnp.max(jnp.abs(probe_shifted), axis=1)[:,jnp.newaxis]
 
         elif pie_method=="ePIE":
-            U = 1/jnp.max(jnp.abs(probe_shifted)**2)
+            U = 1/jnp.max(jnp.abs(probe_shifted)**2, axis=1)[:,jnp.newaxis]
             U = U*jnp.ones(jnp.shape(probe_shifted))
 
         elif pie_method=="rPIE":
-            U = 1/((1-alpha)*jnp.abs(probe_shifted)**2 + alpha*jnp.max(jnp.abs(probe_shifted)**2))
+            U = 1/((1-alpha)*jnp.abs(probe_shifted)**2 + alpha*jnp.max(jnp.abs(probe_shifted)**2, axis=1)[:,jnp.newaxis])
 
         elif pie_method==None:
             U = jnp.ones(jnp.shape(probe_shifted))
@@ -391,20 +413,31 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         return U
 
 
+    def update_population(self, population, gamma, descent_direction, measurement_info, pulse_or_gate):
+        population = jax.vmap(self.update_individual, in_axes=(0,0,0,None,None))(population, gamma, descent_direction, measurement_info, pulse_or_gate)
+        return population
+
+
 
 
     def do_local_iteration(self, descent_state, transform_arr_m, trace_line, measurement_info, descent_info):
         pie_method = descent_info.pie_method.local_pie
+        gamma = descent_info.gamma*jnp.ones(descent_info.population_size)
         population = descent_state.population
         
         signal_t = jax.vmap(self.calculate_signal_t, in_axes=(0,0,None))(population, transform_arr_m, measurement_info)
         get_S_prime = Partial(calculate_S_prime, method=descent_info.s_prime_params.local_method)
         signal_t_new = jax.vmap(get_S_prime, in_axes=(0,0,None,None,None))(jnp.squeeze(signal_t.signal_t), trace_line, 1, measurement_info, descent_info)
 
-        population = self.update_population_local(population, signal_t, signal_t_new, transform_arr_m, pie_method, measurement_info, descent_info, "pulse")
+        grad, U = self.calculate_PIE_descent_direction_local(population, signal_t, signal_t_new, transform_arr_m, pie_method, measurement_info, descent_info, "pulse")
+        descent_direction = -1*grad*U
+        gamma = jnp.ones(descent_info.population_size)*gamma
+        population = self.update_population(population, gamma, descent_direction, measurement_info, "pulse")
 
-        if measurement_info.doubleblind==True:
-            population = self.update_population_local(population, signal_t, signal_t_new, transform_arr_m, pie_method, measurement_info, descent_info, "gate")
+        if measurement_info.doubleblind==True: 
+            grad, U = self.calculate_PIE_descent_direction_local(population, signal_t, signal_t_new, transform_arr_m, pie_method, measurement_info, descent_info, "gate")
+            descent_direction = -1*grad*U
+            population = self.update_population(population, gamma, descent_direction, measurement_info, "gate")
 
         descent_state = tree_at(lambda x: x.population, descent_state, population)
         return descent_state, None
@@ -469,15 +502,16 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         signal_f = do_fft(signal_t.signal_t, sk, rn)
         pie_error = jax.vmap(self.calculate_PIE_error, in_axes=(0,None))(signal_f, measured_trace)
 
-        grad, U = self.calculate_PIE_descent_direction(population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate)
+        grad, U = self.calculate_PIE_descent_direction_global(population, signal_t, signal_t_new, pie_method, measurement_info, descent_info, pulse_or_gate)
         gradient_sum = jnp.sum(grad, axis=1)
 
         
-        if hessian.use_hessian=="diagonal" or hessian.use_hessian=="full":
-            descent_direction, hessian_state = self.calculate_PIE_descent_direction_hessian(grad*U, signal_t, descent_state, measurement_info, descent_info, pulse_or_gate)
+        if hessian.global_hessian=="diagonal" or hessian.global_hessian=="full":
+            descent_direction, hessian_state = self.calculate_PIE_descent_direction_hessian(grad*U, signal_t, descent_state, measurement_info, 
+                                                                                            descent_info, pulse_or_gate)
             descent_state = tree_at(lambda x: getattr(x.hessian, pulse_or_gate), descent_state, hessian_state)
 
-        if hessian.use_hessian=="lbfgs":
+        if hessian.global_hessian=="lbfgs":
             descent_direction, lbfgs_state = get_pseudo_newton_direction(gradient_sum, getattr(descent_state.lbfgs, pulse_or_gate), descent_info)
         else:
             descent_direction = -1*jnp.sum(grad*U, axis=1)
@@ -510,7 +544,7 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
             gamma = jnp.ones(descent_info.population_size)*descent_info.gamma
 
 
-        if hessian.use_hessian=="lbfgs":
+        if hessian.global_hessian=="lbfgs":
            step_size_arr = lbfgs_state.step_size_prev
            step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
            step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
@@ -518,7 +552,7 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
            descent_state = tree_at(lambda x: getattr(x.lbfgs, pulse_or_gate).step_size_prev, descent_state, step_size_arr)
 
 
-        population = self.update_population_global(population, gamma, descent_direction, measurement_info, pulse_or_gate)
+        population = self.update_population(population, gamma, descent_direction, measurement_info, pulse_or_gate)
         descent_state = tree_at(lambda x: x.population, descent_state, population)
         return descent_state     
 
@@ -533,8 +567,6 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
 
         descent_state = self.do_global_step(signal_t, signal_t_new, descent_state, measurement_info, descent_info, "pulse")
-        #population_pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(descent_state.population.pulse)
-        #descent_state = tree_at(lambda x: x.population.pulse, descent_state, population_pulse)
 
         if measurement_info.doubleblind==True:
             descent_state = self.do_global_step(signal_t, signal_t_new, descent_state, measurement_info, descent_info, "gate")
@@ -562,25 +594,11 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
 
         pie_method = MyNamespace(local_pie=local_pie, 
                                  global_pie=global_pie)
-        
-        hessian = MyNamespace(use_hessian=self.use_hessian, 
-                              lbfgs_memory=self.lbfgs_memory, 
-                              linalg_solver=self.linalg_solver, 
-                              lambda_lm=self.lambda_lm)
-        
-        linesearch_params = MyNamespace(use_linesearch=self.use_linesearch, 
-                                        c1=self.c1, 
-                                        c2=self.c2, 
-                                        max_steps=self.max_steps_linesearch, 
-                                        delta_gamma=self.delta_gamma)
-        
-        s_prime_params = MyNamespace(local_method="projection", 
-                                     global_method=self.r_global_method, 
-                                     number_of_iterations=1, 
-                                     r_gradient=self.r_gradient, 
-                                     r_hessian=self.r_hessian, 
-                                     weights=self.r_weights)
 
+        linesearch_params = initialize_linesearch_info(self)
+        hessian = initialize_hessian_info(self)
+        s_prime_params = initialize_S_prime_params(self)
+        
         self.descent_info = self.descent_info.expand(alpha = self.alpha, 
                                                      gamma = self.gamma, 
                                                      pie_method = pie_method,
@@ -628,6 +646,9 @@ class TimeDomainPtychographyBASE(AlgorithmsBASE):
         descent_state, error_arr_local = jax.lax.scan(do_local, descent_state, length=no_iterations_local)
         descent_state, error_arr_global = jax.lax.scan(do_global, descent_state, length=no_iterations_global)
 
+        descent_state, error_arr_local = run_scan(do_local, descent_state, no_iterations_local, self.use_jit)
+        descent_state, error_arr_global = run_scan(do_global, descent_state, no_iterations_global, self.use_jit)
+
         error_arr = jnp.concatenate([error_arr_local, error_arr_global], axis=0)
         error_arr = jnp.squeeze(error_arr)
 
@@ -665,15 +686,21 @@ class COPRABASE(AlgorithmsBASE):
         self.delta_gamma = (0.5, 1.5)
 
 
-        self.use_hessian = "diagonal"
+        self.local_hessian = False
+        self.global_hessian = "diagonal"
         self.lambda_lm = 1e-3
+        self.lbfgs_memory = 10
+        self.linalg_solver="lineax"
 
+
+        self.r_local_method = "projection"
         self.r_global_method = "iteration"
         self.r_gradient = "intensity"
         self.r_hessian = False
         self.r_weights = 1.0
+        self.r_no_iterations = 1
 
-        self.linalg_solver="lineax"
+
 
 
 
@@ -881,28 +908,10 @@ class COPRABASE(AlgorithmsBASE):
     def initialize_run(self, population):
         measurement_info=self.measurement_info
 
-        if type(self.use_hessian)==tuple or type(self.use_hessian)==list:
-            local_hessian, global_hessian = self.use_hessian
-        else:
-            local_hessian, global_hessian = self.use_hessian, self.use_hessian
 
-        linesearch_params = MyNamespace(use_linesearch=self.use_linesearch, 
-                                        c1=self.c1, 
-                                        c2=self.c2, 
-                                        max_steps=self.max_steps_linesearch, 
-                                        delta_gamma=self.delta_gamma)
-        
-        hessian = MyNamespace(local_hessian=local_hessian, 
-                              global_hessian=global_hessian, 
-                              linalg_solver=self.linalg_solver, 
-                              lambda_lm=self.lambda_lm)
-        
-        s_prime_params = MyNamespace(local_method="projection", 
-                                     global_method=self.r_global_method, 
-                                     number_of_iterations=1, 
-                                     r_gradient=self.r_gradient, 
-                                     r_hessian=self.r_hessian, 
-                                     weights=self.r_weights)
+        linesearch_params = initialize_linesearch_info(self)
+        hessian = initialize_hessian_info(self)
+        s_prime_params = initialize_S_prime_params(self)
         
         self.descent_info = self.descent_info.expand(gamma = self.gamma, 
                                                      beta = self.beta, 
@@ -939,8 +948,8 @@ class COPRABASE(AlgorithmsBASE):
 
         descent_state, do_local, do_global = self.initialize_run(population)
 
-        descent_state, error_arr_local = jax.lax.scan(do_local, descent_state, length=no_iterations_local)
-        descent_state, error_arr_global = jax.lax.scan(do_global, descent_state, length=no_iterations_global)
+        descent_state, error_arr_local = run_scan(do_local, descent_state, no_iterations_local, self.use_jit)
+        descent_state, error_arr_global = run_scan(do_global, descent_state, no_iterations_global, self.use_jit)
 
         error_arr = jnp.concatenate([error_arr_local, error_arr_global], axis=0)
         error_arr = jnp.squeeze(error_arr)

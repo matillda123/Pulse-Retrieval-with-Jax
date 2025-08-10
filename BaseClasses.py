@@ -47,12 +47,7 @@ class AlgorithmsBASE:
             assert self.descent_info.measured_spectrum_is_provided.pulse==True or self.descent_info.measured_spectrum_is_provided.gate==True, "you need to provide a spectrum"
 
         carry, do_scan = self.initialize_run(init_vals)
-
-        if self.use_jit==True:
-            scan = jax.jit(run_scan, static_argnames=("do_scan", "no_iterations"))
-            carry, error_arr = scan(do_scan, carry, no_iterations)
-        else:
-            carry, error_arr = jax.lax.scan(do_scan, carry, length=no_iterations)
+        carry, error_arr = run_scan(do_scan, carry, no_iterations, self.use_jit)
 
         error_arr = jnp.squeeze(error_arr)
         final_result = self.post_process(carry, error_arr)
@@ -101,7 +96,13 @@ class AlgorithmsBASE:
 
 
 
-    def use_measured_spectrum(self):
+    def use_measured_spectrum(self, frequency, spectrum, pulse_or_gate="pulse"):
+        if (type(pulse_or_gate)==tuple or type(pulse_or_gate)==list) and len(pulse_or_gate)==2:
+            spectral_amplitude = self.get_spectral_amplitude(frequency[0], spectrum[0], pulse_or_gate[0])
+            spectral_amplitude = self.get_spectral_amplitude(frequency[1], spectrum[1], pulse_or_gate[1])
+        else:
+            spectral_amplitude = self.get_spectral_amplitude(frequency, spectrum, pulse_or_gate)
+
         # if-else is needed to avoid recursion
         if self.spectrum_is_being_used==True:
             return self
@@ -288,7 +289,7 @@ class RetrievePulses:
 
 
 
-    def get_spectral_amplitude(self, measured_frequency, measured_spectrum, pulse_or_gate="pulse"):
+    def get_spectral_amplitude(self, measured_frequency, measured_spectrum, pulse_or_gate):
         frequency = self.frequency
 
         spectral_intensity=do_interpolation_1d(frequency, measured_frequency-self.f0/self.factor, measured_spectrum)

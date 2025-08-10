@@ -181,7 +181,7 @@ def calculate_S_prime(signal_t, measured_trace, mu, measurement_info, descent_in
         signal_t_new = calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info)
 
     elif method=="iteration":
-        number_of_iterations = descent_info.s_prime_params.number_of_iterations
+        number_of_iterations = descent_info.s_prime_params.r_no_iterations
         signal_t_new = calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, descent_info, number_of_iterations)
 
     else:
