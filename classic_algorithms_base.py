@@ -440,10 +440,9 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
         grad_sum = jnp.sum(grad, axis=1)
 
 
-        if hessian_info=="diagonal" or hessian_info=="full":
-            descent_direction, hessian_state = self.calculate_PIE_newton_direction(U*grad, signal_t, transform_arr, measured_trace, population, local_or_global_state, 
+        if hessian_info=="diagonal" or (hessian_info=="full" and pulse_or_gate=="pulse"):
+            descent_direction, hessian_state = self.calculate_PIE_newton_direction(grad, signal_t, transform_arr, measured_trace, population, local_or_global_state, 
                                                                                    measurement_info, descent_info, pulse_or_gate, local_or_global)
-            
             local_or_global_state = tree_at(lambda x: getattr(x.hessian, pulse_or_gate), local_or_global_state, hessian_state)
 
         elif hessian_info=="lbfgs":

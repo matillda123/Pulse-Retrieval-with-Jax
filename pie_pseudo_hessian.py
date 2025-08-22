@@ -52,18 +52,16 @@ def PIE_get_pseudo_hessian_all_m(probe_all_m, signal_f, measured_trace, measurem
 
 
 
-def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measured_trace, reverse_transform, local_or_global_state, 
+def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                     measurement_info, descent_info, pulse_or_gate, local_or_global):
     hessian = descent_info.hessian
     lambda_lm, solver = hessian.lambda_lm, hessian.linalg_solver
     full_or_diagonal = getattr(hessian, local_or_global)
-    newton_direction_prev = getattr(local_or_global_state.hessian, pulse_or_gate).newton_direction_prev
-
 
     hessian_all_m=jax.vmap(PIE_get_pseudo_hessian_all_m, in_axes=(0,0,0,None,None))(probe, signal_f, measured_trace, measurement_info, full_or_diagonal)
 
-    if pulse_or_gate=="gate":
-        hessian_all_m = jax.vmap(reverse_transform, in_axes=(0,0))(hessian_all_m, transform_arr)
+    # if pulse_or_gate=="gate":
+    #     hessian_all_m = jax.vmap(reverse_transform, in_axes=(0,0))(hessian_all_m, transform_arr)
 
 
     grad = jnp.sum(grad, axis=1)
