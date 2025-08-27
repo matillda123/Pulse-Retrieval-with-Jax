@@ -5,7 +5,7 @@ from jax.tree_util import Partial
 from equinox import tree_at
 
 
-from stepsize import do_linesearch, adaptive_scaling_of_step
+from stepsize import do_linesearch, adaptive_step_size
 from nonlinear_cg import get_nonlinear_CG_direction
 from lbfgs import get_quasi_newton_direction
 
@@ -78,7 +78,8 @@ def initialize_linesearch_info(optimizer):
                                     c1=optimizer.c1, 
                                     c2=optimizer.c2, 
                                     max_steps=optimizer.max_steps_linesearch, 
-                                    delta_gamma=optimizer.delta_gamma)
+                                    delta_gamma=optimizer.delta_gamma,
+                                    gamma_max=optimizer.gamma_max)
     return linesearch_params
 
 
@@ -194,12 +195,12 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
 
 
 
-        descent_direction, descent_state = jax.vmap(adaptive_scaling_of_step, in_axes=(0,0,0,None,None,None,None,None), out_axes=(0,None))(Z_error, grad_sum, descent_direction, 
+        descent_direction, descent_state = jax.vmap(adaptive_step_size, in_axes=(0,0,0,None,None,None,None,None), out_axes=(0,None))(Z_error, grad_sum, descent_direction, 
                                                                                                                    descent_state, descent_info.xi, 
                                                                                                                    getattr(descent_info.adaptive_scaling, "_global"), 
                                                                                                                    pulse_or_gate, "_global")
 
-        if descent_info.linesearch_params.use_linesearch=="backtracking" or descent_info.linesearch_params.use_linesearch=="wolfe":
+        if descent_info.linesearch_params.use_linesearch!=False:
             pk_dot_gradient = jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, grad_sum)
             
             linesearch_info=MyNamespace(population=population, descent_direction=descent_direction, signal_t_new=signal_t_new, 
@@ -461,13 +462,13 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
 
 
 
-        descent_direction, local_or_global_state = jax.vmap(adaptive_scaling_of_step, in_axes=(0,0,0,0,None,None,None,None))(pie_error, grad_sum, descent_direction, 
+        descent_direction, local_or_global_state = jax.vmap(adaptive_step_size, in_axes=(0,0,0,0,None,None,None,None))(pie_error, grad_sum, descent_direction, 
                                                                                                                           local_or_global_state, descent_info.xi,
                                                                                                                         getattr(descent_info.adaptive_scaling, local_or_global) ,
                                                                                                                           pulse_or_gate, local_or_global)
 
 
-        if (descent_info.linesearch_params.use_linesearch=="backtracking" or descent_info.linesearch_params.use_linesearch=="wolfe") and local_or_global=="_global":
+        if descent_info.linesearch_params.use_linesearch!=False and local_or_global=="_global":
             pk_dot_gradient=jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, grad_sum)
 
             linesearch_info=MyNamespace(population=population, signal_t=signal_t, descent_direction=descent_direction, 
@@ -747,13 +748,13 @@ class COPRABASE(ClassicAlgorithmsBASE):
 
 
         Z_error = jax.vmap(calculate_Z_error, in_axes=(0,0))(signal_t.signal_t, signal_t_new)
-        descent_direction, local_or_global_state = jax.vmap(adaptive_scaling_of_step, in_axes=(0,0,0,0,None,None,None,None))(Z_error, grad_sum, descent_direction, 
+        descent_direction, local_or_global_state = jax.vmap(adaptive_step_size, in_axes=(0,0,0,0,None,None,None,None))(Z_error, grad_sum, descent_direction, 
                                                                                                                           local_or_global_state, descent_info.xi,
                                                                                                                         getattr(descent_info.adaptive_scaling, local_or_global),
                                                                                                                           pulse_or_gate, local_or_global)
         
 
-        if (descent_info.linesearch_params.use_linesearch=="backtracking" or descent_info.linesearch_params.use_linesearch=="wolfe") and local_or_global=="_global":
+        if descent_info.linesearch_params.use_linesearch!=False and local_or_global=="_global":
             pk_dot_gradient = jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, grad_sum)        
             linesearch_info=MyNamespace(population=population, signal_t_new=signal_t_new, descent_direction=descent_direction, error=Z_error, 
                                         pk_dot_gradient=pk_dot_gradient, transform_arr=transform_arr)

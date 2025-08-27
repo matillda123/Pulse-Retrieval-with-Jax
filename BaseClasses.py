@@ -105,7 +105,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
         self.max_steps_linesearch = 15
         self.c1 = 1e-4
         self.c2 = 0.9
-        self.delta_gamma = (0.5, 1.5)
+        self.delta_gamma = 0.5
+        self.gamma_max = 1e2
 
 
         self.local_hessian = False

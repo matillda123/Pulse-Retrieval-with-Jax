@@ -5,7 +5,7 @@ from jax.tree_util import Partial
 
 
 from utilities import scan_helper, MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_mu, calculate_trace
-from stepsize import do_linesearch, adaptive_scaling_of_step
+from stepsize import do_linesearch, adaptive_step_size
 
 
 
@@ -144,7 +144,7 @@ def calculate_S_prime_iterative_step(signal_t, measured_trace, mu, measurement_i
     descent_direction, gradient = calculate_r_descent_direction(signal_f, mu, measurement_info, descent_info)
     r_error = calculate_r_error(trace, measured_trace, mu, descent_info)
 
-    descent_direction, _ = adaptive_scaling_of_step(r_error, gradient, descent_direction, MyNamespace(), descent_info.xi, "linear", None, "_global")
+    descent_direction, _ = adaptive_step_size(r_error, gradient, descent_direction, MyNamespace(), descent_info.xi, "linear", None, "_global")
 
     # if (descent_info.linesearch_params.use_linesearch=="backtracking" or descent_info.linesearch_params.use_linesearch=="wolfe") and local_or_global=="_global":
     #     pk_dot_gradient = jnp.sum(jnp.real(jnp.vecdot(descent_direction, gradient)))

@@ -3,67 +3,174 @@ import jax
 from jax.tree_util import Partial
 from equinox import tree_at
 
-from utilities import while_loop_helper
+from utilities import while_loop_helper, MyNamespace
 
 
 
-# possible other linesearches
-# bisection based on error-value -> e.g. like LSF algorihtm
+def backtracking_linesearch(linesearch_state, error_func, grad_func, linesearch_params, linesearch_info, measurement_info):
+    gamma = linesearch_state.gamma
+    c1, delta_gamma = linesearch_params.c1, linesearch_params.delta_gamma
+    pk_dot_gradient, error = linesearch_info.pk_dot_gradient, linesearch_info.error
+
+    assert delta_gamma < 1, "delta_gamma needs to be smaller than one for backtracking linesearch."
+
+
+    error_new = error_func(gamma, linesearch_info, measurement_info)
+    armijo_condition = ((error_new - error) <= gamma*c1*pk_dot_gradient).astype(jnp.int16)
+
+    gamma = gamma*armijo_condition + gamma*delta_gamma*(1 - armijo_condition)
+    return MyNamespace(condition=armijo_condition, gamma=gamma, iteration=linesearch_state.iteration+1)
 
 
 
-def do_linesearch_step(condition, gamma, iteration, linesearch_info, measurement_info, linesearch_params, error_func, grad_func):
+
+
+
+
+def zoom_interpolation(low_vals, high_vals):
+    gamma_low, phi_low, phi_prime_low = low_vals.gamma, low_vals.phi, low_vals.phi_prime
+    gamma_high, phi_high, phi_prime_high = high_vals.gamma, high_vals.phi, high_vals.phi_prime
+
+    d1 = phi_prime_low + phi_prime_high - 3*(phi_low - phi_high)/(gamma_low - gamma_high)
+    diskriminante = d1**2 - phi_prime_low*phi_prime_high
+    d2 = jnp.sign(gamma_high - gamma_low)*jnp.sqrt(diskriminante)
+    gamma_cubic = gamma_high - (gamma_high - gamma_low)*(phi_prime_high + d2 - d1)/(phi_prime_high - phi_prime_low + 2*d2)
+
+    gamma_bisection = 0.5*(gamma_low + gamma_high)
+
+    too_much_out_of_range = ((gamma_cubic < gamma_low) | (gamma_cubic > 5*gamma_high))
+    not_usable = ((jnp.sign(diskriminante) < 0) | jnp.isnan(gamma_cubic) | (1-jnp.isfinite(gamma_cubic)))
+    use_bisection = (too_much_out_of_range | not_usable)
+
+    gamma = jnp.where(use_bisection, gamma_bisection, gamma_cubic)
+    return gamma
+
+
+
+def finding_phase(current_vals, bracket, linesearch_info, linesearch_params):
+    low_vals, high_vals = bracket.high, current_vals
+    gamma = current_vals.gamma * linesearch_params.delta_gamma
+    return gamma, low_vals, high_vals
+
+
+def zoom_phase(current_vals, bracket, linesearch_info, linesearch_params):
+    error, pk_dot_gradient = linesearch_info.error, linesearch_info.pk_dot_gradient
+    c1 = linesearch_params.c1
+
+    gamma, phi, phi_prime = current_vals.gamma, current_vals.phi, current_vals.phi_prime
+    gamma_low, phi_low = bracket.low.gamma, bracket.low.phi
+        
+
+    psi = phi - error - c1*pk_dot_gradient*gamma
+    psi_low = phi_low - error - c1*pk_dot_gradient*gamma_low
+    psi_prime = phi_prime - c1*pk_dot_gradient
+
+    case1 = (psi > psi_low)
+    case2 = ((psi <= psi_low) & (psi_prime*(gamma_low-gamma) > 0))
+    case3 = ((psi <= psi_low) & (psi_prime*(gamma_low-gamma) < 0))
+    
+    low_vals = case1 * bracket.low + case2 * current_vals + case3 * current_vals
+    high_vals = case1 * current_vals + case2 * bracket.high + case3 * bracket.low
+    
+    gamma = zoom_interpolation(low_vals, high_vals)
+    return gamma, low_vals, high_vals
+
+
+
+
+def zoom_linesearch(linesearch_state, error_func, grad_func, linesearch_params, linesearch_info, measurement_info):
     c1, c2, delta_gamma = linesearch_params.c1, linesearch_params.c2, linesearch_params.delta_gamma
     pk_dot_gradient, pk, error = linesearch_info.pk_dot_gradient, linesearch_info.descent_direction, linesearch_info.error
 
-    delta_gamma_1, delta_gamma_2 = delta_gamma
+    assert delta_gamma > 1, "delta_gamma needs to be bigger than one for zoom linesearch."
 
-    error_new = error_func(gamma, linesearch_info, measurement_info)
+    gamma, phi, phi_prime = linesearch_state.gamma, linesearch_state.phi, linesearch_state.phi_prime
+    bracket = linesearch_state.bracket
+    current_vals = MyNamespace(gamma=gamma, phi=phi, phi_prime=phi_prime)
 
-    # Armijio Condition
-    if linesearch_params.use_linesearch=="backtracking" or linesearch_params.use_linesearch=="wolfe":
-        condition_one = ((error_new-error) < gamma*c1*pk_dot_gradient).astype(jnp.int16)
+    start_zoom_phase = ((jnp.sign(phi_prime)*jnp.sign(pk_dot_gradient) < 0) | ((phi > bracket.low.phi) & (linesearch_state.iteration > 0))) # overshot minimum
+    in_zoom_phase = (linesearch_state.in_zoom_phase | start_zoom_phase)
 
-    # Strong Wolfe Condition
-    if linesearch_params.use_linesearch=="wolfe":
-        grad = grad_func(gamma, linesearch_info, measurement_info)
-        condition_two = (jnp.abs(jnp.real(jnp.vdot(pk, grad))) - c2*jnp.abs(pk_dot_gradient)).astype(jnp.int16)
-    else:
-        condition_two = 1
+    zoom = Partial(zoom_phase, linesearch_info=linesearch_info, linesearch_params=linesearch_params)
+    finding = Partial(finding_phase, linesearch_info=linesearch_info, linesearch_params=linesearch_params)
 
-    gamma = gamma*condition_one*condition_two + gamma*delta_gamma_1*(1 - condition_one) + gamma*delta_gamma_2*(1 - condition_two)
-    return condition_one*condition_two, gamma, iteration + 1
+    gamma_zoom, low_vals_zoom, high_vals_zoom = zoom(current_vals, bracket)
+    gamma_find, low_vals_find, high_vals_find = finding(current_vals, bracket)
+
+    gamma = in_zoom_phase*gamma_zoom + (1-in_zoom_phase)*gamma_find
+    low_vals = in_zoom_phase*low_vals_zoom + (1-in_zoom_phase)*low_vals_find
+    high_vals = in_zoom_phase*high_vals_zoom + (1-in_zoom_phase)*high_vals_find
+
+
+    phi = error_func(gamma, linesearch_info, measurement_info)
+    armijo_condition = ((phi-error) <= gamma*c1*pk_dot_gradient).astype(jnp.int32)
+
+    grad = grad_func(gamma, linesearch_info, measurement_info)
+    phi_prime = jnp.real(jnp.vdot(pk, grad))
+    strong_wolfe_condition = (jnp.abs(phi_prime) <= c2*jnp.abs(pk_dot_gradient)).astype(jnp.int32)
+
+    linesearch_done = (armijo_condition & strong_wolfe_condition)
+
+    return MyNamespace(condition=linesearch_done, gamma=gamma, phi=phi, phi_prime=phi_prime, bracket=MyNamespace(low=low_vals, high=high_vals), 
+                       in_zoom_phase=in_zoom_phase, iteration=linesearch_state.iteration+1)
+
+
+
+
+
+
+def do_linesearch_step(linesearch_state, linesearch_info, measurement_info, linesearch_params, error_func, grad_func):
+    linesearch_dict={"backtracking": backtracking_linesearch,
+                     "zoom": zoom_linesearch}
+                     #"more-thuente": more_thuente_linesearch}
+
+    linesearch_state = linesearch_dict[linesearch_params.use_linesearch](linesearch_state, error_func, grad_func, linesearch_params, 
+                                                                         linesearch_info, measurement_info)
+    return linesearch_state
     
 
 
-def end_linesearch(condition, gamma, iteration_no, max_steps_linesearch): 
-    print("check these logic operations needs to return false when its supposed to exit")
+def end_linesearch(linesearch_state, max_steps_linesearch): 
+    iteration_no, condition = linesearch_state.iteration, linesearch_state.condition
     run_out_of_steps = (max_steps_linesearch < iteration_no)
     is_linesearch_done = (condition | run_out_of_steps)
-    #is_linesearch_done = -0.5*(is_linesearch_done - 1.5)**2 + 1.125
-    return (1 - is_linesearch_done).astype(jnp.bool)
+    return (1 - is_linesearch_done).astype(jnp.bool_)
 
 
 
 def do_linesearch(linesearch_info, measurement_info, descent_info, error_func, grad_func, local_or_global):
-    assert 0 < descent_info.linesearch_params.c1 < descent_info.linesearch_params.c2 < 1, "Constants for linesearch ar invalid"
+    assert 0 < descent_info.linesearch_params.c1 < descent_info.linesearch_params.c2 < 1, "Constants for linesearch c1 and c2 are invalid"
 
-    gamma, max_steps_linesearch = getattr(descent_info.gamma, local_or_global), descent_info.linesearch_params.max_steps
+    gamma, max_steps_linesearch = jnp.float32(getattr(descent_info.gamma, local_or_global)), descent_info.linesearch_params.max_steps
 
     condition = 0
-    current_step = 0
+    iteration = 0
 
-    linesearch_step = Partial(do_linesearch_step, linesearch_info=linesearch_info, measurement_info=measurement_info, linesearch_params=descent_info.linesearch_params, 
-                            error_func=error_func, grad_func=grad_func)
-    linesearch_step = Partial(while_loop_helper, actual_function=linesearch_step, number_of_args=3)
+    linesearch_step = Partial(do_linesearch_step, linesearch_info=linesearch_info, measurement_info=measurement_info, 
+                              linesearch_params=descent_info.linesearch_params, error_func=error_func, grad_func=grad_func)
+    linesearch_step = Partial(while_loop_helper, actual_function=linesearch_step, number_of_args=1)
 
     linesearch_end = Partial(end_linesearch, max_steps_linesearch=max_steps_linesearch)
-    linesearch_end = Partial(while_loop_helper, actual_function=linesearch_end, number_of_args=3)
+    linesearch_end = Partial(while_loop_helper, actual_function=linesearch_end, number_of_args=1)
 
-    initial_vals = (condition, gamma, current_step)
-    condition, gamma, iteration_no = jax.lax.while_loop(linesearch_end, linesearch_step, initial_vals)
+    if descent_info.linesearch_params.use_linesearch=="zoom":
+        gamma_low, phi_low, phi_prime_low = 0.0, linesearch_info.error, linesearch_info.pk_dot_gradient
+        bracket = MyNamespace(low = MyNamespace(gamma=gamma_low, phi=phi_low, phi_prime=phi_prime_low), 
+                              high = MyNamespace(gamma=gamma_low, phi=phi_low, phi_prime=phi_prime_low))
 
-    return gamma
+        phi = error_func(gamma, linesearch_info, measurement_info)
+        grad = grad_func(gamma, linesearch_info, measurement_info)
+        phi_prime = jnp.real(jnp.vdot(linesearch_info.descent_direction, grad))
+        
+        linesearch_state = MyNamespace(condition=condition, gamma=gamma, phi=phi, phi_prime=phi_prime, bracket=bracket, 
+                                       in_zoom_phase=0, iteration=iteration)
+    else:
+        linesearch_state = MyNamespace(condition=condition, gamma=gamma, iteration=iteration)
+
+
+    linesearch_state = jax.lax.while_loop(linesearch_end, linesearch_step, linesearch_state)
+
+    return linesearch_state.gamma
 
 
 
@@ -107,7 +214,7 @@ def get_step_size(error, gradient, descent_direction, local_or_global_state, xi,
     scaling, local_or_global_state = get_scaling(gradient, descent_direction, xi, local_or_global_state, pulse_or_gate, local_or_global)
 
 
-    L_prime = -1*error # this is the definition in copra paper
+    L_prime = -1*error # this is the definition in copra paper, seems very aggressive
 
     if order=="linear" or order=="pade_10":
         eta = (L_prime-error)/(2*scaling)
@@ -142,7 +249,7 @@ def get_step_size(error, gradient, descent_direction, local_or_global_state, xi,
 
 
 
-def adaptive_scaling_of_step(error, gradient, descent_direction, local_or_global_state, xi, order, pulse_or_gate, local_or_global):
+def adaptive_step_size(error, gradient, descent_direction, local_or_global_state, xi, order, pulse_or_gate, local_or_global):
 
     if order!=False:
         eta, local_or_global_state = get_step_size(error, gradient, descent_direction, local_or_global_state, xi, order, pulse_or_gate, local_or_global)
