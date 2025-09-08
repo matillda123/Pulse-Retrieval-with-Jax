@@ -850,7 +850,6 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
         super().__init__(*args, **kwargs)
 
 
-
     def calculate_signal_t(self, individual, tau_arr, measurement_info):
         time, frequency = measurement_info.time, measurement_info.frequency
         xfrog, doubleblind, ifrog = measurement_info.xfrog, measurement_info.doubleblind, measurement_info.ifrog
@@ -916,7 +915,7 @@ class RetrievePulsesDSCANwithRealFields(RetrievePulsesDSCAN):
 
 
 class RetrievePulses2DSI(RetrievePulsesFROG):
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency=None, anc2_frequency=None, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog=xfrog, ifrog=False, **kwargs)
 
         self.anc1_frequency = anc1_frequency
@@ -939,6 +938,7 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
 
         # somewhere here one should consider the influence of the interferometer type on the phases of gate1/2, but that only shifts everything along tau. I think
+        # one could apply a spectral phase to mimic material dispersion in the interferometer -> would allow to do self referencing
         if measurement_info.doubleblind==True:
             gate1 = gate2 = individual.gate
 
@@ -946,8 +946,7 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
             gate1, gate2 = measurement_info.anc_1, measurement_info.anc_2
 
         else:
-            # here one could apply a spectral phase to mimic material dispersion in the interferometer -> would allow to do self referencing
-            print("2DSI is not implemented as a AC method (yet?). xfrog needs to be true or doubleblind")
+            print("2DSI is not implemented as an autocorrelation method (yet?). xfrog needs to be true or doubleblind")
 
             
         gate2_shifted = self.calculate_shifted_signal(gate2, frequency, tau_arr, time)
@@ -960,16 +959,16 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
 
 
-    def post_process_create_trace(self, pulse_t, gate_t):
-        sk, rn = self.measurement_info.sk, self.measurement_info.rn
-        tau_arr = self.measurement_info.tau_arr
+    # def post_process_create_trace(self, pulse_t, gate_t):
+    #     sk, rn = self.measurement_info.sk, self.measurement_info.rn
+    #     tau_arr = self.measurement_info.tau_arr
         
-        pulse_t = center_signal_to_max(pulse_t)
+    #     pulse_t = center_signal_to_max(pulse_t)
     
-        signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_t, gate=gate_t), tau_arr, self.measurement_info)
-        signal_f = do_fft(signal_t.signal_t, sk, rn)
-        trace = calculate_trace(signal_f)
-        return trace
+    #     signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_t, gate=gate_t), tau_arr, self.measurement_info)
+    #     signal_f = do_fft(signal_t.signal_t, sk, rn)
+    #     trace = calculate_trace(signal_f)
+    #     return trace
 
 
 

@@ -6,19 +6,22 @@ from jax.tree_util import Partial
 from equinox import tree_at
 
 from BaseClasses import RetrievePulses2DSI, AlgorithmsBASE
+from classic_algorithms_base import GeneralizedProjectionBASE, TimeDomainPtychographyBASE, COPRABASE
 from utilities import scan_helper, do_fft, do_ifft, MyNamespace, center_signal_to_max, do_interpolation_1d, calculate_trace, calculate_trace_error
 
 
 
 class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs):
+        assert nonlinear_method=="shg", f"DirectReconstruction only works for three-wave mixing. nonlinear_method cannot be {nonlinear_method}"
         super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs)
+
+        self.name = "DirectReconstruction"
 
         self.integration_method = "euler_maclaurin_3"
         self.integration_order = None
-        self.name = "DirectReconstruction"
 
-        assert nonlinear_method=="shg", f"DirectReconstruction only works for three-wave mixing. nonlinear_method cannot be {nonlinear_method}"
+        self.use_hann_window = True
 
 
     def apply_hann_window(self, signal, axis=-1):
@@ -76,18 +79,26 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
 
 
     def reconstruct_2dsi_1dfft(self, descent_state, measurement_info, descent_info):
-        frequency, trace = measurement_info.frequency, measurement_info.measured_trace
+        tau_arr, frequency, trace = measurement_info.tau_arr, measurement_info.frequency, measurement_info.measured_trace
         pulse_spectral_amplitude, anc1_frequency, anc2_frequency = measurement_info.spectral_amplitude.pulse, measurement_info.anc1_frequency, measurement_info.anc2_frequency
 
-        trace_hann = trace# self.apply_hann_window(trace, axis=0)
+        use_hann = descent_info.use_hann_window
+        if use_hann==True:
+            trace_hann = self.apply_hann_window(trace, axis=0)
+        else:
+            trace_hann = trace
         trace_f = jnp.fft.fftshift(jnp.fft.fft(trace_hann, axis=0), axes=0)
-        idx = jnp.argsort(jnp.sum(jnp.abs(trace_f), axis=1))[-2]
+
+        frequency_tau = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(tau_arr), jnp.mean(jnp.diff(tau_arr))))
+        shear_frequency_mean = (anc1_frequency + anc2_frequency)/2
+        idx = jnp.argmin(jnp.abs(frequency_tau - shear_frequency_mean))
 
         signal_abs = jnp.abs(trace_f)[idx]
         signal_angle = jnp.angle(trace_f)[idx]
 
         group_delay = jnp.unwrap(signal_angle)/(anc2_frequency - anc1_frequency)
         group_delay = jnp.where(signal_abs < 0.0001*jnp.max(signal_abs), 0, group_delay)
+        group_delay = group_delay - jnp.mean(group_delay)
 
         group_delay = self.interpolate_group_delay_onto_spectral_amplitude(group_delay, measurement_info)
 
@@ -129,7 +140,8 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
             self.integration_method = "euler_maclaurin"
             
         self.descent_info = self.descent_info.expand(integration_method = self.integration_method, 
-                                                     integration_order=self.integration_order)
+                                                     integration_order = self.integration_order,
+                                                     use_hann_window = self.use_hann_window)
         init_arr = jnp.zeros(jnp.size(self.measurement_info.frequency))
         self.descent_state = self.descent_state.expand(population = population, 
                                                        group_delay = init_arr, 
@@ -138,3 +150,65 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         do_scan = Partial(self.step, measurement_info=self.measurement_info, descent_info=self.descent_info)
         do_scan=Partial(scan_helper, actual_function=do_scan, number_of_args=1, number_of_xs=0)
         return self.descent_state, do_scan
+    
+
+
+
+
+
+
+
+
+
+
+class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulses2DSI):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs)
+
+
+
+
+
+    def calculate_Z_gradient_individual(self, signal_t, signal_t_new, population, tau_arr, measurement_info, pulse_or_gate):
+        pass
+
+
+    def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, tau_arr, descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate):
+        pass
+
+
+    def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
+        sk, rn = measurement_info.sk, measurement_info.rn
+
+        pulse_f = do_fft(getattr(individual, pulse_or_gate), sk, rn)
+        pulse_f = pulse_f + gamma*descent_direction
+        pulse = do_ifft(pulse_f, sk, rn)
+
+        individual = tree_at(lambda x: getattr(x, pulse_or_gate), individual, pulse)
+        return individual
+
+
+
+
+
+
+
+
+
+class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs)
+        assert self.doubleblind==False
+
+
+
+
+
+
+
+
+
+
+class COPRA(COPRABASE, RetrievePulses2DSI):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency, anc2_frequency, **kwargs)
