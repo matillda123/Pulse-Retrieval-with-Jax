@@ -254,7 +254,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
         
         newton_direction_prev = getattr(local_or_global_state.hessian, pulse_or_gate).newton_direction_prev
         
-        probe = signal_t.gate_shifted
+        probe = signal_t.gate
 
         reverse_transform=None
         signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
