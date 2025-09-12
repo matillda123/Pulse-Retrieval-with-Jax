@@ -726,7 +726,7 @@ class RetrievePulsesDSCAN(RetrievePulses):
                                                              rn = self.rn,
                                                              c0 = self.c0)
 
-
+        
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.z_arr, self.measurement_info)
         self.transform_arr = self.phase_matrix
         self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
@@ -915,40 +915,76 @@ class RetrievePulsesDSCANwithRealFields(RetrievePulsesDSCAN):
 
 
 class RetrievePulses2DSI(RetrievePulsesFROG):
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency=None, anc2_frequency=None, **kwargs):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, xfrog, anc1_frequency=None, anc2_frequency=None, 
+                 material_thickness=0, refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, xfrog=xfrog, ifrog=False, **kwargs)
 
         self.anc1_frequency = anc1_frequency
         self.anc2_frequency = anc2_frequency
-        self.measurement_info = self.measurement_info.expand(anc1_frequency = self.anc1_frequency, anc2_frequency = self.anc2_frequency)
+        self.c0 = c0
+        self.refractive_index = refractive_index
+
+        self.measurement_info = self.measurement_info.expand(c0=self.c0)
+        self.phase_matrix = self.get_phase_matrix(self.refractive_index, material_thickness, self.measurement_info)
+        self.measurement_info = self.measurement_info.expand(anc1_frequency = self.anc1_frequency, anc2_frequency = self.anc2_frequency, 
+                                                             phase_matrix=self.phase_matrix)
+        
+
 
 
     def get_anc_pulse(self, frequency, anc_f, anc_no=1):
         anc_f = do_interpolation_1d(self.frequency, frequency, anc_f)
         anc = do_ifft(anc_f, self.sk, self.rn)
 
-        anc_dict = {1: "anc_1", 2: "anc_2"}
-        setattr(self.measurement_info, anc_dict[anc_no], anc)
+        anc_dict = {1: self.measurement_info.expand(anc_1=anc), 
+                    2: self.measurement_info.expand(anc_2=anc)}
+        self.measurement_info = anc_dict[anc_no]
         return anc
+    
+
+
+    def get_phase_matrix(self, refractive_index, material_thickness, measurement_info):
+        frequency, c0 = measurement_info.frequency, measurement_info.c0
+        c0 = c0*1e-12 # speed of light in mm/fs
+        wavelength = c0/(frequency+1e-15)
+        n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
+        n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
+        k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
+        phase_matrix = k_arr*material_thickness
+        return phase_matrix
+
+
+
+    def apply_phase(self, pulse_t, measurement_info):
+        # apply material dispersion to mimic material in interferometer
+
+        sk, rn = measurement_info.sk, measurement_info.rn
+        
+        pulse_f = do_fft(pulse_t, sk, rn)
+        pulse_f=pulse_f*jnp.exp(1j*measurement_info.phase_matrix)
+        pulse_t_disp=do_ifft(pulse_f, sk, rn)
+        return pulse_t_disp
+    
+
+
+
 
 
     def calculate_signal_t(self, individual, tau_arr, measurement_info):
         time, frequency, nonlinear_method = measurement_info.time, measurement_info.frequency, measurement_info.nonlinear_method
+
         pulse_t = individual.pulse
 
-
-        # somewhere here one should consider the influence of the interferometer type on the phases of gate1/2, but that only shifts everything along tau. I think
-        # one could apply a spectral phase to mimic material dispersion in the interferometer -> would allow to do self referencing
-        if measurement_info.doubleblind==True:
-            gate1 = gate2 = individual.gate
-
-        elif measurement_info.xfrog==True:
+        if measurement_info.xfrog==True:
             gate1, gate2 = measurement_info.anc_1, measurement_info.anc_2
 
-        else:
-            print("2DSI is not implemented as an autocorrelation method (yet?). xfrog needs to be true or doubleblind")
+        elif measurement_info.doubleblind==True:
+            gate1 = gate2 = individual.gate
 
+        else:
+            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info)
             
+
         gate2_shifted = self.calculate_shifted_signal(gate2, frequency, tau_arr, time)
         gate_pulses = gate1 + gate2_shifted
         gate = calculate_gate(gate_pulses, nonlinear_method)
@@ -957,20 +993,6 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate)
         return signal_t
     
-
-
-
-    # def post_process_create_trace(self, pulse_t, gate_t):
-    #     sk, rn = self.measurement_info.sk, self.measurement_info.rn
-    #     tau_arr = self.measurement_info.tau_arr
-        
-    #     pulse_t = center_signal_to_max(pulse_t)
-    
-    #     signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_t, gate=gate_t), tau_arr, self.measurement_info)
-    #     signal_f = do_fft(signal_t.signal_t, sk, rn)
-    #     trace = calculate_trace(signal_f)
-    #     return trace
-
 
 
 

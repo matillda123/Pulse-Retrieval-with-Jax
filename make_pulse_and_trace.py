@@ -234,17 +234,19 @@ class MakePulse:
 
 
 
-    def generate_2dsi_trace_and_spectrum(self, time, frequency, pulse_t, pulse_f, nonlinear_method, anc=((None,None),(None,None)), N=256, scale_time_range=1, plot_stuff=True, 
+    def generate_2dsi_trace_and_spectrum(self, time, frequency, pulse_t, pulse_f, nonlinear_method, xfrog=True, anc=((None,None),(None,None)), N=256, scale_time_range=1, 
+                                         plot_stuff=True, 
                                          cut_off_val=0.001, frequency_range=None):
 
         
-        self.maketrace = MakeTrace2DSI(time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cut_off_val, frequency_range)
+        self.maketrace = MakeTrace2DSI(time, frequency, pulse_t, pulse_f, nonlinear_method, xfrog, N, scale_time_range, cut_off_val, frequency_range)
 
-        anc_1, anc_2 = anc
-        frequency_anc_1, anc_1_f = anc_1
-        frequency_anc_2, anc_2_f = anc_2
-        anc1 = self.maketrace.get_gate_pulse(frequency_anc_1, anc_1_f, anc_no=1)
-        anc2 = self.maketrace.get_gate_pulse(frequency_anc_2, anc_2_f, anc_no=2)
+        if self.maketrace.xfrog==True:
+            anc_1, anc_2 = anc
+            frequency_anc_1, anc_1_f = anc_1
+            frequency_anc_2, anc_2_f = anc_2
+            anc1 = self.maketrace.get_gate_pulse(frequency_anc_1, anc_1_f, anc_no=1)
+            anc2 = self.maketrace.get_gate_pulse(frequency_anc_2, anc_2_f, anc_no=2)
 
         time_trace, frequency_trace, trace, spectra = self.maketrace.generate_trace()
             
@@ -312,14 +314,14 @@ class MakeTrace:
             self.factor=1
 
         individual, measurement_info, transform_arr = self.get_parameters_to_make_signal_t()
+
         signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
         signal_f = do_fft(signal_t.signal_t, self.sk, self.rn)
         self.trace = jnp.abs(signal_f)**2
 
-
         time, frequency, trace, spectra = self.interpolate_trace()
 
-        self.trace=trace/np.max(trace)
+        self.trace = trace/np.max(trace)
         return time, frequency, self.trace, spectra
 
 
@@ -429,6 +431,8 @@ class MakeTraceFROG(MakeTrace, RetrievePulsesFROG):
 
         if self.frequency_range!=None:
             fmin, fmax = self.frequency_range
+            if self.nonlinear_method=="sd":
+                fmin, fmax = np.sort([-1*fmin, -1*fmax])
         else:
             fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
             deltaf = fmax - fmin
@@ -458,7 +462,7 @@ class MakeTraceFROG(MakeTrace, RetrievePulsesFROG):
         trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, self.time, trace_interpolate_freq)
 
         if self.nonlinear_method=="sd":
-            frequency_interpolate = -1*frequency_interpolate
+            frequency_interpolate = -1*np.flip(frequency_interpolate)
             trace_interpolate = np.flip(trace_interpolate, axis=0)
         
 
@@ -526,6 +530,8 @@ class MakeTraceDScan(MakeTrace, RetrievePulsesDSCAN):
 
         if self.frequency_range!=None:
             fmin, fmax = self.frequency_range
+            if self.nonlinear_method=="sd":
+                fmin, fmax = np.sort([-1*fmin, -1*fmax])
         else:
             fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
             deltaf=fmax-fmin
@@ -537,7 +543,7 @@ class MakeTraceDScan(MakeTrace, RetrievePulsesDSCAN):
         trace_interpolate=jax.vmap(do_interpolation_1d, in_axes=(None, None, 0))(frequency_interpolate, self.frequency, self.trace)
 
         if self.nonlinear_method=="sd":
-            frequency_interpolate = -1*frequency_interpolate
+            frequency_interpolate = -1*np.flip(frequency_interpolate)
             trace_interpolate = np.flip(trace_interpolate, axis=1)
 
         frequency_interpolate_spectrum, spectrum = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
@@ -569,8 +575,13 @@ class MakeTraceDScanReal(RetrievePulsesDSCANwithRealFields, MakeTraceDScan):
 
 
 class MakeTrace2DSI(MakeTrace, RetrievePulses2DSI):
-    def __init__(self, time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cut_off_val, frequency_range):
+    def __init__(self, time, frequency, pulse_t, pulse_f, nonlinear_method, xfrog, N, scale_time_range, cut_off_val, frequency_range,
+                 material_thickness = 0,
+                 refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson")):
         super().__init__()
+
+        from scipy.constants import c as c0
+        self.c0 = c0
         
         self.time=time
         self.frequency=frequency
@@ -581,12 +592,15 @@ class MakeTrace2DSI(MakeTrace, RetrievePulses2DSI):
         self.scale_time_range=scale_time_range
         self.cut_off_val = cut_off_val
         self.frequency_range = frequency_range
-        self.xfrog = True
+        self.xfrog = xfrog
         self.gate = None
+        self.anc_1 = self.anc_2 = None
 
         self.x_arr = time
 
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
+        self.refractive_index, self.material_thickness = refractive_index, material_thickness
+
 
 
 
@@ -603,7 +617,11 @@ class MakeTrace2DSI(MakeTrace, RetrievePulses2DSI):
 
     def get_parameters_to_make_signal_t(self):
         measurement_info = MyNamespace(anc_1=self.anc_1, anc_2=self.anc_2, time=self.time, frequency=self.frequency, xfrog=self.xfrog, 
-                                       nonlinear_method=self.nonlinear_method, doubleblind=False)
+                                       nonlinear_method=self.nonlinear_method, doubleblind=False, sk=self.sk, rn=self.rn, c0=self.c0)
+        
+        self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.material_thickness, measurement_info)
+        measurement_info = measurement_info.expand(phase_matrix = self.phase_matrix)
+
         individual = MyNamespace(pulse=self.pulse_t, gate=None)
         return individual, measurement_info, self.time
     
@@ -624,6 +642,8 @@ class MakeTrace2DSI(MakeTrace, RetrievePulses2DSI):
 
         if self.frequency_range!=None:
             fmin, fmax = self.frequency_range
+            if self.nonlinear_method=="sd":
+                fmin, fmax = np.sort([-1*fmin, -1*fmax])
         else:
             fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
             deltaf = fmax - fmin
@@ -641,20 +661,23 @@ class MakeTrace2DSI(MakeTrace, RetrievePulses2DSI):
         trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, self.time, trace_interpolate_freq)
 
         if self.nonlinear_method=="sd":
-            frequency_interpolate = -1*frequency_interpolate
+            frequency_interpolate = -1*np.flip(frequency_interpolate)
             trace_interpolate = np.flip(trace_interpolate, axis=0)
         
 
         frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
 
-        anc1_f=do_fft(self.anc_1, self.sk, self.rn)
-        anc2_f=do_fft(self.anc_2, self.sk, self.rn)
-        frequency_gate_spectrum_1, spectrum_anc_1 = interpolate_spectrum(self.frequency, anc1_f, self.N)
-        frequency_gate_spectrum_2, spectrum_anc_2 = interpolate_spectrum(self.frequency, anc2_f, self.N)
+        if self.xfrog==True:
+            anc1_f=do_fft(self.anc_1, self.sk, self.rn)
+            anc2_f=do_fft(self.anc_2, self.sk, self.rn)
+            frequency_gate_spectrum_1, spectrum_anc_1 = interpolate_spectrum(self.frequency, anc1_f, self.N)
+            frequency_gate_spectrum_2, spectrum_anc_2 = interpolate_spectrum(self.frequency, anc2_f, self.N)
 
-        spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
-                              anc_1=(frequency_gate_spectrum_1, spectrum_anc_1),
-                              anc_2=(frequency_gate_spectrum_2, spectrum_anc_2))
+            spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
+                                anc_1=(frequency_gate_spectrum_1, spectrum_anc_1),
+                                anc_2=(frequency_gate_spectrum_2, spectrum_anc_2))
+        else:
+            spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse))
 
         return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
     

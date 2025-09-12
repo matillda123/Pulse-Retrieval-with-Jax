@@ -4,6 +4,7 @@ from utilities import MyNamespace
 
 
 def get_nonlinear_CG_direction(descent_direction, cg, beta_parameter_version):
+    print("check if abs() is correct in beta_funcs. sometimes real() might be correct")
     descent_direction_prev, CG_direction_prev = cg.descent_direction_prev, cg.CG_direction_prev
     
     # negative one to convert descent_direction to grad or pseudo-newton direction
