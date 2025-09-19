@@ -126,6 +126,7 @@ class MakePulse:
         elif isinstance(amp_parameters, MultiPulse):
             amp, fwhm, shift = amp_parameters.amplitude, amp_parameters.duration, amp_parameters.delay
             shift = np.concatenate((np.zeros(1), shift))
+            shift = shift - np.mean(shift)
             amp_t = self.generate_gaussian_amplitude(self.time, amp, fwhm, shift)
             amp_f = do_fft(amp_t, self.sk, self.rn)
             amp_f = np.abs(amp_f)
@@ -138,7 +139,7 @@ class MakePulse:
         
         
     def init_generation(self, parameters):
-        if len(parameters) == 2:
+        if isinstance(parameters, tuple)==True:
             amplitude, phase = parameters
 
             if self.Delta_f == None:
@@ -173,15 +174,26 @@ class MakePulse:
 
         amp_f = self.get_spectral_amplitude(amplitude)
 
-        if isinstance(phase, list): # in multipulse case, a list of different phases could be provided.
+        if isinstance(parameters, MultiPulse): 
+            shift = np.concatenate((np.zeros(1), parameters.delay))
+            shift = shift - np.mean(shift)
+        
             temp = 0
-            for phase_parameters in phase:
-                temp = temp + self.get_spectral_phase(phase_parameters, amp_f=amp_f)
-            phase = temp
+            for i in range(len(shift)):
+                amp_t = self.gaussian(self.time, parameters.amplitude[i], parameters.duration[i], shift[i])
+                pulse_t = amp_t * np.exp(1j*2*np.pi*parameters.central_frequency[i]*self.time)
+                pulse_f = do_fft(pulse_t, self.sk, self.rn)
+
+                phase = self.get_spectral_phase(parameters.phase[i], amp_f=np.abs(pulse_f))
+                pulse_f = pulse_f*np.exp(1j*phase)
+
+                temp = temp + pulse_f
+            pulse_f = temp
+
         else:
             phase = self.get_spectral_phase(phase, amp_f=amp_f)
-            
-        pulse_f = amp_f*np.exp(1j*phase)
+            pulse_f = amp_f*np.exp(1j*phase)
+
         pulse_t = do_ifft(pulse_f, self.sk, self.rn)
 
         self.pulses = MyNamespace(time=self.time, frequency=self.frequency, pulse_t=pulse_t, pulse_f=pulse_f)

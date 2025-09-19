@@ -11,6 +11,7 @@ from equinox import tree_at
 
 from utilities import MyNamespace, get_com, center_signal, center_signal_to_max, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_gate_with_Real_Fields, calculate_trace, calculate_trace_error, project_onto_amplitude, run_scan
 from create_population import create_population_classic
+from initial_guess_doublepulse import make_population_doublepulse
 
 
 
@@ -546,13 +547,18 @@ class RetrievePulsesFROG(RetrievePulses):
 
 
 
-    def create_initial_population_for_doublepulse(self, monochromatic_double_pulse=False, sigma=3, init_std=0.001):
-        print("make me a population and put me in create_population.py")
-        pulse_f=get_double_pulse_initial_guess(self.tau_arr, self.frequency, self.measured_trace, monochromatic_double_pulse=monochromatic_double_pulse, 
-                                                   sigma=sigma, init_std=init_std)
+    def create_initial_population_doublepulse(self, population_size, monochromatic_double_pulse=False, sigma=3, init_std=0.001, i_want_control=False):
+        measurement_info = self.measurement_info
+        assert measurement_info.doubleblind==False, "Only implemented for doubleblind=False"
         
-        pulse_t=do_ifft(pulse_f, self.sk, self.rn)
-        return pulse_t
+        self.key, subkey = jax.random.split(self.key, 2)
+
+        tau_arr, frequency, measured_trace = measurement_info.tau_arr, measurement_info.frequency, measurement_info.measured_trace
+        nonlinear_method = measurement_info.nonlinear_method
+        pulse_t_arr = make_population_doublepulse(subkey, population_size, tau_arr, frequency, measured_trace, nonlinear_method, 
+                                                  monochromatic_double_pulse=monochromatic_double_pulse, sigma=sigma, init_std=init_std, 
+                                                  i_want_control=i_want_control)
+        return pulse_t_arr
     
 
 
@@ -715,7 +721,7 @@ class RetrievePulsesDSCAN(RetrievePulses):
         self.c0 = c0
 
 
-        self.measurement_info = self.measurement_info.expand(z_arr = self.z_arr, # needs to be in mm
+        self.measurement_info = self.measurement_info.expand(z_arr = self.z_arr, # needs to be in mm, is material thickness not translation
                                                              frequency = self.frequency,
                                                              time = self.time,
                                                              measured_trace = self.measured_trace,
@@ -768,8 +774,12 @@ class RetrievePulsesDSCAN(RetrievePulses):
     def get_dispersed_pulse_t(self, pulse_f, phase_matrix, measurement_info):
         sk, rn = measurement_info.sk, measurement_info.rn
         
-        pulse_f=pulse_f*jnp.exp(1j*phase_matrix)
-        pulse_t_disp=do_ifft(pulse_f, sk, rn)
+        pulse_f = pulse_f*jnp.exp(1j*phase_matrix)
+        pulse_t_disp = do_ifft(pulse_f, sk, rn)
+
+        # it would be more efficient to remove the linear part, when phase_matrix is created
+        # but that would mean one knows the central_frequency, which is not necessarily the case.
+        pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)
         return pulse_t_disp, phase_matrix
 
 

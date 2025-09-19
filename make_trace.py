@@ -168,8 +168,8 @@ class MakeTrace:
 
         individual, measurement_info, transform_arr = self.get_parameters_to_make_signal_t()
 
-        signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
-        signal_f = do_fft(signal_t.signal_t, self.sk, self.rn)
+        self.signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
+        signal_f = do_fft(self.signal_t.signal_t, self.sk, self.rn)
         self.trace = jnp.abs(signal_f)**2
 
         time, frequency, trace, spectra = self.interpolate_trace()
@@ -366,8 +366,8 @@ class MakeTraceDScan(MakeTrace, RetrievePulsesDSCAN):
         measurement_info = MyNamespace(frequency=self.frequency, c0=self.c0, sk=self.sk, rn=self.rn, nonlinear_method=self.nonlinear_method, doubleblind=False)
         individual = MyNamespace(pulse=self.pulse_f, gate=None)
 
-        phase_matrix = self.get_phase_matrix(self.refractive_index, self.z_arr, measurement_info)
-        return individual, measurement_info, phase_matrix
+        self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.z_arr, measurement_info)
+        return individual, measurement_info, self.phase_matrix
 
 
     

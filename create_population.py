@@ -81,7 +81,7 @@ def create_population_classic(key, population_size, guess_type, measurement_info
         signal_f_arr = constant_phase(key, shape, amp)
 
     elif guess_type=="doublepulse":
-        print("Not implemented. Is availabel as extranonlinear_method in RetrievePulsesFROG. Because it only works for frog and is not jax compatible.")
+        print("Moved to initial_guess_doublepulse.py, because its only implemented for AC-Frog and without jax.")
     
     else:
         print("not available")
