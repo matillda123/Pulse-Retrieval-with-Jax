@@ -695,20 +695,38 @@ class RetrievePulsesFROG(RetrievePulses):
 
 
 
+def calulcate_phase_matrix_material(measurement_info, parameters = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)):
+    # z_arr needs to be in mm, is material thickness not translation
+    refractive_index, c0 = parameters
+    z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
+
+    c0 = c0*1e-12 # speed of light in mm/fs
+    wavelength = c0/frequency
+    n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
+    n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
+    k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
+    phase_matrix = jnp.outer(z_arr, k_arr)
+    return phase_matrix
+
+
+
+
+def calculate_phase_matrix_miips(measurement_info, parameters):
+    alpha, gamma, central_frequency = parameters
+    z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
+    
+    omega = 2*jnp.pi * (frequency - central_frequency)
+    phase_matrix = alpha*jnp.sin(gamma*omega[jnp.newaxis, :] - z_arr[:, jnp.newaxis])
+    return phase_matrix
 
 
 
 
 
 
-
-
-
-
-
-class RetrievePulsesDSCAN(RetrievePulses):
-    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, 
-                 refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), **kwargs):
+class RetrievePulsesChirpScan(RetrievePulses):
+    
+    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_matrix_func, **kwargs):
         super().__init__(nonlinear_method, **kwargs)
 
         self.z_arr, self.time, self.frequency, self.measured_trace = self.get_data(z_arr, frequency, measured_trace)
@@ -717,11 +735,8 @@ class RetrievePulsesDSCAN(RetrievePulses):
         self.df = jnp.mean(jnp.diff(self.frequency))
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
 
-        self.refractive_index = refractive_index
-        self.c0 = c0
 
-
-        self.measurement_info = self.measurement_info.expand(z_arr = self.z_arr, # needs to be in mm, is material thickness not translation
+        self.measurement_info = self.measurement_info.expand(z_arr = self.z_arr,
                                                              frequency = self.frequency,
                                                              time = self.time,
                                                              measured_trace = self.measured_trace,
@@ -729,17 +744,27 @@ class RetrievePulsesDSCAN(RetrievePulses):
                                                              dt = self.dt,
                                                              df = self.df,
                                                              sk = self.sk,
-                                                             rn = self.rn,
-                                                             c0 = self.c0)
-
+                                                             rn = self.rn)
         
-        self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.z_arr, self.measurement_info)
+
+        self.calculate_phase_matrix = phase_matrix_func
+        
+
+
+
+    def get_phase_matrix(self, parameters):
+        self.parameters = parameters
+        self.phase_matrix = self.calculate_phase_matrix(self.measurement_info, parameters=parameters)
+
         self.transform_arr = self.phase_matrix
         self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
 
         self.measurement_info = self.measurement_info.expand(phase_matrix = self.phase_matrix,
                                                              transform_arr = self.transform_arr,
                                                              x_arr = self.x_arr)
+        return self.phase_matrix
+        
+
 
 
 
@@ -755,19 +780,6 @@ class RetrievePulsesDSCAN(RetrievePulses):
         population = MyNamespace(pulse=pulse_f_arr, gate=gate_arr)
         return population
     
-    
-
-
-
-    def get_phase_matrix(self, refractive_index, z_arr, measurement_info):
-        frequency, c0 = measurement_info.frequency, measurement_info.c0
-        c0 = c0*1e-12 # speed of light in mm/fs
-        wavelength = c0/frequency
-        n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
-        n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
-        k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
-        phase_matrix = jnp.outer(z_arr, k_arr)
-        return phase_matrix
 
 
 
@@ -781,6 +793,8 @@ class RetrievePulsesDSCAN(RetrievePulses):
         # but that would mean one knows the central_frequency, which is not necessarily the case.
         pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)
         return pulse_t_disp, phase_matrix
+    
+
 
 
     def calculate_signal_t(self, individual, phase_matrix, measurement_info):
@@ -832,19 +846,18 @@ class RetrievePulsesDSCAN(RetrievePulses):
         signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_f, gate=None), self.measurement_info.phase_matrix, self.measurement_info)
         trace = calculate_trace(do_fft(signal_t.signal_t, sk, rn))
         return trace
-    
 
     def get_x_arr(self):
         return self.z_arr
 
 
-
-
-
     def apply_spectrum(self, pulse, spectrum, sk, rn):
         pulse = project_onto_amplitude(pulse, spectrum)
         return pulse
-    
+
+
+
+
 
 
 
@@ -901,7 +914,7 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
 
 
 
-class RetrievePulsesDSCANwithRealFields(RetrievePulsesDSCAN):
+class RetrievePulsesChirpScanwithRealFields(RetrievePulsesChirpScan):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
@@ -1002,21 +1015,3 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
         signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate)
         return signal_t
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-class RetrievePulsesMIIPS(RetrievePulses):
-    # this method is essentially a generalized version of dscan -> make dscan inherit from this -> classical algorithms dscan should work 
-    # only difference is generation of phase matrix -> at least i think so
-    pass

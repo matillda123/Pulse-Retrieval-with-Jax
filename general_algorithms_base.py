@@ -15,16 +15,41 @@ from create_population import create_population_general
 
 
 
-def eval_bspline_segment(x, M, control_points):
-        return control_points @ M.T @ x
+# def eval_bspline_segment(x, M, control_points):
+#         return control_points @ M.T @ x
 
 
-def add_control_points_out_of_domain(control_points, degree, n):
-    temp=jnp.zeros(n + degree)
-    temp=temp.at[degree//2:n+degree//2].set(control_points)
-    temp=temp.at[:degree//2].set(control_points[0])
-    temp=temp.at[-degree//2:].set(control_points[-1])
-    return temp
+# def add_control_points_out_of_domain(control_points, degree, n):
+#     temp=jnp.zeros(n + degree)
+#     temp=temp.at[degree//2:n+degree//2].set(control_points)
+#     temp=temp.at[:degree//2].set(control_points[0])
+#     temp=temp.at[-degree//2:].set(control_points[-1])
+#     return temp
+
+
+# def b_spline(control_points, x):
+#     # M_1=jnp.array([[1, 0], [-1, 1]])
+#     # M_2=1/2*jnp.array([[1, 1, 0], [-2, 2, 0], [1, -2, 1]])
+#     # M_3=1/6*jnp.array([[1, 4, 1, 0], [-3, 0, 3, 0], [3, -6, 3, 0], [-1, 3, -3, 1]])
+    
+#     M=1/24*jnp.array([[1, 11, 11, 1, 0], [-4, -12, 12, 4, 0], [6, -6, -6, 6, 0], [-4, 12, -12, 4, 0], [1, -4, 6, -4, 1]])
+#     k=5
+#     degree=4
+#     n=jnp.size(control_points)
+#     control_points = add_control_points_out_of_domain(control_points, degree, n)
+
+#     N=jnp.size(x)
+#     splines_per_point=n/N
+#     x=jnp.arange(0, 1, splines_per_point)
+#     x = x**jnp.reshape(jnp.arange(k), (-1,1))
+
+#     control_points=jax.vmap(jnp.roll, in_axes=(None, 0))(control_points, -1*jnp.arange(k))
+#     control_points=jnp.transpose(control_points)[:-1*degree]
+
+#     spline_curve = jax.vmap(eval_bspline_segment, in_axes=(None, None, 0))(x, M, control_points)
+#     spline_curve = jnp.ravel(spline_curve)
+
+#     return spline_curve
 
 
 def b_spline(control_points, x):
@@ -32,24 +57,28 @@ def b_spline(control_points, x):
     # M_2=1/2*jnp.array([[1, 1, 0], [-2, 2, 0], [1, -2, 1]])
     # M_3=1/6*jnp.array([[1, 4, 1, 0], [-3, 0, 3, 0], [3, -6, 3, 0], [-1, 3, -3, 1]])
     
-    M=1/24*jnp.array([[1, 11, 11, 1, 0], [-4, -12, 12, 4, 0], [6, -6, -6, 6, 0], [-4, 12, -12, 4, 0], [1, -4, 6, -4, 1]])
+    M=1/24*jnp.array([[1, 11, 11, 1, 0], 
+                      [-4, -12, 12, 4, 0], 
+                      [6, -6, -6, 6, 0], 
+                      [-4, 12, -12, 4, 0], 
+                      [1, -4, 6, -4, 1]])
     k=5
-    degree=4
+    degree=k-1
     n=jnp.size(control_points)
-    control_points = add_control_points_out_of_domain(control_points, degree, n)
+    control_points = jnp.pad(control_points, (degree//2, degree//2), mode="edge")
 
     N=jnp.size(x)
     splines_per_point=n/N
-    x=jnp.arange(0, 1, splines_per_point)
+    x = jnp.arange(0, 1, splines_per_point)
     x = x**jnp.reshape(jnp.arange(k), (-1,1))
 
-    control_points=jax.vmap(jnp.roll, in_axes=(None, 0))(control_points, -1*jnp.arange(k))
-    control_points=jnp.transpose(control_points)[:-1*degree]
+    control_points = jax.vmap(jnp.roll, in_axes=(None, 0))(control_points, -1*jnp.arange(k))
+    control_points = jnp.transpose(control_points)[:-1*degree] # get rid of shared points ? 
 
-    spline_curve = jax.vmap(eval_bspline_segment, in_axes=(None, None, 0))(x, M, control_points)
-    spline_curve = jnp.ravel(spline_curve)
-
-    return spline_curve
+    w = jnp.dot(M.T, x)
+    spline_curve = jax.vmap(jnp.dot, in_axes=(0, None))(control_points, w)
+    s = jnp.ravel(spline_curve)
+    return s
 
 
 
