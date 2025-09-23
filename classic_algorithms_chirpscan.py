@@ -3,15 +3,15 @@ import jax.numpy as jnp
 from jax.tree_util import Partial
 from equinox import tree_at
 
-from BaseClasses import RetrievePulsesDSCAN, AlgorithmsBASE
+from BaseClasses import RetrievePulsesCHIRPSCAN, AlgorithmsBASE
 from classic_algorithms_base import GeneralizedProjectionBASE, TimeDomainPtychographyBASE, COPRABASE
 
 
 from utilities import scan_helper, MyNamespace, get_sk_rn, do_fft, do_ifft, calculate_mu, calculate_S_prime, calculate_trace, calculate_trace_error, calculate_Z_error
 
 
-from dscan_z_error_gradients import calculate_Z_gradient
-from dscan_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
+from chirpscan_z_error_gradients import calculate_Z_gradient
+from chirpscan_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
 from pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 
@@ -22,7 +22,7 @@ from pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 
 
-class Basic(RetrievePulsesDSCAN, AlgorithmsBASE):
+class Basic(RetrievePulsesCHIRPSCAN, AlgorithmsBASE):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 
@@ -88,7 +88,7 @@ class Basic(RetrievePulsesDSCAN, AlgorithmsBASE):
 
 
 
-class GeneralizedProjection(RetrievePulsesDSCAN, GeneralizedProjectionBASE):
+class GeneralizedProjection(RetrievePulsesCHIRPSCAN, GeneralizedProjectionBASE):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 
@@ -117,7 +117,7 @@ class GeneralizedProjection(RetrievePulsesDSCAN, GeneralizedProjectionBASE):
 
 
 
-class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
+class TimeDomainPtychography(RetrievePulsesCHIRPSCAN, TimeDomainPtychographyBASE):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, pie_method="rPIE", **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 
@@ -225,7 +225,7 @@ class TimeDomainPtychography(RetrievePulsesDSCAN, TimeDomainPtychographyBASE):
 
 
 
-class COPRA(RetrievePulsesDSCAN, COPRABASE):
+class COPRA(RetrievePulsesCHIRPSCAN, COPRABASE):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
 

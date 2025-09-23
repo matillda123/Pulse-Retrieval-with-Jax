@@ -724,7 +724,7 @@ def calculate_phase_matrix_miips(measurement_info, parameters):
 
 
 
-class RetrievePulsesChirpScan(RetrievePulses):
+class RetrievePulsesCHIRPSCAN(RetrievePulses):
     
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_matrix_func, **kwargs):
         super().__init__(nonlinear_method, **kwargs)

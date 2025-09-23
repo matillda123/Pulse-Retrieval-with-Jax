@@ -1,15 +1,11 @@
-from BaseClasses import RetrievePulsesDSCAN, RetrievePulsesDSCANwithRealFields
+from BaseClasses import RetrievePulsesCHIRPSCAN, RetrievePulsesCHIRPSCANwithRealFields
 from general_algorithms_base import DifferentialEvolutionBASE, EvosaxBASE, LSFBASE, AutoDiffBASE
 
 from utilities import MyNamespace, do_fft, do_ifft
 
 
-# RetrievePulsesDSCAN = RetrievePulsesDSCANwithRealFields
 
-
-
-
-class DifferentialEvolution(DifferentialEvolutionBASE, RetrievePulsesDSCAN):
+class DifferentialEvolution(DifferentialEvolutionBASE, RetrievePulsesCHIRPSCAN):
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
 
@@ -22,7 +18,7 @@ class DifferentialEvolution(DifferentialEvolutionBASE, RetrievePulsesDSCAN):
 
 
 
-class Evosax(EvosaxBASE, RetrievePulsesDSCAN):
+class Evosax(EvosaxBASE, RetrievePulsesCHIRPSCAN):
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
 
@@ -35,7 +31,7 @@ class Evosax(EvosaxBASE, RetrievePulsesDSCAN):
 
 
 
-class LSF(LSFBASE, RetrievePulsesDSCAN):
+class LSF(LSFBASE, RetrievePulsesCHIRPSCAN):
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
 
@@ -77,7 +73,7 @@ class LSF(LSFBASE, RetrievePulsesDSCAN):
 
 
 
-class AutoDiff(AutoDiffBASE, RetrievePulsesDSCAN):
+class AutoDiff(AutoDiffBASE, RetrievePulsesCHIRPSCAN):
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
 
