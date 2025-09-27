@@ -1,0 +1,31 @@
+import jax.numpy as jnp
+import refractiveindex
+
+from scipy.constants import c as c0
+
+
+parameters_material_scan = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)
+def calulcate_phase_matrix_material(measurement_info, parameters):
+    # z_arr needs to be in mm, is material thickness not translation
+    refractive_index, c0 = parameters
+    z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
+
+    c0 = c0*1e-12 # speed of light in mm/fs
+    wavelength = c0/frequency
+    n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
+    n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
+    k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
+    phase_matrix = jnp.outer(z_arr, k_arr)
+    return phase_matrix
+
+
+
+
+def calculate_phase_matrix_miips(measurement_info, parameters):
+    alpha, gamma, central_frequency = parameters
+    z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
+    
+    omega = 2*jnp.pi * (frequency - central_frequency)
+    phase_matrix = alpha*jnp.sin(gamma*omega[jnp.newaxis, :] - z_arr[:, jnp.newaxis])
+    return phase_matrix
+

@@ -28,6 +28,8 @@ class Vanilla(AlgorithmsBASE, RetrievePulsesFROG):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation, **kwargs)
         self.name = "Vanilla"
         
+        print("maybe this should inherit from ClassicAlgorithmsBase?")
+        
 
         # for some reason vanilla only works when the trace is centered around f=0. No idea why. Is undone when using LSGPA.
         idx = get_com(jnp.mean(self.measured_trace, axis=0), jnp.arange(jnp.size(self.frequency)))

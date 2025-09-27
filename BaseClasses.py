@@ -9,7 +9,7 @@ import jax.numpy as jnp
 from jax.tree_util import Partial
 from equinox import tree_at
 
-from utilities import MyNamespace, get_com, center_signal, center_signal_to_max, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_gate_with_Real_Fields, calculate_trace, calculate_trace_error, project_onto_amplitude, run_scan
+from utilities import MyNamespace, center_signal, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_gate_with_Real_Fields, calculate_trace, calculate_trace_error, project_onto_amplitude, run_scan
 from create_population import create_population_classic
 from initial_guess_doublepulse import make_population_doublepulse
 
@@ -687,46 +687,9 @@ class RetrievePulsesFROG(RetrievePulses):
 
 
 
-
-
-
-
-
-
-
-
-def calulcate_phase_matrix_material(measurement_info, parameters = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)):
-    # z_arr needs to be in mm, is material thickness not translation
-    refractive_index, c0 = parameters
-    z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
-
-    c0 = c0*1e-12 # speed of light in mm/fs
-    wavelength = c0/frequency
-    n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
-    n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
-    k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
-    phase_matrix = jnp.outer(z_arr, k_arr)
-    return phase_matrix
-
-
-
-
-def calculate_phase_matrix_miips(measurement_info, parameters):
-    alpha, gamma, central_frequency = parameters
-    z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
-    
-    omega = 2*jnp.pi * (frequency - central_frequency)
-    phase_matrix = alpha*jnp.sin(gamma*omega[jnp.newaxis, :] - z_arr[:, jnp.newaxis])
-    return phase_matrix
-
-
-
-
-
-
 class RetrievePulsesCHIRPSCAN(RetrievePulses):
     
-    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_matrix_func, **kwargs):
+    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_matrix_func=None, chirp_parameters=None, **kwargs):
         super().__init__(nonlinear_method, **kwargs)
 
         self.z_arr, self.time, self.frequency, self.measured_trace = self.get_data(z_arr, frequency, measured_trace)
@@ -748,13 +711,14 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         
 
         self.calculate_phase_matrix = phase_matrix_func
+        self.phase_matrix = self.get_phase_matrix(chirp_parameters)
         
 
 
 
     def get_phase_matrix(self, parameters):
         self.parameters = parameters
-        self.phase_matrix = self.calculate_phase_matrix(self.measurement_info, parameters=parameters)
+        self.phase_matrix = self.calculate_phase_matrix(self.measurement_info, parameters)
 
         self.transform_arr = self.phase_matrix
         self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
@@ -789,9 +753,6 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         pulse_f = pulse_f*jnp.exp(1j*phase_matrix)
         pulse_t_disp = do_ifft(pulse_f, sk, rn)
 
-        # it would be more efficient to remove the linear part, when phase_matrix is created
-        # but that would mean one knows the central_frequency, which is not necessarily the case.
-        pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)
         return pulse_t_disp, phase_matrix
     
 
@@ -914,7 +875,7 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
 
 
 
-class RetrievePulsesChirpScanwithRealFields(RetrievePulsesChirpScan):
+class RetrievePulsesCHIRPSCANwithRealFields(RetrievePulsesCHIRPSCAN):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     

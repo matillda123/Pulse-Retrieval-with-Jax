@@ -6,8 +6,8 @@ import refractiveindex
 import jax.numpy as jnp
 import jax
 
-from utilities import MyNamespace, do_fft, do_ifft, get_sk_rn, do_interpolation_1d
-from BaseClasses import RetrievePulsesFROG, RetrievePulsesDSCAN, RetrievePulsesFROGwithRealFields, RetrievePulsesDSCANwithRealFields, RetrievePulses2DSI
+from utilities import MyNamespace, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, center_signal_to_max
+from BaseClasses import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulsesFROGwithRealFields, RetrievePulsesCHIRPSCANwithRealFields, RetrievePulses2DSI
 from make_pulse import MakePulse as MakePulseBase
 
 
@@ -75,13 +75,13 @@ class MakePulse(MakePulseBase):
 
 
 
-    def generate_dscan(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N=256, plot_stuff=True, 
+    def generate_chirpscan(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, phase_matrix_func, parameters, N=256, plot_stuff=True, 
                                           cut_off_val=0.001, frequency_range=None, real_fields=False):
 
         if real_fields==True:
-            self.maketrace = MakeTraceDScanReal(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range)
+            self.maketrace = MakeTraceCHIRPSCANReal(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters)
         else:
-            self.maketrace = MakeTraceDScan(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range)
+            self.maketrace = MakeTraceCHIRPSCAN(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters)
 
         time_trace, frequency_trace, trace, spectra = self.maketrace.generate_trace()
             
@@ -336,15 +336,9 @@ class MakeTraceFROG(MakeTrace, RetrievePulsesFROG):
 
 
 
-class MakeTraceDScan(MakeTrace, RetrievePulsesDSCAN):
-    def __init__(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, 
-                 refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson")):
+class MakeTraceCHIRPSCAN(MakeTrace, RetrievePulsesCHIRPSCAN):
+    def __init__(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters):
         super().__init__()
-
-        self.refractive_index=refractive_index
-
-        from scipy.constants import c as c0
-        self.c0 = c0
 
         self.z_arr = z_arr
         self.time = time
@@ -360,14 +354,24 @@ class MakeTraceDScan(MakeTrace, RetrievePulsesDSCAN):
 
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
 
+        self.calculate_phase_matrix = phase_matrix_func
+        self.parameters = parameters
+
+
+
+    def get_dispersed_pulse_t(self, pulse_f, phase_matrix, measurement_info):
+        pulse_t_disp, phase_matrix = super().get_dispersed_pulse_t(pulse_f, phase_matrix, measurement_info)
+        pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)   # THIS FUCKS the retrieval. Only use in generation of traces
+        return pulse_t_disp, phase_matrix
+
 
 
     def get_parameters_to_make_signal_t(self):
-        measurement_info = MyNamespace(frequency=self.frequency, c0=self.c0, sk=self.sk, rn=self.rn, nonlinear_method=self.nonlinear_method, doubleblind=False)
+        self.measurement_info = MyNamespace(z_arr=self.z_arr, frequency=self.frequency, sk=self.sk, rn=self.rn, nonlinear_method=self.nonlinear_method, doubleblind=False)
         individual = MyNamespace(pulse=self.pulse_f, gate=None)
 
-        self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.z_arr, measurement_info)
-        return individual, measurement_info, self.phase_matrix
+        self.phase_matrix = self.get_phase_matrix(self.parameters)
+        return individual, self.measurement_info, self.phase_matrix
 
 
     
@@ -415,7 +419,7 @@ class MakeTraceFROGReal(RetrievePulsesFROGwithRealFields, MakeTraceFROG):
 
 
 
-class MakeTraceDScanReal(RetrievePulsesDSCANwithRealFields, MakeTraceDScan):
+class MakeTraceCHIRPSCANReal(RetrievePulsesCHIRPSCANwithRealFields, MakeTraceCHIRPSCAN):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
