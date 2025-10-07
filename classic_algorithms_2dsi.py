@@ -62,7 +62,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
             signal = jnp.cumsum(yint, axis=-1)
 
         else:
-            print(f"method must be one of cumsum or euler_maclaurin. not {method}")
+            raise ValueError(f"method must be one of cumsum or euler_maclaurin. Not {method}")
         return signal
     
 

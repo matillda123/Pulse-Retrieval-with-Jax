@@ -514,7 +514,7 @@ class DifferentialEvolutionBASE(GeneralOptimization):
             population = jax.tree.unflatten(treedef, leaves_selected)
             
         else:
-            print("something is wrong")
+            raise NotImplementedError(f"Only greedy and global are available as selection_mechanism. Not {descent_info.selection_mechanism}")
         
         return population, error
     
@@ -777,7 +777,7 @@ class EvosaxBASE(GeneralOptimization):
         key, subkey = jax.random.split(key, 2)
 
         params = solver.default_params
-        class_str=str(self.solver)
+        class_str = str(self.solver)
         if class_str.split(".")[2]=="population_based":
             fitness = self.calculate_error_population(population, self.measurement_info, self.descent_info)
 
@@ -788,7 +788,7 @@ class EvosaxBASE(GeneralOptimization):
             elif amp_or_phase=="phase":
                 population = population_phase
             else:
-                print("something is wrong")
+                raise ValueError(f"amp_or_phase needs to be amp or phase. Not {amp_or_phase}")
 
             state = solver.init(subkey, population, fitness, params)
 
@@ -797,7 +797,9 @@ class EvosaxBASE(GeneralOptimization):
             state = solver.init(subkey, individual, params)
 
         else:
-            print("something is wrong with", class_str)
+            raise ValueError(f"Something went wrong in the detection of evosax's submodule. Needs to be \
+                             population_based or distribution_based. Found {class_str}")
+
 
         return state, params, key
 
@@ -817,7 +819,7 @@ class EvosaxBASE(GeneralOptimization):
         elif len(self.solver)==2:
             solver_amp, solver_phase = self.solver
         else:
-            print("something is wrong")
+            raise ValueError(f"solver needs to be an evosax class or a list/tuple of two of its solvers. Got {self.solver}.")
 
         self.descent_info = self.descent_info.expand(solver = MyNamespace(amp=solver_amp(population_size=population_size, solution=individual_amp), 
                                                                           phase=solver_phase(population_size=population_size, solution=individual_phase)))
@@ -885,7 +887,7 @@ class LSFBASE(GeneralOptimization):
             values = values/jnp.max(jnp.abs(values))*jnp.maximum(jnp.abs(minval), jnp.abs(maxval))
 
         else:
-            print("something is wrong")
+            raise NotImplementedError(f"random_direction_mode needs to be random or continuous. Not {mode}")
 
         return values
     
@@ -1018,7 +1020,7 @@ class LSFBASE(GeneralOptimization):
         elif pulse_or_gate=="gate":
             pulse_arr, gate_arr = population.pulse, E_arr
         else:
-            print("something is wrong")
+            raise ValueError(f"pulse_or_gate needs to be pulse or gate. Not {pulse_or_gate}")
 
         error_arr = jax.vmap(self.calculate_error_individual, 
                              in_axes=(0, None, None))(MyNamespace(pulse=pulse_arr, gate=gate_arr), measurement_info, descent_info)
@@ -1183,7 +1185,7 @@ class AutoDiffBASE(GeneralOptimization):
             descent_state = tree_at(lambda x: x.optimistix_state_phase, descent_state, optimistix_state_phase)
             
         else:
-            print("something is wrong")
+            raise ValueError(f"alternating_optimization needs to be True/False. Not {descent_info.alternating_optimization}")
 
         return descent_state, error
     
@@ -1241,7 +1243,8 @@ class AutoDiffBASE(GeneralOptimization):
             descent_state = self.initialize_alternating_optimization(descent_state, individual, solver, optimistix_args, measurement_info, descent_info)
 
         else:
-            print("somethong is wrong")
+            raise ValueError(f"alternating_optimization needs to be True/False. Not {descent_info.alternating_optimization}")
+            
 
         descent_state, static = equinox.partition(descent_state, equinox.is_array)
 

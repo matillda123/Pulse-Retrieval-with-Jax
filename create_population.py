@@ -18,7 +18,7 @@ def get_initial_amp_for_shg_thg(frequency, measured_trace, nonlinear_method):
     elif nonlinear_method=="thg":
         factor=3
     else:
-        print("something went wrong")
+        raise ValueError(f"nonlinear_method needs to be one of shg or thg. Not {nonlinear_method}")
 
     amp = do_interpolation_1d(frequency, frequency/factor, amp)
     return amp
@@ -81,10 +81,11 @@ def create_population_classic(key, population_size, guess_type, measurement_info
         signal_f_arr = constant_phase(key, shape, amp)
 
     elif guess_type=="doublepulse":
-        print("Moved to initial_guess_doublepulse.py, because its only implemented for AC-Frog and without jax.")
+        raise RuntimeError("guess_type=doublepulse is in initial_guess_doublepulse.py. Its only implemented for " \
+        "AC-Frog and without jax.")
     
     else:
-        print("not available")
+        raise ValueError(f"guess_type needs to be one of random, random_phase, constant or constant_phase. Not {guess_type}")
 
     return signal_f_arr
 

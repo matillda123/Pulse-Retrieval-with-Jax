@@ -234,7 +234,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulsesFROG):
         elif nonlinear_method=="sd":
             grad_all_m = jnp.conjugate(grad_all_m*2*gate_pulse_shifted)
         else:
-            print("somethong is wrong")
+            raise NotImplementedError(f"nonlinear_method={nonlinear_method} is not available.")
 
         return grad_all_m
 
@@ -284,7 +284,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulsesFROG):
         elif nonlinear_method=="sd":
             probe = jnp.conjugate(pulse_t)*2*gate_pulse_shifted
         else:
-            print("somethong is wrong")
+             raise NotImplementedError(f"nonlinear_method={nonlinear_method} is not available.")
 
         return probe
 

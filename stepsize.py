@@ -202,7 +202,7 @@ def get_scaling(gradient, descent_direction, xi, local_or_global_state, pulse_or
         pass
 
     else:
-        print("not available")
+        raise ValueError(f"local_or_global needs to be _local or _global. Not {local_or_global}")
     
 
     return scaling, local_or_global_state
@@ -234,7 +234,7 @@ def get_step_size(error, gradient, descent_direction, local_or_global_state, xi,
         eta = error/(4*scaling+error)*(1+jnp.sign(diskriminante)*jnp.sqrt(jnp.abs(diskriminante)))
         
     else:
-        print("not available")
+        raise NotImplementedError(f"order={order} is not available.")
 
 
     # actually i think having a negative eta is a good idea, since it will reverse descent_direction in the case that scaling is positive, 

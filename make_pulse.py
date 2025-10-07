@@ -112,7 +112,7 @@ class MakePulse:
             phase = do_interpolation_1d(self.frequency, phase_parameters.frequency, phase_parameters.phase)
 
         else:
-            print("something went wrong?")
+            raise NotImplementedError(f"Phase type {phase_parameters} is not implemented.")
 
         return phase
     
@@ -132,7 +132,7 @@ class MakePulse:
             amp_f = np.abs(amp_f)
             
         else:
-            print("sorry not available")
+            raise NotImplementedError(f"Amplitude type {amp_parameters} is not implemented.")
 
         return amp_f
     

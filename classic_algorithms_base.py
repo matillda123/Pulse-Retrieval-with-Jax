@@ -367,7 +367,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
             U = jnp.ones(jnp.shape(probe))
 
         else:
-            print(f"pie_method={pie_method} not defined.")
+            raise ValueError(f"pie_method needs to be one of PIE, ePIE, rPIE or None. Not {pie_method}")
         
         return U
 

@@ -27,7 +27,7 @@ def get_double_pulse_amps(trace, sigma=10, init_std=0.001):
         x0 = x1/len(m)
 
     elif len(x1)<=1:
-        print("reduce sigma")
+        raise ValueError(f"Found only {len(x1)} peaks. Three are needed. reduce sigma")
 
 
     x = np.linspace(0, 1, len(m))

@@ -294,7 +294,7 @@ class RetrievePulses:
             self.descent_info.measured_spectrum_is_provided.gate=True
 
         else:
-            print("wrong :/")
+            raise ValueError(f"pulse_or_gate needs to be pulse or gate. Not {pulse_or_gate}")
 
         return spectral_amplitude
     

@@ -114,10 +114,9 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_dispersed, signal_t, sig
     elif full_or_diagonal=="diagonal":
         hessian = hessian + lambda_lm*jnp.max(jnp.abs(hessian), axis=1)[:, jnp.newaxis]
         newton_direction = grad/hessian
-        hessian = jax.vmap(jnp.diag)(hessian)
 
     else:
-        print("something is wrong")
+        raise ValueError(f"full_or_diagonal needs to be full or diagonal. Not {full_or_diagonal}")
 
     hessian_state = MyNamespace(newton_direction_prev = newton_direction)
     return -1*newton_direction, hessian_state

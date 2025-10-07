@@ -3,11 +3,11 @@ import jax
 from jax.tree_util import Partial
 
 import equinox as eqx
-from scipy.special import factorial # using jax.scipy limits everything to k=8 because of accuracy
+from scipy.special import factorial # using jax.scipy limits to k=8 because of accuracy
 
 
 
-def get_C_in(i, n):
+def get_C_in(i, n): # this is just n choose i
     return factorial(n)/(factorial(i)*factorial(n-i))
 
 

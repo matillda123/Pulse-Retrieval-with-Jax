@@ -17,7 +17,7 @@ def apply_noise(trace, scale_val=0.01, additive_noise=False, multiplicative_nois
     shape=np.shape(trace)
 
 
-    if additive_noise==True and multiplicative_noise:
+    if additive_noise==True and multiplicative_noise==True:
         assert len(scale_val)==2, "scale_val needs to have len=2 when using both additive and multiplicative"
 
         noise_additive=np.random.normal(0, scale_val[0], size=shape)
@@ -33,7 +33,7 @@ def apply_noise(trace, scale_val=0.01, additive_noise=False, multiplicative_nois
         trace=trace+noise
 
     else:
-        print("something is wrong")
+        raise ValueError("One of additive_noise or multiplicative_noise must be True.")
 
     return trace
 

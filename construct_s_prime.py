@@ -185,6 +185,6 @@ def calculate_S_prime(signal_t, measured_trace, mu, measurement_info, descent_in
         signal_t_new = calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, descent_info, local_or_global)
 
     else:
-        print("something is wrong")
+         raise ValueError(f"method needs to be one of projection or iteration. Not {method}")
 
     return signal_t_new
