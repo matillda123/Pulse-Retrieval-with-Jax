@@ -9,17 +9,20 @@ from utilities import MyNamespace
 # the two loops need to have differing counting directions
 # because of this its easier to scan over index and not over element
 def backward_loop(q, i, rho, s, y):
+    """ Constructing the LBFGS direction without materializing the inverse hessian is done through nested vector-operations. """
     alpha = rho[i]*jnp.vdot(s[i], q)
     q = q - alpha*y[i]
     return q, alpha
 
 def forward_loop(r, i, alpha, rho, s, y):
+    """ Constructing the LBFGS direction without materializing the inverse hessian is done through nested vector-operations. """
     beta = rho[i]*jnp.vdot(y[i], r)
     r = r + s[i] * (alpha[i] - beta)
     return r, None
 
 
 def calculate_quasi_newton_direction(grad_current, grad_prev, rho, s, y, hessian_info):
+    """ Does the actual LBFGS calculation. """
     m = hessian_info.lbfgs_memory
 
     m_backward = jnp.arange(0,m,1)
@@ -37,19 +40,20 @@ def calculate_quasi_newton_direction(grad_current, grad_prev, rho, s, y, hessian
 
 
 
-def calculate_hessian_approximate(B, rho, s, y):
-    t1 = B @ s
-    return B + jnp.outer(y, jnp.conjugate(y))*rho - jnp.outer(t1, jnp.conjugate(t1))/(jnp.conjugate(s) @ B @ s), None
+# def calculate_hessian_approximate(B, rho, s, y):
+#     t1 = B @ s
+#     return B + jnp.outer(y, jnp.conjugate(y))*rho - jnp.outer(t1, jnp.conjugate(t1))/(jnp.conjugate(s) @ B @ s), None
 
 
-def get_hessian_approximate_explicitly(rho, s, y):
-    B_init = jnp.eye(jnp.shape(y)[-1])
-    B, _ = jax.lax.scan(calculate_hessian_approximate, B_init, (rho, s, y))
-    return B
+# def get_hessian_approximate_explicitly(rho, s, y):
+#     B_init = jnp.eye(jnp.shape(y)[-1])
+#     B, _ = jax.lax.scan(calculate_hessian_approximate, B_init, (rho, s, y))
+#     return B
 
 
 
 def do_lbfgs(grad_current, lbfgs_state, descent_info):
+    """ Prepares and calls the LBFGS calculation. """
     grad_prev, newton_direction_prev, step_size_prev = lbfgs_state.grad_prev, lbfgs_state.newton_direction_prev, lbfgs_state.step_size_prev
 
     s = -1*step_size_prev*newton_direction_prev
@@ -59,20 +63,23 @@ def do_lbfgs(grad_current, lbfgs_state, descent_info):
     rho = jnp.maximum(rho, 0) # ignore iterations with negative curvature
 
     newton_direction = calculate_quasi_newton_direction(grad_current, grad_prev, rho, s, y, descent_info.hessian)
-
-    # if descent_info.adaptive_scaling=="nonlinear":
-    #     B = get_hessian_approximate_explicitly(rho, s, y)
-    #     gHg = jnp.conjugate(grad_current) @ B @ grad_current
-    # else:
-    #     gHg = 1
-
-
     return newton_direction
 
 
 
 # lbfgs isnt sensible when doing alternating optimization 
 def get_quasi_newton_direction(grad, lbfgs_state, descent_info):
+    """
+    Calculate the quasi-newton direciton using LBFGS.
+
+    Args:
+        grad: jnp.array, the current gradient
+        lbfgs_stat: Pytree, the current lbfgs state
+        descent_info: Pytree, holds information on the solver (e.g. memory size for LBFGS)
+
+    Returns:
+        tuple[jnp.array, Pytree], the quasi-newton direction and the updated lbfgs_state excluding the step size which is updated explicitely after a linesearch
+    """
     newton_direction = jax.vmap(do_lbfgs, in_axes=(0,0,None))(grad, lbfgs_state, descent_info)
 
     grad_arr = lbfgs_state.grad_prev
@@ -84,6 +91,6 @@ def get_quasi_newton_direction(grad, lbfgs_state, descent_info):
     newton_arr = newton_arr.at[:,0].set(newton_direction)
 
     lbfgs_state = MyNamespace(grad_prev = grad_arr, 
-                              newton_direction_prev=newton_arr,
+                              newton_direction_prev = newton_arr,
                               step_size_prev = lbfgs_state.step_size_prev)
     return -1*newton_direction, lbfgs_state

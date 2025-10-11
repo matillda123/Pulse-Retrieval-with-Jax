@@ -10,11 +10,13 @@ import jax
 
 
 
-def gaussian(x,a,b,c):
+def gaussian(x, a, b, c):
+    """ Gaussian for fit. """
     return a*np.exp(-0.5*(x-c)**2/b**2)
  
 
 def get_double_pulse_amps(trace, sigma=10, init_std=0.001):
+    """ Estimate temporal amplitude based on Trace. Takes average along frequency axis. Fits gaussians and constructs guess from fit result. """
     m = np.mean(trace, axis=1)
 
     x1 = find_peaks(gaussian_filter1d(m,sigma=sigma))[0]
@@ -56,6 +58,7 @@ def get_double_pulse_amps(trace, sigma=10, init_std=0.001):
 
 
 def get_flat_spectral_phase(time, freq, trace, nonlinear_method, monochromatic=True, sigma=10):
+    """ Construct linear spectral phase in time domain. """
     m = np.mean(trace, axis=0)
 
     if nonlinear_method=="shg":
@@ -91,6 +94,26 @@ def get_flat_spectral_phase(time, freq, trace, nonlinear_method, monochromatic=T
 
 def get_double_pulse_initial_guess(tau_arr, frequency, measured_trace, nonlinear_method, monochromatic_double_pulse=True, sigma=3, init_std=0.001, 
                                    i_want_control=False):
+    
+    """ 
+    Finds an initial guess for an autocorrelation FROG trace for doublepulses. Works by finding the delays, amplitudes and central frequencies 
+    through scipy's peak finder and gaussian fits.
+    Does use or work with jax.
+
+    Args:
+        tau_arr: jnp.array, the delay axis 1D-array
+        frequency: jnp.array, the frequency axis 1D-array
+        measured_trace: jnp.array, the measured trace 2D-array
+        nonlinear_method: str, the nonlinear method
+        monochromatic_double_pulse: bool, whether the doublepulses had different central frequencies
+        sigma: float, a smoothing parameter
+        init_std: float, initial value for width of gaussian fits
+        i_want_control: bool, this method does not really work and is disabled for SHG/THG, can be overwritten by this
+
+    Returns:
+        tuple[jnp.array, jnp.array], guess in time and frequency domain
+    
+    """
     # find an initial guess for an autocorrelation frog trace
     # works by finding the delays, amplitudes and central frequencies through peak_finder
     # the actual guess is obtained from a gaussian fit
@@ -114,7 +137,7 @@ def get_double_pulse_initial_guess(tau_arr, frequency, measured_trace, nonlinear
             p = amp[i]*np.exp(1j*phase[i])
             pulse_t = pulse_t + p
     else:
-        print("something went wrong")
+        raise ValueError
 
     pulse_t = center_signal(pulse_t)
     pulse_t = pulse_t/np.max(np.abs(pulse_t))
@@ -127,6 +150,26 @@ def get_double_pulse_initial_guess(tau_arr, frequency, measured_trace, nonlinear
 
 def make_population_doublepulse(key, population_size, tau_arr, frequency, measured_trace, nonlinear_method, monochromatic_double_pulse=True, sigma=3, 
                                 init_std=0.001, i_want_control=False):
+    """
+    Create an initial guess population for a doublepulse using get_double_pulse_initial_guess, with its restrictions.
+    The population is constructed from a deterministic doublepulse guess by adding noise. 
+
+    Args:
+        key: jnp.array, a jax.random.PRNGKey
+        population_size: int, the number of initial guesses
+        tau_arr: jnp.array, the delay axis 1D-array
+        frequency: jnp.array, the frequency axis 1D-array
+        measured_trace: jnp.array, the measured trace 2D-array
+        nonlinear_method: str, the nonlinear method
+        monochromatic_double_pulse: bool, whether the doublepulses had different central frequencies
+        sigma: float, a smoothing parameter
+        init_std: float, initial value for width of gaussian fits
+        i_want_control: bool, this method does not really work and is disabled for SHG/THG, can be overwritten by this
+
+    Returns:
+        jnp.array
+        
+    """
     pulse_t, pulse_f = get_double_pulse_initial_guess(tau_arr, frequency, measured_trace, nonlinear_method, monochromatic_double_pulse=monochromatic_double_pulse, 
                                                       sigma=sigma, init_std=init_std, i_want_control=i_want_control)
     

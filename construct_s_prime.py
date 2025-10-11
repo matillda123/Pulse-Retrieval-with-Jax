@@ -4,8 +4,8 @@ import jax
 from jax.tree_util import Partial
 
 
-from utilities import scan_helper, MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_mu, calculate_trace
-from stepsize import do_linesearch, adaptive_step_size
+from utilities import scan_helper, MyNamespace, do_fft, do_ifft, project_onto_intensity, calculate_trace
+from stepsize import adaptive_step_size
 
 
 
@@ -13,6 +13,18 @@ from stepsize import do_linesearch, adaptive_step_size
 
 
 def calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info):
+    """
+    Calculates signal_t_new/S_prime via a projection onto the measured intensity.
+
+    Args:
+        signal_t: jnp.array, the complex signal field in the time domain of the current guess
+        measured_trace: jnp.array, the measured intensity
+        mu: float, the scaling factor between the measured intensity and the intensity of the current guess
+        measurement_info: Pytree, contains measurement data and information
+    
+    Returns:
+        jnp.array, the complex signal field in the time domain projected onto the measured intensity
+    """
     sk, rn = measurement_info.sk, measurement_info.rn
     signal_f=do_fft(signal_t, sk, rn)
 
@@ -47,7 +59,9 @@ def calculate_r_hessian_diagonal(signal_f, measurement_info, descent_info):
 
     calc_r_hessian_diag_dict={"amplitude": calculate_r_hessian_diagonal_amplitude,
                               "intensity": calculate_r_hessian_diagonal_intensity}
-    hessian = calc_r_hessian_diag_dict[descent_info.s_prime_params.r_gradient](trace, measured_trace) # r_gradient is correct here, no need for extra r_hessian with amp/int
+    
+    # r_gradient is correct here, no need for extra r_hessian with amp/int
+    hessian = calc_r_hessian_diag_dict[descent_info.s_prime_params.r_gradient](trace, measured_trace)
     return hessian
 
 
@@ -76,6 +90,11 @@ def calculate_r_gradient(signal_f, mu, measurement_info, descent_info):
 
 
 def calculate_r_descent_direction(signal_f, mu, measurement_info, descent_info):
+    """
+    Calculates descent direction of the iterative calculation of signal_t_new/S_prime. 
+    Uses either gradient descent or newtons method with the diagonal approximation. 
+    The error-functions can be based on intensity or amplitude based residuals. 
+    """
     gradient = calculate_r_gradient(signal_f, mu, measurement_info, descent_info)
 
     if descent_info.s_prime_params.r_hessian!=False:
@@ -85,6 +104,9 @@ def calculate_r_descent_direction(signal_f, mu, measurement_info, descent_info):
         descent_direction = -1*gradient
         
     return descent_direction, gradient
+
+
+
 
 
 
@@ -135,17 +157,19 @@ def calculate_r_error(trace, measured_trace, mu, descent_info):
 
 
 def calculate_S_prime_iterative_step(signal_t, measured_trace, mu, measurement_info, descent_info, local_or_global):
+    """ One iteration of the iterative descent based calculation of signal_t_new/S_prime. """
     sk, rn = measurement_info.sk, measurement_info.rn
     gamma = getattr(descent_info.gamma, local_or_global)
 
-    signal_f=do_fft(signal_t, sk, rn)
-    trace=calculate_trace(signal_f)
+    signal_f = do_fft(signal_t, sk, rn)
+    trace = calculate_trace(signal_f)
 
     descent_direction, gradient = calculate_r_descent_direction(signal_f, mu, measurement_info, descent_info)
     r_error = calculate_r_error(trace, measured_trace, mu, descent_info)
 
     descent_direction, _ = adaptive_step_size(r_error, gradient, descent_direction, MyNamespace(), descent_info.xi, "linear", None, "_global")
 
+    # Is removed because it makes usage more complicated. 
     # if (descent_info.linesearch_params.use_linesearch=="backtracking" or descent_info.linesearch_params.use_linesearch=="wolfe") and local_or_global=="_global":
     #     pk_dot_gradient = jnp.sum(jnp.real(jnp.vecdot(descent_direction, gradient)))
     #     linesearch_info = MyNamespace(signal_t=signal_t, descent_direction=descent_direction, error=r_error, 
@@ -160,6 +184,22 @@ def calculate_S_prime_iterative_step(signal_t, measured_trace, mu, measurement_i
 
 
 def calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, descent_info, local_or_global):
+    """
+    Calculates signal_t_new/S_prime via an iterative optimization of the least-squares error.
+
+    Args:
+        signal_t: jnp.array, the complex signal field in the time domain of the current guess
+        measured_trace: jnp.array, the measured intensity
+        mu: float, the scaling factor between the measured intensity and the intensity of the current guess
+        measurement_info: Pytree, contains measurement data and information
+        descent_info: Pytree, contains information on the behaviour of the solver
+        local_or_global: str, whether this is used in a local or global iteration
+    
+    Returns:
+        jnp.array, the complex signal field in the time domain projected onto the measured intensity
+    """
+
+
     number_of_iterations = descent_info.s_prime_params.number_of_iterations
     if number_of_iterations==1:
         signal_t_new, _ = calculate_S_prime_iterative_step(signal_t, measured_trace, mu, measurement_info, descent_info, local_or_global)
@@ -176,6 +216,21 @@ def calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, 
 
 
 def calculate_S_prime(signal_t, measured_trace, mu, measurement_info, descent_info, local_or_global):
+    """
+    Calculates signal_t_new/S_prime via projection or iterative optimization
+
+    Args:
+        signal_t: jnp.array, the complex signal field in the time domain of the current guess
+        measured_trace: jnp.array, the measured intensity
+        mu: float, the scaling factor between the measured intensity and the intensity of the current guess
+        measurement_info: Pytree, contains measurement data and information
+        descent_info: Pytree, contains information on the behaviour of the solver
+        local_or_global: str, whether this is used in a local or global iteration
+    
+    Returns:
+        jnp.array, the complex signal field in the time domain projected onto the measured intensity
+    """
+        
     method = getattr(descent_info.s_prime_params, local_or_global)
 
     if method=="projection":

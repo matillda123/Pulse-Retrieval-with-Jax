@@ -9,19 +9,28 @@ from utilities import MyNamespace, generate_random_continuous_function, do_inter
 
 
 
-def get_initial_amp_for_shg_thg(frequency, measured_trace, nonlinear_method):
+def get_initial_amp(measurement_info):
+    """
+    Estimate spectral amplitude from the integrated measured intensity. For SHG/THG the amplitude is interpolated to lie in the correct frequency region.
+    """
+    frequency, measured_trace, nonlinear_method = measurement_info.frequency, measurement_info.measured_trace, measurement_info.nonlinear_method
     mean_trace = jnp.mean(measured_trace, axis=0)
     amp = jnp.sqrt(jnp.abs(mean_trace))*jnp.sign(mean_trace)
 
-    if nonlinear_method=="shg":
-        factor=2
-    elif nonlinear_method=="thg":
-        factor=3
-    else:
-        raise ValueError(f"nonlinear_method needs to be one of shg or thg. Not {nonlinear_method}")
+    if nonlinear_method=="shg" or nonlinear_method=="thg":
+        if nonlinear_method=="shg":
+            factor=2
+        elif nonlinear_method=="thg":
+            factor=3
+        else:
+            raise ValueError(f"nonlinear_method needs to be one of shg or thg. Not {nonlinear_method}")
 
-    amp = do_interpolation_1d(frequency, frequency/factor, amp)
-    return amp
+        amp = do_interpolation_1d(frequency, frequency/factor, amp)
+
+    else:
+        pass
+
+    return amp/jnp.linalg.norm(amp)
 
 
 
@@ -59,13 +68,21 @@ def constant_phase(key, shape, amp):
 
 
 def create_population_classic(key, population_size, guess_type, measurement_info):
-    if measurement_info.nonlinear_method=="shg" or measurement_info.nonlinear_method=="thg":
-        amp = get_initial_amp_for_shg_thg(measurement_info.frequency, measurement_info.measured_trace, measurement_info.nonlinear_method)
-    else:
-        mean_trace = jnp.mean(measurement_info.measured_trace, axis=0)
-        amp = jnp.sqrt(jnp.abs(mean_trace))*jnp.sign(mean_trace)
-    amp = amp/jnp.linalg.norm(amp)
+    """
+    Creates a stack of initial guesses with the shape (population_size, jnp.size(frequency)). The guesses are all in the frequency domain.
+    The created populations can be optimized by both general and classical solvers.
 
+    Args:
+        key: jnp.array, jax.random.PRNGKey
+        population_size: int, the number of guesses to be optimized
+        guess_type: str, the guess mode. Has to be one of random, random_phase, constant or constant_phase. doublepulse is moved to initial_guess_doublepulse.py
+        measurement_info: Pytree, holds the measurement information, is filled during initialization of each solver
+
+    Returns:
+        jnp.array, stack of 1D-arrays
+    """
+
+    amp = get_initial_amp(measurement_info)
     shape=(population_size, jnp.size(measurement_info.frequency))
 
     if guess_type=="random":
@@ -170,12 +187,8 @@ def gaussian_or_lorentzian_guess(key, population, shape, measurement_info):
 
 def discrete_guess_amp(key, population, shape, measurement_info):
     key, subkey = jax.random.split(key, 2)
-    
-    if measurement_info.nonlinear_method=="shg" or measurement_info.nonlinear_method=="thg":
-        amp=get_initial_amp_for_shg_thg(measurement_info.frequency, measurement_info.measured_trace, measurement_info.nonlinear_method)
-    else:
-        mean_trace=jnp.mean(measurement_info.measured_trace, axis=0)
-        amp=jnp.sqrt(jnp.abs(mean_trace))*jnp.sign(mean_trace)
+
+    amp = get_initial_amp(measurement_info)
 
     noise = jax.random.uniform(subkey, (shape[0], jnp.size(measurement_info.frequency)), minval=-0.05, maxval=0.05)
     amp = amp + noise
@@ -244,6 +257,25 @@ def create_amp(key, amp_type, population, shape, measurement_info):
 
 
 def create_population_general(key, amp_type, phase_type, population, population_size, no_funcs_amp, no_funcs_phase, spectrum_provided, measurement_info):
+    """
+    Creates an initial guess population for general solvers. Since general solvers do not require a grid, different 
+    representations for amplitude and phase can be used. The population is represented in the freqeuncy domain.
+
+    Args:
+        key: jnp.array, jax.random.PRNGKey
+        amp_type: str, representation of the amplitude
+        phase_type: str, representation of the phase
+        population: Pytree, a MyNamespace object containing amp and phase
+        population_size: int, the number of individuals to optimize
+        no_funcs_amp: int, some representations can consist of multiple basis functions
+        no_funcs_phase: int, some representations can consist of multiple basis functions
+        spectrum_provided: bool, if a spectrum is provided then the guessed population will not include an amplitude
+        measurement_info: Pytree, holds the measurement information, is filled during initialization of each solver
+       
+    Returns:
+        tuple[jnp.array, Pytree]
+    """
+
     shape = (population_size, no_funcs_phase)
     key, population = create_phase(key, phase_type, population, shape, measurement_info)
 

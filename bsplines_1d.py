@@ -7,11 +7,13 @@ from scipy.special import factorial # using jax.scipy limits to k=8 because of a
 
 
 
-def get_C_in(i, n): # this is just n choose i
+def get_C_in(i, n):
+    """ Naive implementation of n choose i. """
     return factorial(n)/(factorial(i)*factorial(n-i))
 
 
 def get_m_ij(i, j, k):
+    """ Calculates matrix elements (i,j) for a uniform bspline matrix of order k. """
     temp = [(-1)**(s-j) * get_C_in(s-j, k) * (k-s-1)**(k-1-i) for s in range(j, k, 1)]
     temp = jnp.sum(jnp.asarray(temp))
 
@@ -19,16 +21,19 @@ def get_m_ij(i, j, k):
     return m
 
 def get_M(k):
+    """ Calculates a basis matrix for uniform bsplines of order k. """
     M = [[jnp.round(get_m_ij(i, j, k), 0).astype(int) for j in range(k)] for i in range(k)]
     return jnp.asarray(M).T
 
 def get_prefactor(k):
+    """ Calculates the prefactor for a basis matrix for uniform bsplines of order k. """
     return 1/factorial(k-1)
 
 
 
     
 def _make_one_patch(cpoints, k, M, Nx):
+    """ Calculate one spline of order k. """
     u = jnp.linspace(0, 1, Nx)
     arr = jnp.arange(k).reshape(-1,1)
     u = u**arr
@@ -38,13 +43,14 @@ def _make_one_patch(cpoints, k, M, Nx):
     return c
 
 
-def _make_all_patches(i, cpoints, k, M, Nx):
+def _make_all_patches(i, cpoints, k, M, Nx): # this name is actually wrong. The function y itself only wraps around _make_one_patch.
     c = jax.lax.dynamic_slice(cpoints, (i,), (k,))
     s = _make_one_patch(c, k, M, Nx)
     return s
 
 
 def make_bsplines(cpoints, k, M, f, Nx):
+    """ Evaluate arbitrary order bsplines in 1D. """
     s = jnp.shape(cpoints)
     tx = jnp.arange(s[0] - (k-1))
 
