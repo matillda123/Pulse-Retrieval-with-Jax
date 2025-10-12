@@ -200,6 +200,8 @@ def calc_Z_error_pseudo_hessian_subelement_pg_ifrog_cross_correlation_gate(dummy
 def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, 
                                               frogmethod, cross_correlation, ifrog):
     
+    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
 
@@ -259,6 +261,8 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
 def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, 
                                               frogmethod, cross_correlation, ifrog):
     
+    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
     
@@ -293,6 +297,7 @@ def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, om
 
 def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, 
                                       pulse_t, time, omega, frogmethod, cross_correlation, ifrog, full_or_diagonal, pulse_or_gate):
+    """ jax.vmap over frequency axis """
 
     calc_Z_error_pseudo_hessian_element = {"pulse": calc_Z_error_pseudo_hessian_element_pulse,
                                            "gate": calc_Z_error_pseudo_hessian_element_gate}
@@ -311,6 +316,8 @@ def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, pulse_t_shifted_m, gate_shifted
 
 
 def calc_Z_error_pseudo_hessian_all_m(pulse_t, pulse_t_shifted, gate_shifted, signal_t, signal_t_new, tau_arr, measurement_info, full_or_diagonal, pulse_or_gate):
+    """ jax.vmap over delays """
+
     time, omega = measurement_info.time, 2*jnp.pi*measurement_info.frequency
     cross_correlation, ifrog, frogmethod = measurement_info.cross_correlation, measurement_info.ifrog, measurement_info.nonlinear_method
 
@@ -328,6 +335,31 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t, pulse_t_shifted, gate_shifted, si
 
 def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, pulse_t_shifted, gate_shifted, signal_t, signal_t_new, tau_arr, measurement_info, 
                                         hessian_state, hessian_info, full_or_diagonal, pulse_or_gate):
+    
+    """
+    Calculates the pseudo-newton direction for the Z-error of a FROG measurement.
+    The direction is calculated in the frequency domain.
+
+    Args:
+        grad_m: jnp.array, the current Z-error gradient
+        pulse_t: jnp.array, the current guess
+        pulse_t_shifted: jnp.array, the current guess shifted along the time axis
+        gate_shifted: jnp.array, the current gate guess shifted along the time axis
+        signal_t: jnp.array, the current signal field
+        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
+        tau_arr: jnp.array, the time delays
+        measurement_info: Pytree, contains measurement data and parameters
+        hessian_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
+        hessian_info: Pytree, contains parameters for the pseudo-newton direction calculation
+        full_or_diagonal: str, calculate using the full or diagonal pseudo hessian?
+        pulse_or_gate: str, whether the direction is calculated for the pulse or the gate-pulse
+
+    Returns:
+        tuple[jnp.array, Pytree], the pseudo-newton direction and the updated hessian_state
+    
+    """
+
+
     lambda_lm = hessian_info.lambda_lm
     solver = hessian_info.linalg_solver
     newton_direction_prev = getattr(hessian_state, pulse_or_gate).newton_direction_prev  

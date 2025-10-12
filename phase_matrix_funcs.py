@@ -7,6 +7,16 @@ from scipy.constants import c as c0
 
 parameters_material_scan = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)
 def calculate_phase_matrix_material(measurement_info, parameters):
+    """ 
+    Calculates a phase matrix via material disperson.
+
+    Args:
+        measurement_info: Pytree, holds measurement data and parameters, needs to contain the material thickness z_arr in mm.
+        parameters: tuple[refractiveindex.RefractiveIndexMaterial, float], an object providing the refractive index, the speed of light in m/s
+
+    Returns:
+        jnp.array, the calculated phase matrix
+    """
     # z_arr needs to be in mm, is material thickness not translation
     refractive_index, c0 = parameters
     z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
@@ -23,6 +33,17 @@ def calculate_phase_matrix_material(measurement_info, parameters):
 
 #parameters=(0.75, 5, central_f.item())
 def calculate_phase_matrix_miips(measurement_info, parameters):
+    """ 
+    Calculates a phase matrix through a sinusoidal phase.
+
+    Args:
+        measurement_info: Pytree, holds measurement data and parameters, needs to contain the material thickness z_arr in mm.
+        parameters: tuple[float, float, float], the amplitude, frequency of the sin-function, the central-frequency of the spectrum
+
+    Returns:
+        jnp.array, the calculated phase matrix
+    """
+    
     alpha, gamma, central_frequency = parameters
     z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
     
@@ -35,6 +56,16 @@ def calculate_phase_matrix_miips(measurement_info, parameters):
 
 #parameters = (10, 0, central_f.item())
 def calculate_phase_matrix_tanh(measurement_info, parameters):
+    """ 
+    Calculates a phase matrix through a hyperbolic tangetn.
+
+    Args:
+        measurement_info: Pytree, holds measurement data and parameters, needs to contain the material thickness z_arr in mm.
+        parameters: tuple[float, float, float], the slope, the offset, the central-frequency of the spectrum
+
+    Returns:
+        jnp.array, the calculated phase matrix
+    """
     a, b, central_f = parameters
     z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
     

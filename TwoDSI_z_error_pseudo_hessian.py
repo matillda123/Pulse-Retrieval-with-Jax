@@ -62,6 +62,7 @@ def calc_Z_error_pseudo_hessian_subelement_sd_gate(dummy_element, pulse_t, gate_
 
 def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, 
                                               nonlinear_method):
+    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
     
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
@@ -82,6 +83,8 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
 
 def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, 
                                               nonlinear_method):
+    
+    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
     
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
@@ -106,6 +109,7 @@ def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, om
 
 def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, 
                                       pulse_t, time, omega, nonlinear_method, full_or_diagonal, pulse_or_gate):
+    """ jax.vmap ovet the frequency axis """
 
     calc_Z_error_pseudo_hessian_element = {"pulse": calc_Z_error_pseudo_hessian_element_pulse,
                                            "gate": calc_Z_error_pseudo_hessian_element_gate}
@@ -125,6 +129,7 @@ def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, gate_pulses_m, gate_m, signal_t
 
 
 def calc_Z_error_pseudo_hessian_all_m(pulse_t, gate_pulses, gate, signal_t, signal_t_new, tau_arr, measurement_info, full_or_diagonal, pulse_or_gate):
+    """ jax.vmap along the delays """
     time, omega = measurement_info.time, 2*jnp.pi*measurement_info.frequency
     nonlinear_method = measurement_info.nonlinear_method
 
@@ -142,6 +147,31 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t, gate_pulses, gate, signal_t, sign
 
 def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, gate_pulses, gate, signal_t, signal_t_new, tau_arr, measurement_info, 
                                         hessian_state, hessian_info, full_or_diagonal, pulse_or_gate):
+    
+    """
+    Calculates the pseudo-newton direction for the Z-error of a 2DSI measurement.
+    The direction is calculated in the frequency domain.
+
+    Args:
+        grad_m: jnp.array, the current Z-error gradient
+        pulse_t: jnp.array, the current guess
+        gate_pulses: jnp.array, the currently guessed gate-pulses
+        gate: jnp.array, the current gate
+        signal_t: jnp.array, the current signal field
+        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
+        tau_arr: jnp.array, the applied delays
+        measurement_info: Pytree, contains measurement data and parameters
+        hessian_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
+        hessian_info: Pytree, contains parameters for the pseudo-newton direction calculation
+        full_or_diagonal: str, calculate using the full or diagonal pseudo hessian?
+        pulse_or_gate: str, whether the direction is calculated for the pulse or the gate-pulse
+
+    Returns:
+        tuple[jnp.array, Pytree], the pseudo-newton direction and the updated hessian_state
+    
+    """
+     
+
     lambda_lm = hessian_info.lambda_lm
     solver = hessian_info.linalg_solver
     newton_direction_prev = getattr(hessian_state, pulse_or_gate).newton_direction_prev  

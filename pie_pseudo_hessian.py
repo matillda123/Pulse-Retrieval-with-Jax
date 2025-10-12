@@ -6,13 +6,15 @@ from utilities import scan_helper, solve_linear_system, MyNamespace
 
 
 def PIE_get_pseudo_hessian_subelement(dummy, signal_f, measured_trace, D_arr_kj):
+    """ Calculates one term of one hessian element. Sum over all terms yields one matrix element."""
     res = D_arr_kj*(2 - jnp.sign(measured_trace)*jnp.sqrt(jnp.abs(measured_trace))/(jnp.abs(signal_f) + 1e-9))
     return dummy + res, None
 
 
 def PIE_get_pseudo_hessian_element(probe_k, probe_j, time_k, time_j, omega, signal_f, measured_trace):
-    D_arr_kj=jnp.exp(1j*omega*(time_k-time_j))
+    """ Sum over frequency axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
 
+    D_arr_kj=jnp.exp(1j*omega*(time_k-time_j))
     get_subelement=Partial(scan_helper, actual_function=PIE_get_pseudo_hessian_subelement, number_of_args=1, number_of_xs=3)
 
     carry = 0+0j
@@ -25,9 +27,9 @@ def PIE_get_pseudo_hessian_element(probe_k, probe_j, time_k, time_j, omega, sign
 
 
 def PIE_get_pseudo_hessian_one_m(probe, signal_f, measured_trace, measurement_info, use_hessian):
+    """ jax.vmap over time axis """
+
     time, frequency = measurement_info.time, measurement_info.frequency
-
-
     get_hessian=Partial(PIE_get_pseudo_hessian_element, omega=2*jnp.pi*frequency, signal_f=signal_f, measured_trace=measured_trace)
 
     if use_hessian=="full":
@@ -41,7 +43,7 @@ def PIE_get_pseudo_hessian_one_m(probe, signal_f, measured_trace, measurement_in
 
 
 def PIE_get_pseudo_hessian_all_m(probe_all_m, signal_f, measured_trace, measurement_info, use_hessian):
-
+    """ jax.vmap over delays/shifts """
     get_hessian=Partial(PIE_get_pseudo_hessian_one_m, measurement_info=measurement_info, use_hessian=use_hessian)
     hessian_all_m=jax.vmap(get_hessian, in_axes=(0,0,0))(probe_all_m, signal_f, measured_trace)
 
@@ -54,15 +56,40 @@ def PIE_get_pseudo_hessian_all_m(probe_all_m, signal_f, measured_trace, measurem
 
 def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                     measurement_info, descent_info, pulse_or_gate, local_or_global):
+    
+    """
+    Calculates the pseudo-newton direction for the PIE loss function. Is the same for all methods.
+    The direction is calculated in the time domain.
+
+    Args:
+        grad: jnp.array, the current (weighted) gradient
+        probe: jnp.array, the PIE probe
+        signal_f: jnp.array, the signal field in the frequency domain
+        transform_arr: jnp.array, the delays or phase matrix
+        measured_trace: jnp.array, the measured intensity
+        reverse_transform: Callable, unused
+        newton_direction_prev: jnp.array, the previous pseudo-newton direction
+        measurement_info: Pytree, holds measurement data and parameters
+        descent_info: Pytree, holds algorithm parameters
+        pulse_or_gate: str, pulse or gate?
+        local_or_global: str, local or global iteration?
+
+    Returns:
+        tuple[jnp.array, Pytree]
+    
+    """
+
+
     hessian = descent_info.hessian
     lambda_lm, solver = hessian.lambda_lm, hessian.linalg_solver
     full_or_diagonal = getattr(hessian, local_or_global)
 
+    # vmap over population
     hessian_all_m=jax.vmap(PIE_get_pseudo_hessian_all_m, in_axes=(0,0,0,None,None))(probe, signal_f, measured_trace, measurement_info, full_or_diagonal)
+
 
     # if pulse_or_gate=="gate":
     #     hessian_all_m = jax.vmap(reverse_transform, in_axes=(0,0))(hessian_all_m, transform_arr)
-
 
     grad = jnp.sum(grad, axis=1)
     hessian = jnp.sum(hessian_all_m, axis=1)

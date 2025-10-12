@@ -40,6 +40,7 @@ def calc_Z_error_pseudo_hessian_subelement_pg(dummy_element, pulse_t_dispersed, 
 
 
 def calc_Z_error_pseudo_hessian_element(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time, pulse_t_dispersed, signal_t_m, signal_t_new_m, nonlinear_method):
+    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
     
     D_arr_pn=jnp.exp(1j*time*(omega_p-omega_n))
 
@@ -62,6 +63,7 @@ def calc_Z_error_pseudo_hessian_element(exp_arr_mp, exp_arr_mn, omega_p, omega_n
 
 
 def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, pulse_t_dispersed, signal_t_m, signal_t_new_m, time, omega, nonlinear_method, full_or_diagonal):
+    """ jax.vmap over frequency axis """
 
     calc_hessian_partial=Partial(calc_Z_error_pseudo_hessian_element, time=time, pulse_t_dispersed=pulse_t_dispersed, 
                                  signal_t_m=signal_t_m, signal_t_new_m=signal_t_new_m, nonlinear_method=nonlinear_method)
@@ -78,6 +80,7 @@ def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, pulse_t_dispersed, signal_t_m, 
 
 
 def calc_Z_error_pseudo_hessian_all_m(pulse_t_dispersed, signal_t, signal_t_new, phase_matrix, measurement_info, full_or_diagonal):
+    """ jax.vmap over shifts """
     time, omega, nonlinear_method = measurement_info.time, 2*jnp.pi*measurement_info.frequency, measurement_info.nonlinear_method
 
     exp_arr=jnp.exp(-1j*phase_matrix)
@@ -92,6 +95,26 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t_dispersed, signal_t, signal_t_new,
 
 def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_dispersed, signal_t, signal_t_new, phase_matrix, measurement_info, hessian_state, hessian_info, 
                                         full_or_diagonal):
+    
+    """
+    Calculates the pseudo-newton direction for the Z-error of a chirp-scan.
+    The direction is calculated in the frequency domain.
+
+    Args:
+        grad_m: jnp.array, the current Z-error gradient
+        pulse_t_dispersed: jnp.array, the current guess after phase_matrix was applied
+        signal_t: jnp.array, the current signal field
+        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
+        phase_matrix: jnp.array, the applied phases
+        measurement_info: Pytree, contains measurement data and parameters
+        hessian_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
+        hessian_info: Pytree, contains parameters for the pseudo-newton direction calculation
+        full_or_diagonal: str, calculate using the full or diagonal pseudo hessian?
+
+    Returns:
+        tuple[jnp.array, Pytree], the pseudo-newton direction and the updated hessian_state
+    
+    """
 
     lambda_lm = hessian_info.lambda_lm
     solver = hessian_info.linalg_solver
