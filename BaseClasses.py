@@ -22,6 +22,8 @@ class AlgorithmsBASE:
     Attributes:
         use_jit: bool, enables/disables jax.jit
         spectrum_is_being_used: bool,
+        fft: Callable, performs an fft, performs an fft of a signal. (Needs to expect signal, sk, rn, axis)
+        ifft: Callable, performs an ifft, performs an ifft of a signal. (Needs to expect signal, sk, rn, axis)
 
     """
     def __init__(self, *args, **kwargs):
@@ -29,6 +31,10 @@ class AlgorithmsBASE:
 
         self.use_jit = False
         self.spectrum_is_being_used = False
+
+
+        self.fft = do_fft
+        self.ifft = do_ifft
 
 
 
@@ -435,7 +441,7 @@ class RetrievePulses:
     def get_gate_pulse(self, frequency, gate_f):
         """ For crosscorrelation=True the actual gate pulse has to be provided. """
         gate_f = do_interpolation_1d(self.frequency, frequency, gate_f)
-        self.gate = do_ifft(gate_f, self.sk, self.rn)
+        self.gate = self.ifft(gate_f, self.sk, self.rn)
         self.measurement_info = self.measurement_info.expand(gate = self.gate)
         return self.gate
     
@@ -530,7 +536,7 @@ class RetrievePulses:
         measurement_info, descent_info = self.measurement_info, self.descent_info 
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)        
-        trace = calculate_trace(do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn))
+        trace = calculate_trace(self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn))
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measurement_info.measured_trace)
         idx = jnp.argmin(trace_error)
         return idx
@@ -546,8 +552,8 @@ class RetrievePulses:
         pulse_t = center_signal(pulse_t)
         gate_t = center_signal(gate_t)
 
-        pulse_f = do_fft(pulse_t, sk, rn)
-        gate_f = do_fft(gate_t, sk, rn)
+        pulse_f = self.fft(pulse_t, sk, rn)
+        gate_f = self.fft(gate_t, sk, rn)
 
         return pulse_t, gate_t, pulse_f, gate_f
 
@@ -690,10 +696,10 @@ class RetrievePulsesFROG(RetrievePulses):
         pulse_f_arr, gate_f_arr = super().create_initial_population(population_size, guess_type)
 
         sk, rn = self.sk, self.rn
-        pulse_t_arr = do_ifft(pulse_f_arr, sk, rn)
+        pulse_t_arr = self.ifft(pulse_f_arr, sk, rn)
 
         if self.measurement_info.doubleblind==True:
-            gate_t_arr = do_ifft(gate_f_arr, sk, rn)
+            gate_t_arr = self.ifft(gate_f_arr, sk, rn)
         else:
             gate_t_arr = None
 
@@ -734,9 +740,9 @@ class RetrievePulsesFROG(RetrievePulses):
 
     def shift_signal_in_time(self, signal, tau, frequency, sk, rn):
         """ The Fourier-Shift theorem. """
-        signal_f = do_fft(signal, sk, rn)
+        signal_f = self.fft(signal, sk, rn)
         signal_f = signal_f*jnp.exp(-1j*2*jnp.pi*frequency*tau)
-        signal = do_ifft(signal_f, sk, rn)
+        signal = self.ifft(signal_f, sk, rn)
         return signal
 
 
@@ -829,11 +835,11 @@ class RetrievePulsesFROG(RetrievePulses):
 
         individual = self.get_individual_from_idx(idx, descent_state.population)
         pulse_t = individual.pulse
-        pulse_f = do_fft(pulse_t, sk, rn)
+        pulse_f = self.fft(pulse_t, sk, rn)
 
         if measurement_info.doubleblind==True:
             gate_t = individual.gate
-            gate_f = do_fft(gate_t, sk, rn)
+            gate_f = self.fft(gate_t, sk, rn)
         else:
             gate_t, gate_f = pulse_t, pulse_f
 
@@ -847,7 +853,7 @@ class RetrievePulsesFROG(RetrievePulses):
         tau_arr = self.measurement_info.tau_arr
     
         signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_t, gate=gate_t), tau_arr, self.measurement_info)
-        signal_f = do_fft(signal_t.signal_t, sk, rn)
+        signal_f = self.fft(signal_t.signal_t, sk, rn)
         trace = calculate_trace(signal_f)
         return trace
     
@@ -860,9 +866,9 @@ class RetrievePulsesFROG(RetrievePulses):
     
     def apply_spectrum(self, pulse_t, spectrum, sk, rn):
         """ FROG specific method to project the pulse guess onto a measured spectrum. """
-        pulse_f = do_fft(pulse_t, sk, rn)
+        pulse_f = self.fft(pulse_t, sk, rn)
         pulse_f_new = project_onto_amplitude(pulse_f, spectrum)
-        pulse_t = do_ifft(pulse_f_new, sk, rn)
+        pulse_t = self.ifft(pulse_f_new, sk, rn)
         return pulse_t
     
 
@@ -967,7 +973,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         sk, rn = measurement_info.sk, measurement_info.rn
         
         pulse_f = pulse_f*jnp.exp(1j*phase_matrix)
-        pulse_t_disp = do_ifft(pulse_f, sk, rn)
+        pulse_t_disp = self.ifft(pulse_f, sk, rn)
 
         return pulse_t_disp, phase_matrix
     
@@ -1018,11 +1024,11 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
 
         individual = self.get_individual_from_idx(idx, descent_state.population)
         pulse_f = individual.pulse
-        pulse_t = do_ifft(pulse_f, sk, rn)
+        pulse_t = self.ifft(pulse_f, sk, rn)
 
         if measurement_info.doubleblind==True:
             gate_f = individual.gate
-            gate_t = do_ifft(gate_f, sk, rn)
+            gate_t = self.ifft(gate_f, sk, rn)
         else:
             gate_f, gate_t = pulse_f, pulse_t
 
@@ -1034,9 +1040,9 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
     def post_process_create_trace(self, pulse_t, gate_t):
         """ Chirp-Scan specific post processing to get the final trace """
         sk, rn = self.measurement_info.sk, self.measurement_info.rn
-        pulse_f = do_fft(pulse_t, sk, rn)
+        pulse_f = self.fft(pulse_t, sk, rn)
         signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_f, gate=None), self.measurement_info.phase_matrix, self.measurement_info)
-        trace = calculate_trace(do_fft(signal_t.signal_t, sk, rn))
+        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
         return trace
 
     def get_x_arr(self):
@@ -1091,7 +1097,7 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
     def get_anc_pulse(self, frequency, anc_f, anc_no=1):
         """ For cross_correlation instead of the gate pulse the two-acillae pulses need to be provided. """
         anc_f = do_interpolation_1d(self.frequency, frequency, anc_f)
-        anc = do_ifft(anc_f, self.sk, self.rn)
+        anc = self.ifft(anc_f, self.sk, self.rn)
 
         anc_dict = {1: self.measurement_info.expand(anc_1=anc), 
                     2: self.measurement_info.expand(anc_2=anc)}
@@ -1123,9 +1129,9 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
         sk, rn = measurement_info.sk, measurement_info.rn
         
-        pulse_f = do_fft(pulse_t, sk, rn)
+        pulse_f = self.fft(pulse_t, sk, rn)
         pulse_f=pulse_f*jnp.exp(1j*measurement_info.phase_matrix)
-        pulse_t_disp=do_ifft(pulse_f, sk, rn)
+        pulse_t_disp=self.ifft(pulse_f, sk, rn)
         return pulse_t_disp
     
 
@@ -1205,6 +1211,9 @@ class RetrievePulsesRealFields:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fft = None
+        self.ifft = None
 
         self.measurement_info = self.measurement_info.expand(frequency_exp = self.frequency_exp, 
                                                              fcut = jnp.argmin(jnp.abs(self.frequency)))

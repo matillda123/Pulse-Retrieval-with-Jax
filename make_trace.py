@@ -164,6 +164,9 @@ class MakeTraceBASE:
     def __init__(self, *args, **kwargs):
         self.cross_correlation = False
 
+        self.fft = do_fft
+        self.ifft = do_ifft
+
 
     def generate_trace(self):
 
@@ -177,7 +180,7 @@ class MakeTraceBASE:
         individual, measurement_info, transform_arr = self.get_parameters_to_make_signal_t()
 
         self.signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
-        signal_f = do_fft(self.signal_t.signal_t, self.sk, self.rn)
+        signal_f = self.fft(self.signal_t.signal_t, self.sk, self.rn)
         self.trace = jnp.abs(signal_f)**2
 
         time, frequency, trace, spectra = self.interpolate_trace()
@@ -262,10 +265,10 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
 
 
     def get_gate_pulse(self, frequency_gate, gate_f, time, frequency):
-        gate_f=do_interpolation_1d(frequency, frequency_gate, gate_f)
+        gate_f = do_interpolation_1d(frequency, frequency_gate, gate_f)
 
         self.sk, self.rn = get_sk_rn(time, frequency)
-        self.gate=do_ifft(gate_f, self.sk, self.rn)
+        self.gate = self.ifft(gate_f, self.sk, self.rn)
         return self.gate
 
 
@@ -278,9 +281,9 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
         
     
     def interpolate_trace(self):
-        max_val=np.max(self.trace)
+        max_val = np.max(self.trace)
 
-        idx=np.where(self.trace>max_val*self.cut_off_val)
+        idx = np.where(self.trace>max_val*self.cut_off_val)
         idx_0, idx_1 = np.sort(idx)
 
         idx_0_min, idx_0_max = idx_0[0], idx_0[-1]+1
@@ -329,7 +332,7 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
 
         frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
         if self.cross_correlation==True:
-            gate_f=do_fft(self.gate, self.sk, self.rn)
+            gate_f = self.fft(self.gate, self.sk, self.rn)
             frequency_gate_spectrum, spectrum_gate = interpolate_spectrum(self.frequency, gate_f, self.N)
         else:
             frequency_gate_spectrum, spectrum_gate = None, None
@@ -470,7 +473,7 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
 
     def get_gate_pulse(self, frequency, gate_f, anc_no=1):
         gate_f = do_interpolation_1d(self.frequency, frequency, gate_f)
-        gate = do_ifft(gate_f, self.sk, self.rn)
+        gate = self.ifft(gate_f, self.sk, self.rn)
 
         anc = {1: "anc_1", 
                2: "anc_2"}
@@ -532,8 +535,8 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
         frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
 
         if self.cross_correlation==True:
-            anc1_f=do_fft(self.anc_1, self.sk, self.rn)
-            anc2_f=do_fft(self.anc_2, self.sk, self.rn)
+            anc1_f = self.fft(self.anc_1, self.sk, self.rn)
+            anc2_f = self.fft(self.anc_2, self.sk, self.rn)
             frequency_gate_spectrum_1, spectrum_anc_1 = interpolate_spectrum(self.frequency, anc1_f, self.N)
             frequency_gate_spectrum_2, spectrum_anc_2 = interpolate_spectrum(self.frequency, anc2_f, self.N)
 

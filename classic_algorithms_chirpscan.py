@@ -38,7 +38,7 @@ class Basic(RetrievePulsesCHIRPSCAN, AlgorithmsBASE):
             n=5
         signal_t_new = jnp.abs(signal_t_new)**(1/n)*jnp.exp(1j*jnp.angle(signal_t_new))
 
-        signal_f_new = do_fft(signal_t_new, sk, rn)
+        signal_f_new = self.fft(signal_t_new, sk, rn)
         signal_f_new = signal_f_new*jnp.exp(-1j*phase_matrix)
 
         pulse_f = jnp.mean(signal_f_new, axis=0)
@@ -52,7 +52,7 @@ class Basic(RetrievePulsesCHIRPSCAN, AlgorithmsBASE):
         measured_trace = measurement_info.measured_trace
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = do_fft(signal_t.signal_t, sk, rn)
+        signal_f = self.fft(signal_t.signal_t, sk, rn)
         trace = calculate_trace(signal_f)
 
 
@@ -128,9 +128,9 @@ class TimeDomainPtychography(RetrievePulsesCHIRPSCAN, TimeDomainPtychographyBASE
 
     def reverse_transform_grad(self, signal, phase_matrix, measurement_info):
         sk, rn = measurement_info.sk, measurement_info.rn
-        signal_f = do_fft(signal, sk, rn)
+        signal_f = self.fft(signal, sk, rn)
         signal_f = signal_f*jnp.exp(-1j*phase_matrix)
-        signal = do_ifft(signal_f, sk, rn)
+        signal = self.ifft(signal_f, sk, rn)
         return signal
 
 
@@ -146,8 +146,8 @@ class TimeDomainPtychography(RetrievePulsesCHIRPSCAN, TimeDomainPtychographyBASE
     #     # sk, rn = get_sk_rn(time, frequency)
 
     #     # # convert hessian to (m, n, n) -> frequency domain 
-    #     # hessian_all_m = do_fft(hessian_all_m, sk, rn, axis=-1)
-    #     # hessian_all_m = do_fft(hessian_all_m, sk, rn, axis=-2) 
+    #     # hessian_all_m = self.fft(hessian_all_m, sk, rn, axis=-1)
+    #     # hessian_all_m = self.fft(hessian_all_m, sk, rn, axis=-2) 
 
     #     # phi_mn = -1*phase_matrix
     #     # phi = phi_mn[:,:,jnp.newaxis] - phi_mn[:,jnp.newaxis,:]
@@ -155,8 +155,8 @@ class TimeDomainPtychography(RetrievePulsesCHIRPSCAN, TimeDomainPtychographyBASE
     #     # hessian_all_m = hessian_all_m * exp_arr
 
     #     # # convert hessian to (N, m, k, k) -> time domain 
-    #     # hessian_all_m = do_ifft(hessian_all_m, sk, rn, axis=-1)
-    #     # hessian_all_m = do_ifft(hessian_all_m, sk, rn, axis=-2) 
+    #     # hessian_all_m = self.ifft(hessian_all_m, sk, rn, axis=-1)
+    #     # hessian_all_m = self.ifft(hessian_all_m, sk, rn, axis=-2) 
     #     return hessian_all_m#[:, :N, :N]
     
 
@@ -186,9 +186,9 @@ class TimeDomainPtychography(RetrievePulsesCHIRPSCAN, TimeDomainPtychographyBASE
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         sk, rn = measurement_info.sk, measurement_info.rn
         
-        pulse_t=do_ifft(individual.pulse, sk, rn)
+        pulse_t=self.ifft(individual.pulse, sk, rn)
         pulse_t=pulse_t + gamma*descent_direction
-        pulse = do_fft(pulse_t, sk, rn)
+        pulse = self.fft(pulse_t, sk, rn)
 
         individual = tree_at(lambda x: x.pulse, individual, pulse)
         return individual
@@ -206,7 +206,7 @@ class TimeDomainPtychography(RetrievePulsesCHIRPSCAN, TimeDomainPtychographyBASE
         # reverse_transform = Partial(reverse_transform_hessian[getattr(descent_info.hessian, local_or_global)], measurement_info=measurement_info)
         reverse_transform = None
 
-        signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
         descent_direction, hessian = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_f, phase_matrix, measured_trace, reverse_transform, 
                                                                      newton_direction_prev, measurement_info, descent_info, "gate", local_or_global)
         return descent_direction, hessian

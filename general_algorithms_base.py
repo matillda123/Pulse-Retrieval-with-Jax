@@ -286,7 +286,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
     def make_pulse_t_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
         """ Evaluates a parametrized individual onto the time axis. """
         signal_f = self.make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate)
-        signal = do_ifft(signal_f, measurement_info.sk, measurement_info.rn)
+        signal = self.ifft(signal_f, measurement_info.sk, measurement_info.rn)
         return signal
     
     
@@ -294,10 +294,10 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
     def get_pulses_t_from_population(self, population, measurement_info, descent_info):
         """ Evaluates a parametrized population onto the time axis. """
         pulse_f_arr, gate_arr = self.get_pulses_f_from_population(population, measurement_info, descent_info)
-        pulse_t_arr = do_ifft(pulse_f_arr, measurement_info.sk, measurement_info.rn)
+        pulse_t_arr = self.ifft(pulse_f_arr, measurement_info.sk, measurement_info.rn)
 
         if measurement_info.doubleblind==True:
-            gate_arr = do_ifft(gate_arr, measurement_info.sk, measurement_info.rn)
+            gate_arr = self.ifft(gate_arr, measurement_info.sk, measurement_info.rn)
         else:
             gate_arr = pulse_t_arr
 
@@ -312,7 +312,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         sk, rn = measurement_info.sk, measurement_info.rn
         
         signal_t = self.calculate_signal_t(individual, measurement_info.transform_arr, measurement_info)
-        signal_f = do_fft(signal_t.signal_t, sk, rn)
+        signal_f = self.fft(signal_t.signal_t, sk, rn)
         trace = calculate_trace(signal_f)
         return x_arr, frequency, trace
     
@@ -1212,8 +1212,8 @@ class LSFBASE(GeneralOptimizationBASE):
 
         pulse_t = individual.pulse
         gate_t = individual.gate
-        pulse_f = do_fft(pulse_t, sk, rn) 
-        gate_f = do_fft(gate_t, sk, rn) 
+        pulse_f = self.fft(pulse_t, sk, rn) 
+        gate_f = self.fft(gate_t, sk, rn) 
         return pulse_t, gate_t, pulse_f, gate_f
     
 

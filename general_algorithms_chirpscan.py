@@ -93,11 +93,11 @@ class AutoDiff(AutoDiffBASE, RetrievePulsesCHIRPSCAN):
         # needs to be overwritten because the original function works on a population
 
         pulse_f = self.make_pulse_from_individual(descent_state.individual, measurement_info, descent_info, "pulse")
-        pulse_t = do_ifft(pulse_f, measurement_info.sk, measurement_info.rn)
+        pulse_t = self.ifft(pulse_f, measurement_info.sk, measurement_info.rn)
 
         if measurement_info.doubleblind==True:
             gate_f = self.make_pulse_from_individual(descent_state.individual, measurement_info, descent_info, "gate")
-            gate_t = do_ifft(gate_f, measurement_info.sk, measurement_info.rn)
+            gate_t = self.ifft(gate_f, measurement_info.sk, measurement_info.rn)
         else:
             gate_t, gate_f = pulse_t, pulse_f
 

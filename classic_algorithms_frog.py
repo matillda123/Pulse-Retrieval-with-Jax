@@ -64,7 +64,7 @@ class Vanilla(AlgorithmsBASE, RetrievePulsesFROG):
         population = descent_state.population
         
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        trace = calculate_trace(do_fft(signal_t.signal_t, sk, rn))
+        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
 
         mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
         signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
@@ -77,7 +77,7 @@ class Vanilla(AlgorithmsBASE, RetrievePulsesFROG):
 
         if measurement_info.doubleblind==True:
             signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-            trace = calculate_trace(do_fft(signal_t.signal_t, sk, rn))
+            trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
 
             mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
             signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
@@ -189,9 +189,9 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulsesFROG):
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         sk, rn = measurement_info.sk, measurement_info.rn
 
-        pulse_f = do_fft(getattr(individual, pulse_or_gate), sk, rn)
+        pulse_f = self.fft(getattr(individual, pulse_or_gate), sk, rn)
         pulse_f = pulse_f + gamma*descent_direction
-        pulse = do_ifft(pulse_f, sk, rn)
+        pulse = self.ifft(pulse_f, sk, rn)
 
         individual = tree_at(lambda x: getattr(x, pulse_or_gate), individual, pulse)
         return individual
@@ -308,7 +308,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulsesFROG):
         # reverse_transform = Partial(reverse_transform_hessian[getattr(descent_info.hessian, local_or_global)], measurement_info=measurement_info)
         reverse_transform=None
 
-        signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
         descent_direction, hessian = PIE_get_pseudo_newton_direction(grad, probe, signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                                                      measurement_info, descent_info, pulse_or_gate, local_or_global)
         return descent_direction, hessian
@@ -339,9 +339,9 @@ class COPRA(COPRABASE, RetrievePulsesFROG):
         sk, rn = measurement_info.sk, measurement_info.rn
 
         signal = getattr(individual, pulse_or_gate)
-        signal_f = do_fft(signal, sk, rn)
+        signal_f = self.fft(signal, sk, rn)
         signal_f = signal_f + gamma*descent_direction
-        signal = do_ifft(signal_f, sk, rn)
+        signal = self.ifft(signal_f, sk, rn)
 
         individual = tree_at(lambda x: getattr(x, pulse_or_gate), individual, signal)
         return individual

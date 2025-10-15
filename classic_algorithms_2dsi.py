@@ -107,7 +107,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         descent_state = tree_at(lambda x: x.spectral_phase, descent_state, spectral_phase)
 
         pulse_f = pulse_spectral_amplitude*jnp.exp(1j*spectral_phase)
-        pulse_t = do_ifft(pulse_f, measurement_info.sk, measurement_info.rn)
+        pulse_t = self.ifft(pulse_f, measurement_info.sk, measurement_info.rn)
         pulse_t = center_signal(pulse_t).reshape(1,-1)
         descent_state = tree_at(lambda x: x.population.pulse, descent_state, pulse_t)
         return descent_state
@@ -116,7 +116,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
 
     def calc_error_of_reconstruction(self, descent_state, measurement_info, descent_info):
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
         trace = calculate_trace(signal_f)
         # if population is larger than one this may cause an error or bug
         trace_error = calculate_trace_error(trace, measurement_info.measured_trace)
@@ -190,9 +190,9 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulses2DSI):
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
         sk, rn = measurement_info.sk, measurement_info.rn
 
-        pulse_f = do_fft(getattr(individual, pulse_or_gate), sk, rn)
+        pulse_f = self.fft(getattr(individual, pulse_or_gate), sk, rn)
         pulse_f = pulse_f + gamma*descent_direction
-        pulse = do_ifft(pulse_f, sk, rn)
+        pulse = self.ifft(pulse_f, sk, rn)
 
         individual = tree_at(lambda x: getattr(x, pulse_or_gate), individual, pulse)
         return individual
@@ -257,7 +257,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
         probe = signal_t.gate
 
         reverse_transform=None
-        signal_f = do_fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
         descent_direction, hessian = PIE_get_pseudo_newton_direction(grad, probe, signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                                                      measurement_info, descent_info, pulse_or_gate, local_or_global)
         return descent_direction, hessian
@@ -283,9 +283,9 @@ class COPRA(COPRABASE, RetrievePulses2DSI):
         sk, rn = measurement_info.sk, measurement_info.rn
 
         signal = getattr(individual, pulse_or_gate)
-        signal_f = do_fft(signal, sk, rn)
+        signal_f = self.fft(signal, sk, rn)
         signal_f = signal_f + gamma*descent_direction
-        signal = do_ifft(signal_f, sk, rn)
+        signal = self.ifft(signal_f, sk, rn)
 
         individual = tree_at(lambda x: getattr(x, pulse_or_gate), individual, signal)
         return individual

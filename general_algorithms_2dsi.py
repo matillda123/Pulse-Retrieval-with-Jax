@@ -99,11 +99,11 @@ class AutoDiff(AutoDiffBASE, RetrievePulses2DSI):
         # needs to be overwritten because the original function works on a population
 
         pulse_t = self.make_pulse_from_individual(descent_state.individual, measurement_info, descent_info, "pulse")
-        pulse_f = do_fft(pulse_t, measurement_info.sk, measurement_info.rn)
+        pulse_f = self.fft(pulse_t, measurement_info.sk, measurement_info.rn)
 
         if measurement_info.doubleblind==True:
             gate_t = self.make_pulse_from_individual(descent_state.individual, measurement_info, descent_info, "gate")
-            gate_f = do_fft(gate_t, measurement_info.sk, measurement_info.rn)
+            gate_f = self.fft(gate_t, measurement_info.sk, measurement_info.rn)
         else:
             gate_t, gate_f = pulse_t, pulse_f
 
