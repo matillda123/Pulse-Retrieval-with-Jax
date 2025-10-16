@@ -11,7 +11,7 @@ from equinox import tree_at
 
 from src.utilities import MyNamespace, center_signal, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_gate_with_Real_Fields, calculate_trace, calculate_trace_error, project_onto_amplitude, run_scan
 from .create_population import create_population_classic
-from src.frog.initial_guess_doublepulse import make_population_doublepulse
+from src.core.initial_guess_doublepulse import make_population_doublepulse
 
 
 
@@ -197,33 +197,6 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
 
         self.momentum_is_being_used = False
 
-
-
-
-    
-    def create_initial_population(self, population_size=1, guess_type="random"):
-        """ 
-        Creates an initial population.
-
-        Args:
-            population_size: int,
-            guess_type: str, can be one of random, random_phase, constant or constant_phase
-
-        Returns:
-            tuple[jnp.array, jnp.array or None], initial populations for the pulse and possibly the gate-pulse
-
-        """
-        self.key, subkey = jax.random.split(self.key, 2)
-        pulse_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
-
-        if self.doubleblind==True:
-            self.key, subkey = jax.random.split(self.key, 2)
-            gate_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
-        else:
-            gate_f_arr=None
-
-        self.descent_info = self.descent_info.expand(population_size=population_size)
-        return pulse_f_arr, gate_f_arr
 
 
 
@@ -447,8 +420,30 @@ class RetrievePulses:
     
 
 
+    def create_initial_population(self, population_size=1, guess_type="random"):
+        """ 
+        Creates an initial population.
 
+        Args:
+            population_size: int,
+            guess_type: str, can be one of random, random_phase, constant or constant_phase
 
+        Returns:
+            tuple[jnp.array, jnp.array or None], initial populations for the pulse and possibly the gate-pulse
+
+        """
+        self.key, subkey = jax.random.split(self.key, 2)
+        pulse_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
+
+        if self.doubleblind==True:
+            self.key, subkey = jax.random.split(self.key, 2)
+            gate_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
+        else:
+            gate_f_arr=None
+
+        self.descent_info = self.descent_info.expand(population_size=population_size)
+        return pulse_f_arr, gate_f_arr
+    
 
     def get_individual_from_idx(self, idx, population):
         # idx can also be an array (i think, didnt test)

@@ -67,7 +67,7 @@ def initialize_lbfgs_state(shape, measurement_info, descent_info):
 
 
 def initialize_linesearch_info(optimizer):
-    linesearch_params = MyNamespace(use_linesearch=optimizer.use_linesearch, 
+    linesearch_params = MyNamespace(linesearch=optimizer.linesearch, 
                                     c1=optimizer.c1, 
                                     c2=optimizer.c2, 
                                     max_steps=optimizer.max_steps_linesearch, 
@@ -209,7 +209,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
                                                                                                                    getattr(descent_info.adaptive_scaling, "_global"), 
                                                                                                                    pulse_or_gate, "_global")
 
-        if descent_info.linesearch_params.use_linesearch!=False:
+        if descent_info.linesearch_params.linesearch!=False:
             pk_dot_gradient = jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, grad_sum)
             
             linesearch_info=MyNamespace(population=population, descent_direction=descent_direction, signal_t_new=signal_t_new, 
@@ -523,7 +523,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
                                                                                                                           pulse_or_gate, local_or_global)
 
 
-        if descent_info.linesearch_params.use_linesearch!=False and local_or_global=="_global":
+        if descent_info.linesearch_params.linesearch!=False and local_or_global=="_global":
             pk_dot_gradient=jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, grad_sum)
 
             linesearch_info=MyNamespace(population=population, signal_t=signal_t, descent_direction=descent_direction, 
@@ -789,7 +789,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
 
     def get_Z_gradient(self, signal_t, signal_t_new, population, transform_arr, measurement_info, pulse_or_gate):
         """ Calculates the Z-error gradient for the current population. """
-        grad = jax.vmap(self.get_Z_gradient_individual, in_axes=(0,0,0,0,None))(signal_t, signal_t_new, population, transform_arr, measurement_info)
+        grad = jax.vmap(self.get_Z_gradient_individual, in_axes=(0,0,0,0,None,None))(signal_t, signal_t_new, population, transform_arr, measurement_info, pulse_or_gate)
         return grad
 
 
@@ -866,7 +866,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
                                                                                                                         getattr(descent_info.adaptive_scaling, local_or_global),
                                                                                                                           pulse_or_gate, local_or_global)
         
-        if descent_info.linesearch_params.use_linesearch!=False and local_or_global=="_global":
+        if descent_info.linesearch_params.linesearch!=False and local_or_global=="_global":
             pk_dot_gradient = jax.vmap(lambda x,y: jnp.real(jnp.vdot(x,y)), in_axes=(0,0))(descent_direction, grad_sum)        
             linesearch_info=MyNamespace(population=population, signal_t_new=signal_t_new, descent_direction=descent_direction, error=Z_error, 
                                         pk_dot_gradient=pk_dot_gradient, transform_arr=transform_arr)

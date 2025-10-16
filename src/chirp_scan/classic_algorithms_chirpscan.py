@@ -278,7 +278,7 @@ class COPRA(COPRABASE, RetrievePulsesCHIRPSCAN):
         return individual
 
 
-    def get_Z_gradient_individual(self, signal_t, signal_t_new, population, phase_matrix, measurement_info):
+    def get_Z_gradient_individual(self, signal_t, signal_t_new, population, phase_matrix, measurement_info, pulse_or_gate):
         """ Calculates the Z-error gradient for an individual. """
         grad = calculate_Z_gradient(signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, measurement_info)
         return grad
