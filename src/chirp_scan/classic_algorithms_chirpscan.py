@@ -130,11 +130,11 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulsesCHIRPSCAN):
         return grad 
 
 
-    def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, phase_matrix, descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate):
+    def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, phase_matrix, descent_state, measurement_info, descent_info, full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
-        descent_direction, hessian = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, 
-                                                                        measurement_info, descent_state.hessian, descent_info.hessian, use_hessian)
-        return descent_direction, hessian
+        descent_direction, newton_state = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, 
+                                                                        measurement_info, descent_state.newton, descent_info.newton, full_or_diagonal)
+        return descent_direction, newton_state
     
 
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
@@ -235,20 +235,20 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulsesCHIRPSCAN
                                                 descent_info, pulse_or_gate, local_or_global):
         """ Calculates the PIE newton direction for a population. """
         
-        assert getattr(descent_info.hessian, local_or_global)!="full", "Dont use full hessian. Its not implemented. "
+        assert getattr(descent_info.newton, local_or_global)!="full", "Dont use full hessian. Its not implemented. "
         "It requires the derivative with respect to the unmodified pulse. Which seems hard for the hessian."
         
-        newton_direction_prev = local_or_global_state.hessian.pulse.newton_direction_prev
+        newton_direction_prev = local_or_global_state.newton.pulse.newton_direction_prev
 
         # reverse_transform_hessian = {"diagonal": self.reverse_transform_diagonal_hessian,
         #                              "full": self.reverse_transform_full_hessian}
-        # reverse_transform = Partial(reverse_transform_hessian[getattr(descent_info.hessian, local_or_global)], measurement_info=measurement_info)
+        # reverse_transform = Partial(reverse_transform_hessian[getattr(descent_info.newton, local_or_global)], measurement_info=measurement_info)
         reverse_transform = None
 
         signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        descent_direction, hessian = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_f, phase_matrix, measured_trace, reverse_transform, 
+        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_f, phase_matrix, measured_trace, reverse_transform, 
                                                                      newton_direction_prev, measurement_info, descent_info, "gate", local_or_global)
-        return descent_direction, hessian
+        return descent_direction, newton_state
 
 
 
@@ -286,10 +286,10 @@ class COPRA(COPRABASE, RetrievePulsesCHIRPSCAN):
 
 
     def calculate_Z_error_newton_direction(self, grad, signal_t, signal_t_new, phase_matrix, population, local_or_global_state, measurement_info, descent_info, 
-                                           use_hessian, pulse_or_gate):
+                                           full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
 
-        hessian_state = local_or_global_state.hessian
-        descent_direction, hessian = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, measurement_info, 
-                                                                         hessian_state, descent_info.hessian, use_hessian)
-        return descent_direction, hessian
+        newton_state = local_or_global_state.newton
+        descent_direction, newton_state = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, measurement_info, 
+                                                                         newton_state, descent_info.newton, full_or_diagonal)
+        return descent_direction, newton_state

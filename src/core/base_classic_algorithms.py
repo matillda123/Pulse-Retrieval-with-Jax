@@ -38,20 +38,20 @@ def initialize_CG_state(shape, measurement_info):
 def initialize_pseudo_newton_state(shape, measurement_info):
     init_arr1 = jnp.zeros(shape, dtype=jnp.complex64)
 
-    hessian_pulse = MyNamespace(newton_direction_prev=init_arr1)
+    newton_pulse = MyNamespace(newton_direction_prev=init_arr1)
     if measurement_info.doubleblind==True:
-        hessian_gate = MyNamespace(newton_direction_prev=init_arr1)
+        newton_gate = MyNamespace(newton_direction_prev=init_arr1)
     else:
-        hessian_gate = None
+        newton_gate = None
 
-    return MyNamespace(pulse=hessian_pulse, gate=hessian_gate)
+    return MyNamespace(pulse=newton_pulse, gate=newton_gate)
 
 
 
 def initialize_lbfgs_state(shape, measurement_info, descent_info):
     N = shape[0]
     n = shape[1]
-    m = descent_info.hessian.lbfgs_memory
+    m = descent_info.newton.lbfgs_memory
 
     init_arr1 = jnp.zeros((N,m,n), dtype=jnp.complex64)
     init_arr2 = jnp.zeros((N,m,1), dtype=jnp.float32)
@@ -81,20 +81,20 @@ def initialize_S_prime_params(optimizer):
                                  _global=optimizer.r_global_method, 
                                  number_of_iterations=optimizer.r_no_iterations, 
                                  r_gradient=optimizer.r_gradient, 
-                                 r_hessian=optimizer.r_hessian, 
+                                 r_newton=optimizer.r_newton, 
                                  weights=optimizer.r_weights)
     return s_prime_params
 
 
 
-def initialize_hessian_info(optimizer):
-    hessian = MyNamespace(_local=optimizer.local_hessian, 
-                        _global=optimizer.global_hessian, 
+def initialize_newton_info(optimizer):
+    newton = MyNamespace(_local=optimizer.local_newton, 
+                        _global=optimizer.global_newton, 
                         linalg_solver=optimizer.linalg_solver, 
                         lambda_lm=optimizer.lambda_lm,
                         lbfgs_memory=optimizer.lbfgs_memory)
 
-    return hessian
+    return newton
 
 
 
@@ -175,7 +175,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         The step size is determined via a fixed/adaptive step size, a backtracking or a zoom linesearch.
         """       
 
-        hessian_info, conjugate_gradients = descent_info.hessian._global, descent_info.conjugate_gradients
+        newton_info, conjugate_gradients = descent_info.newton._global, descent_info.conjugate_gradients
 
         population = descent_state.population
         transform_arr = measurement_info.transform_arr
@@ -185,12 +185,12 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         grad_sum = jnp.sum(grad, axis=1)
 
 
-        if hessian_info=="diagonal" or hessian_info=="full":
-            descent_direction, hessian_state = self.calculate_Z_newton_direction(grad, signal_t_new, signal_t, transform_arr, descent_state, 
-                                                                                       measurement_info, descent_info, hessian_info, pulse_or_gate)
-            descent_state = tree_at(lambda x: getattr(x.hessian, pulse_or_gate), descent_state, hessian_state)
+        if newton_info=="diagonal" or newton_info=="full":
+            descent_direction, newton_state = self.calculate_Z_newton_direction(grad, signal_t_new, signal_t, transform_arr, descent_state, 
+                                                                                       measurement_info, descent_info, newton_info, pulse_or_gate)
+            descent_state = tree_at(lambda x: getattr(x.newton, pulse_or_gate), descent_state, newton_state)
 
-        elif hessian_info=="lbfgs":
+        elif newton_info=="lbfgs":
             descent_direction, lbfgs_state = get_quasi_newton_direction(grad_sum, getattr(descent_state.lbfgs, pulse_or_gate), descent_info)
 
         else:
@@ -222,7 +222,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
             gamma = jnp.broadcast_to(descent_info.gamma._global, (descent_info.population_size, ))
 
 
-        if hessian_info=="lbfgs":
+        if newton_info=="lbfgs":
            step_size_arr = lbfgs_state.step_size_prev
            step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
            step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
@@ -257,10 +257,10 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         
         shape_pulse = jnp.shape(descent_state.population.pulse)
         cg_state = initialize_CG_state(shape_pulse, measurement_info)
-        hessian_state = initialize_pseudo_newton_state(shape_pulse, measurement_info)
+        newton_state = initialize_pseudo_newton_state(shape_pulse, measurement_info)
         lbfgs_state = initialize_lbfgs_state(shape_pulse, measurement_info, descent_info)
         descent_state = tree_at(lambda x: x.cg, descent_state, cg_state)
-        descent_state = tree_at(lambda x: x.hessian, descent_state, hessian_state)
+        descent_state = tree_at(lambda x: x.newton, descent_state, newton_state)
         descent_state = tree_at(lambda x: x.lbfgs, descent_state, lbfgs_state)
         
         do_gradient_descent_step = Partial(self.do_descent_Z_error_step, signal_t_new=signal_t_new, measurement_info=measurement_info, descent_info=descent_info)
@@ -320,7 +320,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         measurement_info = self.measurement_info
 
         linesearch_params = initialize_linesearch_info(self)
-        hessian = initialize_hessian_info(self)
+        newton = initialize_newton_info(self)
         s_prime_params = initialize_S_prime_params(self)
 
         self.descent_info = self.descent_info.expand(gamma = MyNamespace(_local=self.local_gamma, _global=self.global_gamma), 
@@ -329,7 +329,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
                                                      conjugate_gradients = self.conjugate_gradients,
                                                      linesearch_params = linesearch_params, 
                                                      s_prime_params = s_prime_params, 
-                                                     hessian = hessian, 
+                                                     newton = newton, 
 
                                                      xi = self.xi, 
                                                      adaptive_scaling = MyNamespace(_local=self.local_adaptive_scaling, _global=self.global_adaptive_scaling))
@@ -340,9 +340,9 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
 
         shape_pulse = jnp.shape(self.descent_state.population.pulse)
         cg_state = initialize_CG_state(shape_pulse, measurement_info)
-        hessian_state = initialize_pseudo_newton_state(shape_pulse, measurement_info)
+        newton_state = initialize_pseudo_newton_state(shape_pulse, measurement_info)
         lbfgs_state = initialize_lbfgs_state(shape_pulse, measurement_info, descent_info)
-        self.descent_state = self.descent_state.expand(cg = cg_state, hessian=hessian_state, lbfgs=lbfgs_state)
+        self.descent_state = self.descent_state.expand(cg = cg_state, newton=newton_state, lbfgs=lbfgs_state)
 
         descent_state = self.descent_state
 
@@ -474,7 +474,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
         On top of the different PIE-version nonlinear conjugate gradients, LBFGS or damped Newtons method (diagonal or full) may be used.
         The step size is determined via a fixed/adaptive step size, a backtracking or a zoom linesearch.
 
-        Newtons method with a full hessian is not available for the reconstruction of the gate.
+        Newtons method with a full newton is not available for the reconstruction of the gate.
         """
         
 
@@ -489,19 +489,19 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
 
         pie_method = descent_info.pie_method
         conjugate_gradients = descent_info.conjugate_gradients
-        hessian_info = getattr(descent_info.hessian, local_or_global)
+        newton_info = getattr(descent_info.newton, local_or_global)
 
         grad, U = self.calculate_PIE_descent_direction(population, signal_t, signal_t_new, transform_arr, pie_method, measurement_info, descent_info, pulse_or_gate)
         grad_sum = jnp.sum(grad, axis=1)
 
 
-        if hessian_info=="diagonal" or (hessian_info=="full" and pulse_or_gate=="pulse"):
+        if newton_info=="diagonal" or (newton_info=="full" and pulse_or_gate=="pulse"):
             # one could use U*grad instead of grad here
-            descent_direction, hessian_state = self.calculate_PIE_newton_direction(grad, signal_t, transform_arr, measured_trace, population, local_or_global_state, 
+            descent_direction, newton_state = self.calculate_PIE_newton_direction(grad, signal_t, transform_arr, measured_trace, population, local_or_global_state, 
                                                                                    measurement_info, descent_info, pulse_or_gate, local_or_global)
-            local_or_global_state = tree_at(lambda x: getattr(x.hessian, pulse_or_gate), local_or_global_state, hessian_state)
+            local_or_global_state = tree_at(lambda x: getattr(x.newton, pulse_or_gate), local_or_global_state, newton_state)
 
-        elif hessian_info=="lbfgs":
+        elif newton_info=="lbfgs":
             lbfgs_state = getattr(local_or_global_state.lbfgs, pulse_or_gate)
             descent_direction, lbfgs_state = get_quasi_newton_direction(grad_sum, lbfgs_state, descent_info)
 
@@ -540,7 +540,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
             gamma = jnp.broadcast_to(getattr(descent_info.gamma, local_or_global), (descent_info.population_size, ))
 
 
-        if hessian_info=="lbfgs":
+        if newton_info=="lbfgs":
             step_size_arr = lbfgs_state.step_size_prev
             step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
             step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
@@ -672,7 +672,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
         measurement_info = self.measurement_info
 
         linesearch_params = initialize_linesearch_info(self)
-        hessian = initialize_hessian_info(self)
+        newton = initialize_newton_info(self)
         s_prime_params = initialize_S_prime_params(self)
         
         self.descent_info = self.descent_info.expand(alpha = self.alpha, 
@@ -680,7 +680,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
                                                      pie_method = self.pie_method,
 
                                                      conjugate_gradients = self.conjugate_gradients,
-                                                     hessian = hessian,
+                                                     newton = newton,
                                                      linesearch_params = linesearch_params,
                                                      s_prime_params = s_prime_params,
 
@@ -693,19 +693,19 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
 
         shape = jnp.shape(population.pulse)
         cg_state_local = initialize_CG_state(shape, measurement_info)
-        hessian_state_local = initialize_pseudo_newton_state(shape, measurement_info)
+        newton_state_local = initialize_pseudo_newton_state(shape, measurement_info)
         lbfgs_state_local = initialize_lbfgs_state(shape, measurement_info, descent_info)
 
         cg_state_global = initialize_CG_state(shape, measurement_info)
-        hessian_state_global = initialize_pseudo_newton_state(shape, measurement_info)
+        newton_state_global = initialize_pseudo_newton_state(shape, measurement_info)
         lbfgs_state_global = initialize_lbfgs_state(shape, measurement_info, descent_info)
 
         init_arr = jnp.zeros(shape[0])
         self.descent_state = self.descent_state.expand(key = self.key, 
                                                        population = population, 
-                                                       _local=MyNamespace(cg=cg_state_local, hessian=hessian_state_local, lbfgs=lbfgs_state_local, 
+                                                       _local=MyNamespace(cg=cg_state_local, newton=newton_state_local, lbfgs=lbfgs_state_local, 
                                                                           max_scaling = MyNamespace(pulse=init_arr, gate=init_arr)),
-                                                       _global=MyNamespace(cg=cg_state_global, hessian=hessian_state_global, lbfgs=lbfgs_state_global))
+                                                       _global=MyNamespace(cg=cg_state_global, newton=newton_state_global, lbfgs=lbfgs_state_global))
     
         descent_state=self.descent_state
 
@@ -831,7 +831,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
         The step size is determined via a fixed/adaptive step size, a backtracking or a zoom linesearch.
         """
         
-        gamma, hessian_info = getattr(descent_info.gamma, local_or_global), getattr(descent_info.hessian, local_or_global)
+        gamma, newton_info = getattr(descent_info.gamma, local_or_global), getattr(descent_info.newton, local_or_global)
         
         if local_or_global=="_global":
             shape = (descent_info.population_size, ) + jnp.shape(transform_arr)
@@ -840,13 +840,13 @@ class COPRABASE(ClassicAlgorithmsBASE):
         grad = self.get_Z_gradient(signal_t, signal_t_new, population, transform_arr, measurement_info, pulse_or_gate)
         grad_sum = jnp.sum(grad, axis=1)
 
-        if hessian_info=="diagonal" or hessian_info=="full":
-            descent_direction, hessian_state = self.get_Z_newton_direction(grad, signal_t, signal_t_new, transform_arr, population, local_or_global_state, 
-                                                                                       measurement_info, descent_info, hessian_info, pulse_or_gate)
+        if newton_info=="diagonal" or newton_info=="full":
+            descent_direction, newton_state = self.get_Z_newton_direction(grad, signal_t, signal_t_new, transform_arr, population, local_or_global_state, 
+                                                                                       measurement_info, descent_info, newton_info, pulse_or_gate)
 
-            local_or_global_state = tree_at(lambda x: getattr(x.hessian, pulse_or_gate), local_or_global_state, hessian_state)
+            local_or_global_state = tree_at(lambda x: getattr(x.newton, pulse_or_gate), local_or_global_state, newton_state)
 
-        elif hessian_info=="lbfgs":
+        elif newton_info=="lbfgs":
             lbfgs_state = getattr(local_or_global_state.lbfgs, pulse_or_gate)
             descent_direction, lbfgs_state = get_quasi_newton_direction(grad_sum, lbfgs_state, descent_info)
 
@@ -879,7 +879,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
         else:
             gamma = jnp.broadcast_to(gamma, (descent_info.population_size, ))
 
-        if hessian_info=="lbfgs":
+        if newton_info=="lbfgs":
             step_size_arr = lbfgs_state.step_size_prev
             step_size_arr = step_size_arr.at[:,1:].set(step_size_arr[:,:-1])
             step_size_arr = step_size_arr.at[:,0].set(gamma[:, jnp.newaxis])
@@ -1016,13 +1016,13 @@ class COPRABASE(ClassicAlgorithmsBASE):
         measurement_info = self.measurement_info
 
         linesearch_params = initialize_linesearch_info(self)
-        hessian = initialize_hessian_info(self)
+        newton = initialize_newton_info(self)
         s_prime_params = initialize_S_prime_params(self)
         
         self.descent_info = self.descent_info.expand(gamma = MyNamespace(_local=self.local_gamma, _global=self.global_gamma),  
                                                      xi = self.xi, 
                                                      linesearch_params = linesearch_params,
-                                                     hessian = hessian,
+                                                     newton = newton,
                                                      s_prime_params = s_prime_params,
                                                      adaptive_scaling = MyNamespace(_local=self.local_adaptive_scaling, _global=self.global_adaptive_scaling),
                                                      idx_arr = self.idx_arr,
@@ -1031,20 +1031,20 @@ class COPRABASE(ClassicAlgorithmsBASE):
 
         shape = jnp.shape(population.pulse)
         cg_state_local = initialize_CG_state(shape, measurement_info)
-        hessian_state_local = initialize_pseudo_newton_state(shape, measurement_info)
+        newton_state_local = initialize_pseudo_newton_state(shape, measurement_info)
         lbfgs_state_local = initialize_lbfgs_state(shape, measurement_info, descent_info)
 
         cg_state_global = initialize_CG_state(shape, measurement_info)
-        hessian_state_global = initialize_pseudo_newton_state(shape, measurement_info)
+        newton_state_global = initialize_pseudo_newton_state(shape, measurement_info)
         lbfgs_state_global = initialize_lbfgs_state(shape, measurement_info, descent_info)
 
         init_arr = jnp.zeros(shape[0])
         self.descent_state = self.descent_state.expand(key = self.key, 
                                                        population = population, 
-                                                       _local=MyNamespace(cg=cg_state_local, hessian=hessian_state_local, lbfgs=lbfgs_state_local, 
+                                                       _local=MyNamespace(cg=cg_state_local, newton=newton_state_local, lbfgs=lbfgs_state_local, 
                                                                           max_scaling = MyNamespace(pulse=init_arr, gate=init_arr),
                                                                           mu = jnp.ones(shape[0])),
-                                                       _global=MyNamespace(cg=cg_state_global, hessian=hessian_state_global, lbfgs=lbfgs_state_global))
+                                                       _global=MyNamespace(cg=cg_state_global, newton=newton_state_global, lbfgs=lbfgs_state_global))
         
         descent_state = self.descent_state
 

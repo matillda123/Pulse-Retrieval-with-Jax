@@ -135,8 +135,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
         c2: float, constant for the strong Wolfe-condition
         delta_gamma: float, a factor which by which gamma is increased each iteration
 
-        local_hessian: bool or str, enables/disables the use of a hessian in local iterations. Can be False, lbfgs or diagonal.
-        global_hessian: bool or str, enables/disables the use of a hessian in global iterations. Can be False, lbfgs, diagonal or full.
+        local_newton: bool or str, enables/disables the use of a hessian in local iterations. Can be False, lbfgs or diagonal.
+        global_newton: bool or str, enables/disables the use of a hessian in global iterations. Can be False, lbfgs, diagonal or full.
         lambda_lm: float, a Levenberg-Marquardt style damping coefficient.
         lbfgs_memory: int, the number of past iterations to use in LBFGS
         linalg_solver: str or lineax-solver, chooses a library/method for inverting the hessian. Can be scipy, lineax or a specific lineax solver.
@@ -174,8 +174,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
         self.c2 = 0.9
         self.delta_gamma = 0.5
 
-        self.local_hessian = False
-        self.global_hessian = False
+        self.local_newton = False
+        self.global_newton = False
         self.lambda_lm = 1e-3
         self.lbfgs_memory = 10
         self.linalg_solver = "lineax"

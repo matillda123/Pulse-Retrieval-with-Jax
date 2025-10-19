@@ -232,12 +232,12 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulses2DSI):
         return grad
 
 
-    def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, tau_arr, descent_state, measurement_info, descent_info, use_hessian, pulse_or_gate):
+    def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, tau_arr, descent_state, measurement_info, descent_info, full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
-        descent_direction, hessian = get_pseudo_newton_direction_Z_error(grad, descent_state.population.pulse, signal_t.gate_pulses, signal_t.gate, 
+        descent_direction, newton_state = get_pseudo_newton_direction_Z_error(grad, descent_state.population.pulse, signal_t.gate_pulses, signal_t.gate, 
                                                                          signal_t.signal_t, signal_t_new, tau_arr, measurement_info, 
-                                                                         descent_state.hessian, descent_info.hessian, use_hessian, pulse_or_gate)
-        return descent_direction, hessian
+                                                                         descent_state.newton, descent_info.newton, full_or_diagonal, pulse_or_gate)
+        return descent_direction, newton_state
 
 
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):
@@ -314,14 +314,14 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
         
         """ Calculates the PIE newton direction for a population. """
         
-        newton_direction_prev = getattr(local_or_global_state.hessian, pulse_or_gate).newton_direction_prev
+        newton_direction_prev = getattr(local_or_global_state.newton, pulse_or_gate).newton_direction_prev
         probe = signal_t.gate
 
         reverse_transform = None
         signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        descent_direction, hessian = PIE_get_pseudo_newton_direction(grad, probe, signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
+        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, probe, signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                                                      measurement_info, descent_info, pulse_or_gate, local_or_global)
-        return descent_direction, hessian
+        return descent_direction, newton_state
     
     
 
@@ -364,11 +364,11 @@ class COPRA(COPRABASE, RetrievePulses2DSI):
 
 
     def get_Z_newton_direction(self, grad, signal_t, signal_t_new, tau_arr, population, local_or_global_state, measurement_info, descent_info, 
-                                           use_hessian, pulse_or_gate):
+                                           full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
         
-        hessian_state = local_or_global_state.hessian
-        descent_direction, hessian = get_pseudo_newton_direction_Z_error(grad, population.pulse, signal_t.gate_pulses, signal_t.gate, 
+        newton_state = local_or_global_state.newton
+        descent_direction, newton_state = get_pseudo_newton_direction_Z_error(grad, population.pulse, signal_t.gate_pulses, signal_t.gate, 
                                                                          signal_t.signal_t, signal_t_new, tau_arr, measurement_info, 
-                                                                         hessian_state, descent_info.hessian, use_hessian, pulse_or_gate)
-        return descent_direction, hessian
+                                                                         newton_state, descent_info.newton, full_or_diagonal, pulse_or_gate)
+        return descent_direction, newton_state

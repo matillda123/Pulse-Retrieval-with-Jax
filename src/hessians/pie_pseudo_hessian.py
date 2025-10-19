@@ -80,9 +80,9 @@ def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measur
     """
 
 
-    hessian = descent_info.hessian
-    lambda_lm, solver = hessian.lambda_lm, hessian.linalg_solver
-    full_or_diagonal = getattr(hessian, local_or_global)
+    newton = descent_info.newton
+    lambda_lm, solver = newton.lambda_lm, newton.linalg_solver
+    full_or_diagonal = getattr(newton, local_or_global)
 
     # vmap over population
     hessian_all_m=jax.vmap(PIE_get_pseudo_hessian_all_m, in_axes=(0,0,0,None,None))(probe, signal_f, measured_trace, measurement_info, full_or_diagonal)
@@ -107,6 +107,6 @@ def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measur
     # else:
     #     raise ValueError(f"full_or_diagonal needs to be full or diagonal. Not {full_or_diagonal}")
 
-    # hessian_state = MyNamespace(newton_direction_prev = newton_direction)
-    # return -1*newton_direction, hessian_state
+    # newton_state = MyNamespace(newton_direction_prev = newton_direction)
+    # return -1*newton_direction, newton_state
     return calculate_newton_direction(grad, hessian_all_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)
