@@ -11,7 +11,8 @@ from src.utilities import MyNamespace, generate_random_continuous_function, do_i
 
 def get_initial_amp(measurement_info):
     """
-    Estimate spectral amplitude from the integrated measured intensity. For SHG/THG the amplitude is interpolated to lie in the correct frequency region.
+    Estimate spectral amplitude from the integrated measured intensity. 
+    For SHG/THG the amplitude is interpolated to lie in the correct frequency region.
     """
     frequency, measured_trace, nonlinear_method = measurement_info.frequency, measurement_info.measured_trace, measurement_info.nonlinear_method
     mean_trace = jnp.mean(measured_trace, axis=0)
