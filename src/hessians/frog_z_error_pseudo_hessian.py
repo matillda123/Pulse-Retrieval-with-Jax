@@ -243,13 +243,14 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
                              True: hess_func_ifrog_True}
 
     
-    calc_subelement=Partial(calc_hessian_subelement[ifrog][cross_correlation][frogmethod], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=6)
+    calc_subelement = Partial(calc_hessian_subelement[ifrog][cross_correlation][frogmethod], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
+    # element_scan = Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=6)
 
-    carry=0+0j
-    xs=(pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn)
-    hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
-
+    # carry=0+0j
+    # xs=(pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn)
+    # hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
+    hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0,0,0))(pulse_t, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, D_arr_pn)
+    hessian_element = jnp.sum(hessian_element_arr)
     return hessian_element
 
 
@@ -295,7 +296,7 @@ def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, om
 
 
 
-def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, 
+def calc_Z_error_pseudo_hessian_one_m(dummy, exp_arr_m, pulse_t_shifted_m, gate_shifted_m, signal_t_m, signal_t_new_m, 
                                       pulse_t, time, omega, frogmethod, cross_correlation, ifrog, full_or_diagonal, pulse_or_gate):
     """ jax.vmap over frequency axis """
 
@@ -311,7 +312,7 @@ def calc_Z_error_pseudo_hessian_one_m(exp_arr_m, pulse_t_shifted_m, gate_shifted
         calc_hessian=jax.vmap(calc_hessian_partial, in_axes=(0, 0, 0, 0))
     
     hessian=calc_hessian(exp_arr_m, exp_arr_m, omega, omega)
-    return hessian
+    return dummy, hessian
 
 
 
@@ -326,8 +327,14 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t, pulse_t_shifted, gate_shifted, si
 
     hessian_all_m=Partial(calc_Z_error_pseudo_hessian_one_m, pulse_t=pulse_t, time=time, omega=omega, frogmethod=frogmethod, cross_correlation=cross_correlation, ifrog=ifrog, 
                           full_or_diagonal=full_or_diagonal, pulse_or_gate=pulse_or_gate)
-    h_all_m=jax.vmap(hessian_all_m, in_axes=(0,0,0,0,0))(exp_arr, pulse_t_shifted, gate_shifted, signal_t, signal_t_new)
+    
+    #h_all_m=jax.vmap(hessian_all_m, in_axes=(0,0,0,0,0))(exp_arr, pulse_t_shifted, gate_shifted, signal_t, signal_t_new)
 
+    carry = jnp.zeros(1)
+    xs = (exp_arr, pulse_t_shifted, gate_shifted, signal_t, signal_t_new)
+
+    get_hessian_all_m = Partial(scan_helper, actual_function=hessian_all_m, number_of_args=1, number_of_xs=5)
+    _, h_all_m = jax.lax.scan(get_hessian_all_m, carry, xs)
     return h_all_m
 
 
@@ -368,25 +375,6 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, pulse_t_shifted, gate_s
     hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=(0,0,0,0,0,0,None,None,None))(pulse_t, pulse_t_shifted, gate_shifted, signal_t, signal_t_new, 
                                                                                                 tau_arr, measurement_info, full_or_diagonal, pulse_or_gate)
     
-    # hessian=jnp.sum(hessian_m, axis=1)
-    # grad=jnp.sum(grad_m, axis=1)
-    
-    # if full_or_diagonal=="full":
-        
-    #     idx=jax.vmap(jnp.diag_indices_from)(hessian)
-    #     hessian=jax.vmap(lambda x,y: x.at[y].add(lambda_lm*jnp.abs(x[y])))(hessian, idx)
-
-    #     newton_direction=solve_linear_system(hessian, grad, newton_direction_prev, solver)
-
-    # elif full_or_diagonal=="diagonal":
-    #     hessian = hessian + lambda_lm*jnp.max(jnp.abs(hessian), axis=1)[:, jnp.newaxis]
-    #     newton_direction=grad/hessian
-        
-    # else:
-    #     raise ValueError(f"full_or_diagonal needs to be full or diagonal. Not {full_or_diagonal}")
-    
-    # newton_state = MyNamespace(newton_direction_prev = newton_direction)
-    # return -1*newton_direction, newton_state
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)
 
         

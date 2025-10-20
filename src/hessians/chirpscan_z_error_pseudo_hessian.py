@@ -52,12 +52,13 @@ def calc_Z_error_pseudo_hessian_element(exp_arr_mp, exp_arr_mn, omega_p, omega_n
 
 
     calc_subelement=Partial(calc_hessian_subelement[nonlinear_method], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=4)
+    # element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=4)
 
-    carry=0+0j
-    xs=(pulse_t_dispersed, signal_t_m, signal_t_new_m, D_arr_pn)
-    hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
-
+    # carry=0+0j
+    # xs=(pulse_t_dispersed, signal_t_m, signal_t_new_m, D_arr_pn)
+    # hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
+    hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0))(pulse_t_dispersed, signal_t_m, signal_t_new_m, D_arr_pn)
+    hessian_element = jnp.sum(hessian_element_arr)
     return hessian_element
 
 
@@ -86,7 +87,12 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t_dispersed, signal_t, signal_t_new,
     exp_arr=jnp.exp(-1j*phase_matrix)
 
     hessian_all_m=Partial(calc_Z_error_pseudo_hessian_one_m, time=time, omega=omega, nonlinear_method=nonlinear_method, full_or_diagonal=full_or_diagonal)
-    h_all_m=jax.vmap(hessian_all_m, in_axes=(0,0,0,0))(exp_arr, pulse_t_dispersed, signal_t, signal_t_new)
+    #h_all_m=jax.vmap(hessian_all_m, in_axes=(0,0,0,0))(exp_arr, pulse_t_dispersed, signal_t, signal_t_new)
+
+    carry = jnp.zeros(1)
+    xs = (exp_arr, pulse_t_dispersed, signal_t, signal_t_new)
+    get_hessian_all_m = Partial(scan_helper, actual_function=hessian_all_m, number_of_args=1, number_of_xs=4)
+    _, h_all_m = jax.lax.scan(get_hessian_all_m, carry, xs)
 
     return h_all_m
 
@@ -125,22 +131,4 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_dispersed, signal_t, sig
     hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=(0,0,0,0,None,None))(pulse_t_dispersed, signal_t, signal_t_new, phase_matrix, measurement_info, 
                                                                                        full_or_diagonal)
 
-    # hessian=jnp.sum(hessian_m, axis=1)
-    # grad=jnp.sum(grad_m, axis=1)
-
-    # if full_or_diagonal=="full":
-    #     idx=jax.vmap(jnp.diag_indices_from)(hessian)
-    #     hessian=jax.vmap(lambda x,y: x.at[y].add(lambda_lm*jnp.abs(x[y])))(hessian, idx)
-
-    #     newton_direction=solve_linear_system(hessian, grad, newton_direction_prev, solver)
-
-    # elif full_or_diagonal=="diagonal":
-    #     hessian = hessian + lambda_lm*jnp.max(jnp.abs(hessian), axis=1)[:, jnp.newaxis]
-    #     newton_direction = grad/hessian
-
-    # else:
-    #     raise ValueError(f"full_or_diagonal needs to be full or diagonal. Not {full_or_diagonal}")
-
-    # newton_state = MyNamespace(newton_direction_prev = newton_direction)
-    # return -1*newton_direction, newton_state
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)
