@@ -49,7 +49,7 @@ class MyNamespace:
             value = mydict[key]
 
             if type(value)==MyNamespace:
-                myoutput.append([key, "\n\t" + value.__repr__() + "\n"])
+                myoutput.append([key, value.__repr__()])
             else:
                 try:
                     myoutput.append([key, jnp.shape(value), value.dtype])

@@ -338,8 +338,6 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         self.amplitude_or_intensity = "intensity"
         self.error_metric = self.trace_error
 
-        self.bspline_info = MyNamespace(amp = None, phase = None)
-
 
     def create_initial_population(self, population_size, amp_type="gaussian", phase_type="polynomial", no_funcs_amp=5, no_funcs_phase=6):
         """ 
@@ -373,8 +371,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
             no_funcs_phase = int(nn[jnp.round(nn%1, 5)==0][-1]) + (k-1)
 
             Nx = N/(no_funcs_phase-k+1) + 1 # how many points per spline?
-            bspline_info_phase = MyNamespace(k=k, M=M, f=f, Nx=int(Nx))
-            self.bspline_info = self.bspline_info.expand(phase = bspline_info_phase)
+            self.make_bsplines_phase = Partial(make_bsplines, k=k, M=M, f=f, Nx=int(Nx))
 
         if amp_type[:-2]=="bsplines":
             k, amp_type = int(amp_type[-1]), amp_type[:-2]
@@ -386,8 +383,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
             no_funcs_amp = int(nn[jnp.round(nn%1, 5)==0][-1]) + (k-1)
 
             Nx = N/(no_funcs_amp-k+1) + 1
-            bspline_info_amp = MyNamespace(k=k, M=M, f=f, Nx=int(Nx))
-            self.bspline_info = self.bspline_info.expand(amp = bspline_info_amp)
+            self.make_bsplines_amp = Partial(make_bsplines, k=k, M=M, f=f, Nx=int(Nx))
 
         subkey, population_pulse = create_population_general(subkey, amp_type, phase_type, population.pulse, population_size, no_funcs_amp, no_funcs_phase, 
                                                              self.descent_info.measured_spectrum_is_provided.pulse, self.measurement_info)
@@ -435,7 +431,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         return coefficient*(x-x0)**order
     
 
-    def polynomial_phase(self, coefficients, central_f, measurement_info, descent_info):
+    def polynomial_phase(self, coefficients, central_f, measurement_info):
         phase = jax.vmap(self.polynomial_term, in_axes=(0, 0, None, None))(coefficients, jnp.arange(jnp.size(coefficients))+1, central_f, measurement_info.frequency)
         phase = jnp.sum(phase, axis=0)
         return phase
@@ -445,14 +441,14 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         phase = a*jnp.sin(2*jnp.pi*b*x+c)
         return phase
     
-    def sinusoidal_phase(self, coefficients, central_f, measurement_info, descent_info):
+    def sinusoidal_phase(self, coefficients, central_f, measurement_info):
         a, b, c = coefficients.a, coefficients.b, coefficients.c
         phase_arr = jax.vmap(self.sinusoidal_term, in_axes=(0, 0, 0, None))(a, b, c, measurement_info.frequency)
         phase = jnp.sum(phase_arr, axis=0)
         return phase
     
 
-    def discrete_phase(self, coefficients, central_f, measurement_info, descent_info):
+    def discrete_phase(self, coefficients, central_f, measurement_info):
         return coefficients
     
 
@@ -460,17 +456,15 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         return 0.5*(1+jnp.tanh((x-c)/k))
     
 
-    def tanh_phase(self, coefficients, central_f, measurement_info, descent_info):
+    def tanh_phase(self, coefficients, central_f, measurement_info):
         a, c, k = coefficients.a, coefficients.c, coefficients.k
         phase_arr=jax.vmap(self.tanh_term, in_axes=(0, 0, None))(c, k, measurement_info.frequency)
         phase = jnp.sum(a[:, jnp.newaxis]*phase_arr, axis=0)
         return phase
     
 
-    def bspline_phase(self, coefficients, central_f, measurement_info, descent_info):
-        bspline_info = descent_info.bsplines.phase
-        k, M, f, Nx = bspline_info.k, bspline_info.M, bspline_info.f, bspline_info.Nx
-        phase = make_bsplines(coefficients.c, k, M, f, Nx)
+    def bspline_phase(self, coefficients, central_f, measurement_info):
+        phase = self.make_bsplines_phase(coefficients.c)
         return phase
 
 
@@ -480,7 +474,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         return a*jnp.exp(-(frequency-c)**2/(2*b**2+1e-9))
     
 
-    def gaussian_amplitude(self, coefficients, measurement_info, descent_info):
+    def gaussian_amplitude(self, coefficients, measurement_info):
         a, b, c = coefficients.a, coefficients.b, coefficients.c
         amp_f = jax.vmap(self.gaussian_term, in_axes=(0, 0, 0, None))(a, b, c, measurement_info.frequency)
         amp_f = jnp.sum(amp_f, axis=0)
@@ -494,7 +488,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         return a/((frequency-c)**2+b**2)
     
 
-    def lorentzian_amplitude(self, coefficients, measurement_info, descent_info):
+    def lorentzian_amplitude(self, coefficients, measurement_info):
         a, b, c = coefficients.a, coefficients.b, coefficients.c
         amp_f = jax.vmap(self.lorentzian_term, in_axes=(0, 0, 0, None))(a, b, c, measurement_info.frequency)
         amp_f = jnp.sum(amp_f, axis=0)
@@ -503,15 +497,13 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
     
 
-    def discrete_amplitude(self, coefficients, measurement_info, descent_info):
+    def discrete_amplitude(self, coefficients, measurement_info):
         amp_f = coefficients
         return amp_f
     
 
-    def bspline_amplitude(self, coefficients, measurement_info, descent_info):
-        bspline_info = descent_info.bsplines.amp
-        k, M, f, Nx = bspline_info.k, bspline_info.M, bspline_info.f, bspline_info.Nx
-        amp_f = make_bsplines(coefficients.c, k, M, f, Nx)
+    def bspline_amplitude(self, coefficients, measurement_info):
+        amp_f = self.make_bsplines_amp(coefficients.c)
         return amp_f
     
 
@@ -526,7 +518,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
                                   "discrete": self.discrete_phase}
         
         spectral_phase_func = spectral_phase_func_dict[descent_info.phase_type]
-        return spectral_phase_func(coefficients, central_f, measurement_info, descent_info)
+        return spectral_phase_func(coefficients, central_f, measurement_info)
     
 
 
@@ -538,7 +530,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
                        "discrete": self.discrete_amplitude}
             
         amp_func = amp_func_dict[descent_info.amp_type]
-        amp_f = amp_func(coefficients, measurement_info, descent_info)
+        amp_f = amp_func(coefficients, measurement_info)
 
         frequency = measurement_info.frequency
         idx_arr = jnp.arange(jnp.size(frequency))
@@ -658,8 +650,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
         self.descent_info = self.descent_info.expand(use_fd_grad = self.use_fd_grad,
                                                      amplitude_or_intensity = self.amplitude_or_intensity,
-                                                     error_metric = self.error_metric,
-                                                     bsplines = self.bspline_info)
+                                                     error_metric = self.error_metric)
 
         self.descent_state = self.descent_state.expand(population = population)
 

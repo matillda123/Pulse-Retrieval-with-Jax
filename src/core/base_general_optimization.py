@@ -787,10 +787,10 @@ class LSFBASE(GeneralOptimizationBASE):
         if self.descent_info.amp_type!="discrete" or self.descent_info.phase_type!="discrete":
             print("LSF is only implemented for amp_type=discrete, phase_type=discrete and converts the populations accordingly.")
 
+        self.initialize_general_optimizer(population)
         population = self.convert_population(population, self.measurement_info, self.descent_info)
         population_pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(population.pulse)
         population = tree_at(lambda x: x.pulse, population, population_pulse)
-        self.initialize_general_optimizer(population)
 
         measurement_info = self.measurement_info
 
@@ -800,6 +800,7 @@ class LSFBASE(GeneralOptimizationBASE):
                                                      boundary = self.boundary)
         descent_info = self.descent_info
 
+        self.descent_state = tree_at(lambda x: x.population, self.descent_state, population)
         self.descent_state = self.descent_state.expand(key = self.key)
         descent_state = self.descent_state
 
@@ -1016,6 +1017,8 @@ class AutoDiffBASE(GeneralOptimizationBASE):
             
 
         descent_state, static = equinox.partition(descent_state, equinox.is_array)
+        self.descent_state = descent_state
+        self.static = static
 
         do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
         do_step = Partial(scan_helper_equinox, step=do_step, static=static)
@@ -1042,10 +1045,10 @@ class AutoDiffBASE(GeneralOptimizationBASE):
             print("You can select the individual to be optimized via self.optimize_individual_idx")
             
         self.initialize_general_optimizer(population)
-
+        
         measurement_info = self.measurement_info
 
-        self.descent_info = self.descent_info.expand(alternating_optimization=self.alternating_optimization)
+        self.descent_info = self.descent_info.expand(alternating_optimization = self.alternating_optimization)
         descent_info = self.descent_info
 
         self.descent_state = self.descent_state.expand(individual = self.get_individual_from_idx(self.optimize_individual_idx, population))

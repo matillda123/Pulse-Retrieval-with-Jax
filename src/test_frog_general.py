@@ -27,8 +27,8 @@ nonlinear_method = ("shg", "thg", "pg", "sd", "shg")
 cross_correlation = (False, True, "doubleblind", False, True)
 use_measured_spectrum = (False, True, True, False, False)
 
-amp_type = ("gaussian", "lorentzian", "bsplines", "discrete", "gaussian")
-phase_type = ("polynomial", "sinusoidal", "sigmoidal", "bsplines", "discrete")
+amp_type = ("gaussian", "lorentzian", "bsplines_5", "discrete", "gaussian")
+phase_type = ("polynomial", "sinusoidal", "sigmoidal", "bsplines_5", "discrete")
 
 parameters_measurement = (delay, frequency, trace, spectra, gate)
 
