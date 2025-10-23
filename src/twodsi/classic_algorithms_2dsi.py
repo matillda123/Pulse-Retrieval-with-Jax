@@ -185,6 +185,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         assert len(population.pulse)==1, "DirectReconstruction has no inherent randomness, so its not sensible to use or expect more than one result."
 
         self.measurement_info = self.measurement_info.expand(cut_off_intensity = self.cut_off_intensity_for_GD)
+        measurement_info = self.measurement_info
 
         if self.integration_method[:-2]=="euler_maclaurin":
             self.integration_order = int(self.integration_method[-1])
@@ -198,12 +199,17 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
                                                      integration_order = self.integration_order,
                                                      windowing = a0_dict[self.windowing])
         
+        descent_info = self.descent_info
+        
         init_arr = jnp.zeros(jnp.size(self.measurement_info.frequency))
         self.descent_state = self.descent_state.expand(population = population, 
                                                        group_delay = init_arr, 
                                                        spectral_phase=init_arr)
 
-        do_scan = Partial(self.step, measurement_info=self.measurement_info, descent_info=self.descent_info)
+        #do_scan = Partial(self.step, measurement_info=self.measurement_info, descent_info=self.descent_info)
+        step = self.step
+        def do_scan(descent_state):
+            return step(descent_state, measurement_info, descent_info)
         do_scan = Partial(scan_helper, actual_function=do_scan, number_of_args=1, number_of_xs=0)
         return self.descent_state, do_scan
 

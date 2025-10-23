@@ -58,21 +58,16 @@ class MyNamespace:
                 except Exception:
                     myoutput.append([key, value, type(value).__name__])
                     
-        return f"{myoutput}"
+        return f"{myoutput}".replace("\'","").replace("\"", "")
     
         
 
     def __add__(self, other): # i think one can just use jax.tree.map?
         if isinstance(other, MyNamespace):
-            leaves1, treedef = jax.tree.flatten(self)
-            leaves2, treedef = jax.tree.flatten(other)
-            leaves_new = [leaves1[i] + leaves2[i] for i in range((len(leaves1) + len(leaves2))//2)]
-            tree_new = jax.tree.unflatten(treedef, leaves_new)
+            tree_new = jax.tree.map(lambda x,y: x+y, self, other)
         else:
-            leaves, treedef = jax.tree.flatten(self)
-            leaves_new = [leaves[i] + other for i in range(len(leaves))]
-            tree_new = jax.tree.unflatten(treedef, leaves_new)
-
+            y = other
+            tree_new = jax.tree.map(lambda x: x+y, self)
         return tree_new
     
 
@@ -82,15 +77,10 @@ class MyNamespace:
 
     def __mul__(self, other):
         if isinstance(other, MyNamespace):
-            leaves1, treedef = jax.tree.flatten(self)
-            leaves2, treedef = jax.tree.flatten(other)
-            leaves_new = [leaves1[i]*leaves2[i] for i in range((len(leaves1)+len(leaves2))//2)]
-            tree_new = jax.tree.unflatten(treedef, leaves_new)
+            tree_new = jax.tree.map(lambda x,y: x*y, self, other)
         else:
-            leaves, treedef = jax.tree.flatten(self)
-            leaves_new = [leaves[i]*other for i in range(len(leaves))]
-            tree_new = jax.tree.unflatten(treedef, leaves_new)
-
+            y = other
+            tree_new = jax.tree.map(lambda x: x*y, self)
         return tree_new
     
 
@@ -109,13 +99,6 @@ jax.tree_util.register_pytree_node(MyNamespace, flatten_MyNamespace, unflatten_M
 
 
 
-def run_scan_helper(do_scan, carry, no_iterations):
-    """
-    Helper to be able to set static arguments in jax.jit
-    """
-    return jax.lax.scan(do_scan, carry, length=no_iterations)
-
-
 def run_scan(do_scan, carry, no_iterations, use_jit):
     """
     Run a solver iteratively using lax.scan with or without jax.jit.
@@ -130,14 +113,15 @@ def run_scan(do_scan, carry, no_iterations, use_jit):
         tuple[Carry, Y], the output of jax.lax.scan
 
     """
+    def scan(carry):
+        return jax.lax.scan(do_scan, carry, length=no_iterations)
 
     if use_jit==True:
-        scan = jax.jit(run_scan_helper, static_argnames=("do_scan", "no_iterations"))
-        carry, error_arr = scan(do_scan, carry, no_iterations)
+        scan = jax.jit(scan)
     else:
-        carry, error_arr = jax.lax.scan(do_scan, carry, length=no_iterations)
+        pass
     
-    return carry, error_arr
+    return scan(carry)
 
 
 

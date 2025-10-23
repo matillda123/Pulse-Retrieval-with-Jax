@@ -345,7 +345,11 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
 
         descent_state = self.descent_state
 
-        do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        #do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        step = self.step
+        def do_step(descent_state):
+            return step(descent_state, measurement_info, descent_info)
+        
         do_step = Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
     
@@ -707,9 +711,17 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
     
         descent_state=self.descent_state
 
-        do_local=Partial(self.local_step, measurement_info=measurement_info, descent_info=descent_info)
+        #do_local=Partial(self.local_step, measurement_info=measurement_info, descent_info=descent_info)
+        local_step = self.local_step
+        def do_local(descent_state):
+            return local_step(descent_state, measurement_info, descent_info)
         do_local=Partial(scan_helper, actual_function=do_local, number_of_args=1, number_of_xs=0)
-        do_global=Partial(self.global_step, measurement_info=measurement_info, descent_info=descent_info)
+
+
+        #do_global=Partial(self.global_step, measurement_info=measurement_info, descent_info=descent_info)
+        global_step = self.global_step
+        def do_global(descent_state):
+            return global_step(descent_state, measurement_info, descent_info)
         do_global=Partial(scan_helper, actual_function=do_global, number_of_args=1, number_of_xs=0)
 
         return descent_state, do_local, do_global
@@ -1046,10 +1058,19 @@ class COPRABASE(ClassicAlgorithmsBASE):
         
         descent_state = self.descent_state
 
-        do_local = Partial(self.local_step, measurement_info=measurement_info, descent_info=descent_info)
-        do_local = Partial(scan_helper, actual_function=do_local, number_of_args=1, number_of_xs=0)
-        do_global = Partial(self.global_step, measurement_info=measurement_info, descent_info=descent_info)
-        do_global = Partial(scan_helper, actual_function=do_global, number_of_args=1, number_of_xs=0)
+        #do_local=Partial(self.local_step, measurement_info=measurement_info, descent_info=descent_info)
+        local_step = self.local_step
+        def do_local(descent_state):
+            return local_step(descent_state, measurement_info, descent_info)
+        do_local=Partial(scan_helper, actual_function=do_local, number_of_args=1, number_of_xs=0)
+
+
+        #do_global=Partial(self.global_step, measurement_info=measurement_info, descent_info=descent_info)
+        global_step = self.global_step
+        def do_global(descent_state):
+            return global_step(descent_state, measurement_info, descent_info)
+        do_global=Partial(scan_helper, actual_function=do_global, number_of_args=1, number_of_xs=0)
+        
         return descent_state, do_local, do_global
     
 

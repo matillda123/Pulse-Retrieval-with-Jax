@@ -341,7 +341,10 @@ class DifferentialEvolutionBASE(GeneralOptimizationBASE):
                                                        key=self.key)
         descent_state = self.descent_state
         
-        do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        #do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        step = self.step
+        def do_step(descent_state):
+            return step(descent_state, measurement_info, descent_info)
         do_step = Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
 
@@ -517,7 +520,10 @@ class EvosaxBASE(GeneralOptimizationBASE):
                                                        key = self.key)
         descent_state = self.descent_state
         
-        do_step=Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        #do_step=Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        step = self.step
+        def do_step(descent_state):
+            return step(descent_state, measurement_info, descent_info)
         do_step=Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
 
@@ -804,7 +810,10 @@ class LSFBASE(GeneralOptimizationBASE):
         self.descent_state = self.descent_state.expand(key = self.key)
         descent_state = self.descent_state
 
-        do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        #do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        step = self.step
+        def do_step(descent_state):
+            return step(descent_state, measurement_info, descent_info)
         do_step = Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
 
@@ -1017,10 +1026,11 @@ class AutoDiffBASE(GeneralOptimizationBASE):
             
 
         descent_state, static = equinox.partition(descent_state, equinox.is_array)
-        self.descent_state = descent_state
-        self.static = static
 
-        do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        #do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        step = self.step
+        def do_step(descent_state):
+            return step(descent_state, measurement_info, descent_info)
         do_step = Partial(scan_helper_equinox, step=do_step, static=static)
         return descent_state, do_step
 
