@@ -138,8 +138,8 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
     
     def get_Z_gradient(self, signal_t, signal_t_new, population, transform_arr, measurement_info, pulse_or_gate):
         """ Calculates the Z-error gradient for the entire population. """
-        grad = jax.vmap(self.calculate_Z_gradient_individual, in_axes=(0, 0, 0, None, None, None))(signal_t, signal_t_new, population, transform_arr, 
-                                                                                                   measurement_info, pulse_or_gate)
+        grad = jax.vmap(self.calculate_Z_gradient_individual, in_axes=(0, 0, 0, 0, None, None))(signal_t, signal_t_new, population, transform_arr, 
+                                                                                                measurement_info, pulse_or_gate)
         return grad
 
     
@@ -179,6 +179,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
 
         population = descent_state.population
         transform_arr = measurement_info.transform_arr
+        transform_arr = jnp.broadcast_to(transform_arr, (descent_info.population_size, ) + jnp.shape(transform_arr))
 
         grad = self.get_Z_gradient(signal_t, signal_t_new, population, transform_arr, measurement_info, pulse_or_gate)
         grad_sum = jnp.sum(grad, axis=1)

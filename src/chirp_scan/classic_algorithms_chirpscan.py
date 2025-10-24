@@ -135,6 +135,7 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulsesCHIRPSCAN):
 
     def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, phase_matrix, descent_state, measurement_info, descent_info, full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
+
         descent_direction, newton_state = get_pseudo_newton_direction_Z_error(grad, signal_t.pulse_t_disp, signal_t.signal_t, signal_t_new, phase_matrix, 
                                                                         measurement_info, descent_state.newton, descent_info.newton, full_or_diagonal)
         return descent_direction, newton_state
@@ -288,7 +289,7 @@ class COPRA(COPRABASE, RetrievePulsesCHIRPSCAN):
         return grad
 
 
-    def calculate_Z_error_newton_direction(self, grad, signal_t, signal_t_new, phase_matrix, population, local_or_global_state, measurement_info, descent_info, 
+    def get_Z_newton_direction(self, grad, signal_t, signal_t_new, phase_matrix, population, local_or_global_state, measurement_info, descent_info, 
                                            full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
 

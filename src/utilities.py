@@ -62,7 +62,7 @@ class MyNamespace:
     
         
 
-    def __add__(self, other): # i think one can just use jax.tree.map?
+    def __add__(self, other):
         if isinstance(other, MyNamespace):
             tree_new = jax.tree.map(lambda x,y: x+y, self, other)
         else:
@@ -472,7 +472,8 @@ import lineax
 def _solve_system_using_lineax_iteratively(A, b, x_prev, solver):
     """ Wraps around lineax.linear_solve. Supplies lineax with a preconditioner and an approximate solution in case the solver may use those. """
     
-    if isinstance(solver, lineax.CG):
+    if isinstance(solver, lineax.CG): 
+        # appyling this tag might be a lie. But lineax will throw an error otherwise
         operator = lx.MatrixLinearOperator(A, lineax.positive_semidefinite_tag)
     else:
         operator = lx.MatrixLinearOperator(A)

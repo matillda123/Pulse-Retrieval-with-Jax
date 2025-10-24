@@ -213,10 +213,7 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulsesFROG):
 
     def calculate_Z_newton_direction(self, grad, signal_t_new, signal_t, tau_arr, descent_state, measurement_info, descent_info, full_or_diagonal, pulse_or_gate):
         """ Calculates the Z-error newton direction for a population. """
-
-        tau_arr = jnp.broadcast_to(tau_arr, (descent_info.population_size, ) + jnp.shape(tau_arr))
-        # this fixes a vmap issue could maybe be handled nicer/more generally
-
+        
         descent_direction, newton_state = get_pseudo_newton_direction_Z_error(grad, descent_state.population.pulse, signal_t.pulse_t_shifted, signal_t.gate_shifted, 
                                                                          signal_t.signal_t, signal_t_new, tau_arr, measurement_info, 
                                                                          descent_state.newton, descent_info.newton, full_or_diagonal, pulse_or_gate)
