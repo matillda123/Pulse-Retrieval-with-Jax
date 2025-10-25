@@ -385,6 +385,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
             Nx = N/(no_funcs_amp-k+1) + 1
             self.make_bsplines_amp = Partial(make_bsplines, k=k, M=M, f=f, Nx=int(Nx))
 
+
         subkey, population_pulse = create_population_general(subkey, amp_type, phase_type, population.pulse, population_size, no_funcs_amp, no_funcs_phase, 
                                                              self.descent_info.measured_spectrum_is_provided.pulse, self.measurement_info)
         population = tree_at(lambda x: x.pulse, population, population_pulse)
@@ -610,6 +611,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
     def trace_error(self, trace, measured_trace):
         """ The mean least squares error. """
         return jnp.mean(jnp.abs(trace - measured_trace)**2)
+
 
     def calculate_error_individual(self, individual, measurement_info, descent_info):
         """ Calculates the error of an individual based on its trace. 

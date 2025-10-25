@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import jax
 
 from src.utilities import MyNamespace, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, center_signal_to_max
-from src.core.base_classes_methods import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulsesFROGwithRealFields, RetrievePulsesCHIRPSCANwithRealFields, RetrievePulses2DSI
+from src.core.base_classes_methods import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulsesFROGwithRealFields, RetrievePulsesCHIRPSCANwithRealFields, RetrievePulses2DSI, RetrievePulses2DSIwithRealFields
 from .make_pulse import MakePulse as MakePulseBase
 
 
@@ -61,11 +61,12 @@ class MakePulse(MakePulseBase):
                                     real_fields=False):
         
         if real_fields==True:
-            self.maketrace = MakeTraceFROGReal(time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
-                                             interpolate_fft_conform, cut_off_val, frequency_range)
+            maketrace = MakeTraceFROGReal
         else:
-            self.maketrace = MakeTraceFROG(time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
-                                         interpolate_fft_conform, cut_off_val, frequency_range)
+            maketrace = MakeTraceFROG
+        
+        self.maketrace = maketrace(time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
+                                   interpolate_fft_conform, cut_off_val, frequency_range)
 
 
         if cross_correlation==True:
@@ -87,10 +88,13 @@ class MakePulse(MakePulseBase):
                                           cut_off_val=0.001, frequency_range=None, real_fields=False):
 
         if real_fields==True:
-            self.maketrace = MakeTraceCHIRPSCANReal(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters)
+            maketrace = MakeTraceCHIRPSCANReal
         else:
-            self.maketrace = MakeTraceCHIRPSCAN(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters)
+            maketrace = MakeTraceCHIRPSCAN
 
+        self.maketrace = maketrace(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters)
+        
+        
         time_trace, frequency_trace, trace, spectra = self.maketrace.generate_trace()
             
         if plot_stuff==True:
@@ -104,10 +108,15 @@ class MakePulse(MakePulseBase):
 
     def generate_2dsi(self, time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation=True, anc=((None,None),(None,None)), N=256, scale_time_range=1, 
                                          plot_stuff=True, 
-                                         cut_off_val=0.001, frequency_range=None):
-
+                                         cut_off_val=0.001, frequency_range=None, real_fields=False):
         
-        self.maketrace = MakeTrace2DSI(time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation, N, scale_time_range, cut_off_val, frequency_range)
+
+        if real_fields==True:
+            maketrace = MakeTrace2DSIReal
+        else:
+            maketrace = MakeTrace2DSI
+
+        self.maketrace = maketrace(time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation, N, scale_time_range, cut_off_val, frequency_range)
 
         if self.maketrace.cross_correlation==True:
             anc_1, anc_2 = anc
@@ -274,7 +283,7 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
 
 
     def get_parameters_to_make_signal_t(self):
-        measurement_info = MyNamespace(cross_correlation_gate=self.gate, time=self.time, frequency=self.frequency, cross_correlation=self.cross_correlation, ifrog=self.ifrog, 
+        measurement_info = MyNamespace(gate=self.gate, time=self.time, frequency=self.frequency, cross_correlation=self.cross_correlation, ifrog=self.ifrog, 
                                        nonlinear_method=self.nonlinear_method, doubleblind=False)
         individual = MyNamespace(pulse=self.pulse_t, gate=self.gate)
         return individual, measurement_info, self.time
@@ -341,9 +350,6 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
 
         return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
     
-
-
-
 
 
 
@@ -418,25 +424,6 @@ class MakeTraceCHIRPSCAN(MakeTraceBASE, RetrievePulsesCHIRPSCAN):
         spectra = MyNamespace(pulse=(frequency_interpolate_spectrum, spectrum), gate=None)
         
         return self.time, frequency_interpolate, np.abs(trace_interpolate), spectra
-
-
-
-
-
-class MakeTraceFROGReal(RetrievePulsesFROGwithRealFields, MakeTraceFROG):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-
-
-class MakeTraceCHIRPSCANReal(RetrievePulsesCHIRPSCANwithRealFields, MakeTraceCHIRPSCAN):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-
-
 
 
 
@@ -548,3 +535,42 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
 
         return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
     
+
+
+
+
+
+
+
+
+
+
+
+class MakeTraceFROGReal(RetrievePulsesFROGwithRealFields, MakeTraceFROG):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def calculate_shifted_signal(self, signal, frequency, tau_arr, time, in_axes=(None, 0, None, None, None)):
+        return RetrievePulsesFROG.calculate_shifted_signal(self, signal, frequency, tau_arr, time, in_axes=in_axes)
+    
+
+
+
+
+
+
+
+class MakeTraceCHIRPSCANReal(RetrievePulsesCHIRPSCANwithRealFields, MakeTraceCHIRPSCAN):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+
+
+
+class MakeTrace2DSIReal(RetrievePulses2DSIwithRealFields, MakeTrace2DSI):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+

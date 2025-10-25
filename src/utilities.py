@@ -116,6 +116,7 @@ def run_scan(do_scan, carry, no_iterations, use_jit):
     def scan(carry):
         return jax.lax.scan(do_scan, carry, length=no_iterations)
 
+
     if use_jit==True:
         scan = jax.jit(scan)
     else:
@@ -271,8 +272,8 @@ def do_fft(signal, sk, rn, axis=-1):
     """
     # if axis=0 -> sk, rn need to be use with jnp.newaxis to map over axis=0
     # default is always axis=-1
-    sk=jnp.conjugate(sk)
-    rn=jnp.conjugate(rn)
+    sk = jnp.conjugate(sk)
+    rn = jnp.conjugate(rn)
     return jnp.fft.fft(signal*sk, axis=axis)*rn
 
 
@@ -309,10 +310,10 @@ def get_sk_rn(time, frequency):
         tuple[jnp.array, jnp.array], the corrections used by do_fft/do_ifft
 
     """
-    n=jnp.arange(jnp.size(frequency))
-    df=jnp.mean(jnp.diff(frequency))
-    rn=jnp.exp(1j*time[0]*2*jnp.pi*n*df)
-    sk=jnp.exp(1j*2*jnp.pi*frequency[0]*time)
+    n = jnp.arange(jnp.size(frequency))
+    df = jnp.mean(jnp.diff(frequency))
+    rn = jnp.exp(1j*time[0]*2*jnp.pi*n*df)
+    sk = jnp.exp(1j*2*jnp.pi*frequency[0]*time)
     return sk, rn
 
 
