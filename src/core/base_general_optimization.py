@@ -8,7 +8,7 @@ from equinox import tree_at
 import equinox
 import optimistix
 
-from src.utilities import scan_helper, optimistix_helper_loss_function, scan_helper_equinox, MyNamespace, do_interpolation_1d
+from src.utilities import scan_helper, scan_helper_equinox, MyNamespace, do_interpolation_1d
 from .base_classes_algorithms import GeneralOptimizationBASE
 
 
@@ -935,23 +935,23 @@ class AutoDiffBASE(GeneralOptimizationBASE):
         """
 
         if descent_info.alternating_optimization==False:
-            individual, optimistix_state = descent_state.individual, descent_state.optimistix_state
-            individual, optimistix_state, error = self.optimistix_step(y=individual, state=optimistix_state)
+            population, optimistix_state = descent_state.population, descent_state.optimistix_state
+            population, optimistix_state, error = self.optimistix_step(population, optimistix_state)
 
-            descent_state = tree_at(lambda x: x.individual, descent_state, individual)
+            descent_state = tree_at(lambda x: x.population, descent_state, population)
             descent_state = tree_at(lambda x: x.optimistix_state, descent_state, optimistix_state)
 
         elif descent_info.alternating_optimization==True:
-            individual, optimistix_state_amp, optimistix_state_phase = descent_state.individual, descent_state.optimistix_state_amp, descent_state.optimistix_state_phase
+            population, optimistix_state_amp, optimistix_state_phase = descent_state.population, descent_state.optimistix_state_amp, descent_state.optimistix_state_phase
 
-            individual_amp, individual_phase = self.split_population_in_amp_and_phase(individual)
+            population_amp, population_phase = self.split_population_in_amp_and_phase(population)
             
-            individual_amp, optimistix_state_amp, error_amp = self.optimistix_step_amp(y=individual_amp, args=individual_phase, state=optimistix_state_amp)
-            individual_phase, optimistix_state_phase, error = self.optimistix_step_phase(y=individual_phase, args=individual_amp, state=optimistix_state_phase)
+            population_amp, optimistix_state_amp, error_amp = self.optimistix_step_amp(population_amp, population_phase, optimistix_state_amp)
+            population_phase, optimistix_state_phase, error = self.optimistix_step_phase(population_phase, population_amp, optimistix_state_phase)
             
-            individual = self.merge_population_from_amp_and_phase(individual_amp, individual_phase)
+            population = self.merge_population_from_amp_and_phase(population_amp, population_phase)
 
-            descent_state = tree_at(lambda x: x.individual, descent_state, individual)
+            descent_state = tree_at(lambda x: x.population, descent_state, population)
             descent_state = tree_at(lambda x: x.optimistix_state_amp, descent_state, optimistix_state_amp)
             descent_state = tree_at(lambda x: x.optimistix_state_phase, descent_state, optimistix_state_phase)
             
@@ -963,24 +963,49 @@ class AutoDiffBASE(GeneralOptimizationBASE):
     
 
 
-    def initialize_alternating_optimization(self, descent_state, individual, solver, optimistix_args, measurement_info, descent_info):
+    def initialize_alternating_optimization(self, descent_state, population, solver, optimistix_args, measurement_info, descent_info):
         """ If the amplitude and phase are supposed to be optimized in an alternating fashion instead of simultaneously, different methods have to be initialized. """
         options, f_struct, aux_struct, tags = optimistix_args
 
-        individual_amp, individual_phase = self.split_population_in_amp_and_phase(individual)
+        population_amp, population_phase = self.split_population_in_amp_and_phase(population)
 
-        loss_function_amp = Partial(self.loss_function_amp, measurement_info=measurement_info, descent_info=descent_info)
-        loss_function_amp = Partial(optimistix_helper_loss_function, function=loss_function_amp, no_of_args=1)
+        loss_amp = self.loss_function_amp
+        loss_phase = self.loss_function_phase
+
+        init_amp = solver.init
+        init_phase = solver.init
+
+        step_amp = solver.step
+        step_phase = solver.step
+
+        def loss_function_amp(individual_amp, individual_phase):
+            loss = loss_amp(individual_amp, individual_phase, measurement_info, descent_info)
+            return loss, loss
         
-        loss_function_phase = Partial(self.loss_function_phase, measurement_info=measurement_info, descent_info=descent_info)
-        loss_function_phase = Partial(optimistix_helper_loss_function, function=loss_function_phase, no_of_args=1)
-
-
-        state_amp = solver.init(loss_function_amp, individual_amp, individual_phase, options, f_struct, aux_struct, tags)
-        state_phase = solver.init(loss_function_phase, individual_phase, individual_amp, options, f_struct, aux_struct, tags)
+        def loss_function_phase(individual_phase, individual_amp):
+            loss = loss_phase(individual_phase, individual_amp, measurement_info, descent_info)
+            return loss, loss
         
-        self.optimistix_step_amp = Partial(solver.step, fn=loss_function_amp, options=options, tags=tags)
-        self.optimistix_step_phase = Partial(solver.step, fn=loss_function_phase, options=options, tags=tags)
+
+        def vmap_init_amp(individual_amp, individual_phase):
+            return init_amp(loss_function_amp, individual_amp, individual_phase, options, f_struct, aux_struct, tags)
+        
+        def vmap_init_phase(individual_phase, individual_amp):
+            return init_phase(loss_function_phase, individual_phase, individual_amp, options, f_struct, aux_struct, tags)
+        
+
+        def vmap_step_amp(individual_amp, individual_phase, state_amp):
+            return step_amp(loss_function_amp, individual_amp, individual_phase, options, state_amp, tags)
+        
+        def vmap_step_phase(individual_phase, individual_amp, state_phase):
+            return step_phase(loss_function_phase, individual_phase, individual_amp, options, state_phase, tags)
+            
+
+        state_amp = jax.vmap(vmap_init_amp)(population_amp, population_phase)
+        state_phase = jax.vmap(vmap_init_phase)(population_phase, population_amp)
+        
+        self.optimistix_step_amp = jax.vmap(vmap_step_amp)
+        self.optimistix_step_phase = jax.vmap(vmap_step_phase)
 
         descent_state = descent_state.expand(optimistix_state_amp = state_amp,
                                              optimistix_state_phase = state_phase)
@@ -998,8 +1023,6 @@ class AutoDiffBASE(GeneralOptimizationBASE):
         else:
             solver=solver(rtol=1, atol=1)
 
-        loss_function = Partial(self.loss_function, measurement_info=measurement_info, descent_info=descent_info)
-        loss_function = Partial(optimistix_helper_loss_function, function=loss_function, no_of_args=0)
 
         args = None
         options = dict()
@@ -1007,15 +1030,31 @@ class AutoDiffBASE(GeneralOptimizationBASE):
         aux_struct = jax.ShapeDtypeStruct((), jnp.float32)
         tags = frozenset()
 
-        individual = descent_state.individual
+        population = descent_state.population
         if descent_info.alternating_optimization==False:
-            state = solver.init(loss_function, individual, args, options, f_struct, aux_struct, tags)
-            self.optimistix_step = Partial(solver.step, args=args, fn=loss_function, options=options, tags=tags)
+
+            _loss_function = self.loss_function
+            solver_init = solver.init
+            solver_step = solver.step
+
+            def loss_function(individual, args):
+                loss = _loss_function(individual, measurement_info, descent_info)
+                return loss, loss
+
+            def vmap_init(individual):
+                return solver_init(loss_function, individual, args, options, f_struct, aux_struct, tags)
+
+            def vmap_solver_step(individual, state):
+                return solver_step(loss_function, individual, args, options, state, tags)
+            
+            self.optimistix_step = jax.vmap(vmap_solver_step)
+
+            state = jax.vmap(vmap_init)(population)
             descent_state = descent_state.expand(optimistix_state = state)
 
         elif descent_info.alternating_optimization==True:
             optimistix_args = (options, f_struct, aux_struct, tags)
-            descent_state = self.initialize_alternating_optimization(descent_state, individual, solver, optimistix_args, measurement_info, descent_info)
+            descent_state = self.initialize_alternating_optimization(descent_state, population, solver, optimistix_args, measurement_info, descent_info)
 
         else:
             raise ValueError(f"alternating_optimization needs to be True/False. Not {descent_info.alternating_optimization}")
@@ -1046,10 +1085,7 @@ class AutoDiffBASE(GeneralOptimizationBASE):
 
         """
 
-        if self.descent_info.population_size!=1:
-            print("AD will only optimize one individual in the population. This is because there are some issues when using vmap.")
-            print("You can select the individual to be optimized via self.optimize_individual_idx")
-            
+
         self.initialize_general_optimizer(population)
         
         measurement_info = self.measurement_info
@@ -1057,7 +1093,7 @@ class AutoDiffBASE(GeneralOptimizationBASE):
         self.descent_info = self.descent_info.expand(alternating_optimization = self.alternating_optimization)
         descent_info = self.descent_info
 
-        self.descent_state = self.descent_state.expand(individual = self.get_individual_from_idx(self.optimize_individual_idx, population))
+
         descent_state = self.descent_state
 
         descent_state, do_scan = self.initialize_optimistix(descent_state, self.solver, measurement_info, descent_info)

@@ -48,7 +48,8 @@ class RetrievePulses:
 
         self.measurement_info = MyNamespace(nonlinear_method = self.nonlinear_method, 
                                             spectral_amplitude = MyNamespace(pulse=None, gate=None), 
-                                            central_f = MyNamespace(pulse=None, gate=None))
+                                            central_f = MyNamespace(pulse=None, gate=None),
+                                            real_fields = False)
         self.descent_info = MyNamespace(measured_spectrum_is_provided = MyNamespace(pulse=False, gate=False))
         self.descent_state = MyNamespace()
 

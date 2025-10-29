@@ -98,8 +98,8 @@ class AutoDiff(AutoDiffBASE, RetrievePulses2DSI):
 
 
 
-    # def get_pulses_from_population(self, population, measurement_info, descent_info):
-    #     return self.get_pulses_t_from_population(population, measurement_info, descent_info)
+    def get_pulses_from_population(self, population, measurement_info, descent_info):
+        return self.get_pulses_t_from_population(population, measurement_info, descent_info)
     
 
 
@@ -107,19 +107,3 @@ class AutoDiff(AutoDiffBASE, RetrievePulses2DSI):
         """ Evaluates a pulse/gate for an individual. """
         signal = self.make_pulse_t_from_individual(individual, measurement_info, descent_info, pulse_or_gate)
         return signal
-    
-
-
-    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
-        """ AD specific post processing because AD only works with an individual while the original post processing works on a population. """
-
-        pulse_t = self.make_pulse_from_individual(descent_state.individual, measurement_info, descent_info, "pulse")
-        pulse_f = self.fft(pulse_t, measurement_info.sk, measurement_info.rn)
-
-        if measurement_info.doubleblind==True:
-            gate_t = self.make_pulse_from_individual(descent_state.individual, measurement_info, descent_info, "gate")
-            gate_f = self.fft(gate_t, measurement_info.sk, measurement_info.rn)
-        else:
-            gate_t, gate_f = pulse_t, pulse_f
-
-        return pulse_t, gate_t, pulse_f, gate_f

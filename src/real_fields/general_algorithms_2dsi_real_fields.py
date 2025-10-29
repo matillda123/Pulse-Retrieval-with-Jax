@@ -1,5 +1,5 @@
-from src.core.base_classes_methods import RetrievePulses2DSIwithRealFields, RetrievePulsesRealFields
-from ..twodsi.general_algorithms_2dsi import DifferentialEvolution as DifferentialEvolution2DSI, Evosax as Evosax2DSI, LSF as LSF2DSI, AutoDiff as AutoDiff2DSI
+from src.real_fields.base_classes_methods import RetrievePulses2DSIwithRealFields, RetrievePulsesRealFields
+from src.twodsi.general_algorithms_2dsi import DifferentialEvolution as DifferentialEvolution2DSI, Evosax as Evosax2DSI, LSF as LSF2DSI, AutoDiff as AutoDiff2DSI
 
 
 
