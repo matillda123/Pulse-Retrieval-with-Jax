@@ -1,5 +1,5 @@
 from src.core.base_classes_methods import RetrievePulsesFROGwithRealFields, RetrievePulsesRealFields
-from .general_algorithms_frog import DifferentialEvolution as DifferentialEvolutionFROG, Evosax as EvosaxFROG, LSF as LSFFROG, AutoDiff as AutoDiffFROG
+from ..frog.general_algorithms_frog import DifferentialEvolution as DifferentialEvolutionFROG, Evosax as EvosaxFROG, LSF as LSFFROG, AutoDiff as AutoDiffFROG
 
 
 
