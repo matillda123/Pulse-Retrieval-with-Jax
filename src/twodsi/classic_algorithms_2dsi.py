@@ -206,10 +206,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
                                                        group_delay = init_arr, 
                                                        spectral_phase=init_arr)
 
-        #do_scan = Partial(self.step, measurement_info=self.measurement_info, descent_info=self.descent_info)
-        step = self.step
-        def do_scan(descent_state):
-            return step(descent_state, measurement_info, descent_info)
+        do_scan = Partial(self.step, measurement_info=self.measurement_info, descent_info=self.descent_info)
         do_scan = Partial(scan_helper, actual_function=do_scan, number_of_args=1, number_of_xs=0)
         return self.descent_state, do_scan
 

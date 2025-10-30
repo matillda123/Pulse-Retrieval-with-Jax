@@ -341,10 +341,7 @@ class DifferentialEvolutionBASE(GeneralOptimizationBASE):
                                                        key=self.key)
         descent_state = self.descent_state
         
-        #do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
-        step = self.step
-        def do_step(descent_state):
-            return step(descent_state, measurement_info, descent_info)
+        do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
         do_step = Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
 
@@ -520,10 +517,7 @@ class EvosaxBASE(GeneralOptimizationBASE):
                                                        key = self.key)
         descent_state = self.descent_state
         
-        #do_step=Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
-        step = self.step
-        def do_step(descent_state):
-            return step(descent_state, measurement_info, descent_info)
+        do_step=Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
         do_step=Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
 
@@ -810,10 +804,7 @@ class LSFBASE(GeneralOptimizationBASE):
         self.descent_state = self.descent_state.expand(key = self.key)
         descent_state = self.descent_state
 
-        #do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
-        step = self.step
-        def do_step(descent_state):
-            return step(descent_state, measurement_info, descent_info)
+        do_step = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
         do_step = Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
         return descent_state, do_step
 
@@ -852,21 +843,11 @@ class AutoDiffBASE(GeneralOptimizationBASE):
     Is not implemented to optimize over a population. Instead only one individual is optimized.
 
     Attributes:
-        solver: optimistix-solver,
+        solver: optimistix/optax-solver,
         alternating_optimization: bool,
         optimize_individual_idx: int,
     
     """
-
-    # Making this work for a population: (?) 
-    #    vmap over solver.init and over solver.step 
-    #          -> currently only equinox.filter_vmap for solver.init 
-    #          -> doesnt vmap some things 
-    #          -> vmap over solver.step doesnt work becasue of wrong leaf dimensions
-    #   
-    #    repeatedly calling optimistix.minimise does not work because of limited recursion depth for jax. 
-
-    #        print("using jax.scipy minimize might work with vmap") -> jax.scipy is not really developed. only a prelimiary version of lbfgs
 
     
     def __init__(self, *args, **kwargs):
@@ -1071,7 +1052,7 @@ class AutoDiffBASE(GeneralOptimizationBASE):
 
         """
 
-        assert self.solver!=optimistix.IndirectLevenbergMarquardt, f"{self.solver} cannot be used here, because of a jax/xla bug involving memory layout for FFTs."
+        assert self.solver!=optimistix.IndirectLevenbergMarquardt, f"{self.solver} cannot be used here, because of a jax/xla bug involving the memory layout for FFTs."
 
 
         self.initialize_general_optimizer(population)

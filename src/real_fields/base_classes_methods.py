@@ -24,7 +24,9 @@ class RetrievePulsesRealFields:
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, real_fields=True, **kwargs):
+        self.measurement_info = tree_at(lambda x: x.real_fields, self.measurement_info, real_fields)
+
         super().__init__(*args, **kwargs)
 
         self.measurement_info = self.measurement_info.expand(frequency_exp = self.frequency_exp, 
@@ -34,11 +36,10 @@ class RetrievePulsesRealFields:
         self.transfer_matrix = self.get_nonlinear_transfer_matrix((fmin, fmax), self.measurement_info)
         self.descent_info = self.descent_info.expand(nonlinear_transfer_matrix = self.transfer_matrix)
 
-        #self.sk, self.rn = get_sk_rn(self.time, jnp.concatenate((jnp.flip(self.frequency[1:]), self.frequency)))
-        #self.measurement_info = tree_at(lambda x: x.sk, self.measurement_info, self.sk)
-        #self.measurement_info = tree_at(lambda x: x.rn, self.measurement_info, self.rn)
-
-        self.measurement_info = tree_at(lambda x: x.real_fields, self.measurement_info, True)
+        if self.measurement_info.real_fields=="flip":
+            self.sk, self.rn = get_sk_rn(self.time, jnp.concatenate((jnp.flip(self.frequency[1:]), self.frequency)))
+            self.measurement_info = tree_at(lambda x: x.sk, self.measurement_info, self.sk)
+            self.measurement_info = tree_at(lambda x: x.rn, self.measurement_info, self.rn)
 
 
 
@@ -50,10 +51,15 @@ class RetrievePulsesRealFields:
         self.frequency_exp = jnp.array(frequency)
         f = jnp.abs(jnp.array(frequency))
         df = jnp.mean(jnp.diff(jnp.array(frequency)))
-        #self.frequency = jnp.arange(0, jnp.max(f)+df, df)
-        self.frequency = jnp.arange(-jnp.max(f), jnp.max(f)+df, df)
 
-        self.time = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(self.frequency), df))
+        if self.measurement_info.real_fields=="flip":
+            self.frequency = jnp.arange(0, jnp.max(f)+df, df)
+            N = 2*jnp.size(self.frequency)-1
+        elif self.measurement_info.real_fields==True:
+            self.frequency = jnp.arange(-jnp.max(f), jnp.max(f)+df, df)
+            N = jnp.size(self.frequency)
+
+        self.time = jnp.fft.fftshift(jnp.fft.fftfreq(N, df))
         self.measured_trace = jnp.array(measured_trace)
 
         return self.x_arr, self.time, self.frequency, self.measured_trace
@@ -63,7 +69,8 @@ class RetrievePulsesRealFields:
         frequency = measurement_info.frequency
         fmin, fmax = parameters
 
-        #frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
+        if self.measurement_info.real_fields=="flip":
+            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
 
         idxmin, idxmax = jnp.argmin(jnp.abs(frequency-fmin)), jnp.argmin(jnp.abs(frequency-fmax))
         transfer_matrix = jnp.zeros(jnp.size(frequency))
@@ -81,7 +88,8 @@ class RetrievePulsesRealFields:
         trace = self.apply_nonlinear_transfer_matrix(trace, descent_info)
 
         frequency_exp = measurement_info.frequency_exp
-        #frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
+        if self.measurement_info.real_fields=="flip":
+            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
         trace = do_interpolation_1d(frequency_exp, frequency, trace.T, method="linear").T
         return x_arr, frequency_exp, trace
     
@@ -90,9 +98,10 @@ class RetrievePulsesRealFields:
 
     def make_pulse_f_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
         pulse_f = super().make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate)
-        #p_flip = jnp.flip(pulse_f[1:])
-        #p_flip = p_flip*jnp.exp(-2j*jnp.angle(p_flip))
-        #pulse_f = jnp.concatenate((p_flip, pulse_f))
+        if self.measurement_info.real_fields=="flip":
+            p_flip = jnp.flip(pulse_f[1:])
+            p_flip = p_flip*jnp.exp(-2j*jnp.angle(p_flip))
+            pulse_f = jnp.concatenate((p_flip, pulse_f))
         return pulse_f
     
 
@@ -102,7 +111,8 @@ class RetrievePulsesRealFields:
         final_result = super().post_process(descent_state, error_arr)
 
         frequency_exp, frequency = self.measurement_info.frequency_exp, self.measurement_info.frequency
-        #frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
+        if self.measurement_info.real_fields=="flip":
+            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
         trace = final_result.trace
         trace = self.apply_nonlinear_transfer_matrix(trace, self.descent_info)
         trace = do_interpolation_1d(frequency_exp, frequency, trace.T, method="linear").T
@@ -132,7 +142,8 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
 
 
     def calculate_shifted_signal(self, signal, frequency, tau_arr, time, in_axes=(None, 0, None, None, None)):
-        #frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
+        if self.measurement_info.real_fields=="flip":
+            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
         return super().calculate_shifted_signal(signal, frequency, tau_arr, time, in_axes=in_axes)
 
 
