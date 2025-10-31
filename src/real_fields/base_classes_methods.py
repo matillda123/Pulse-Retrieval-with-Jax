@@ -2,8 +2,9 @@ import jax.numpy as jnp
 
 from equinox import tree_at
 
-from src.utilities import MyNamespace, get_sk_rn, do_interpolation_1d, calculate_gate_with_Real_Fields
+from src.utilities import MyNamespace, get_sk_rn, do_interpolation_1d, calculate_gate_with_Real_Fields, calculate_trace, center_signal
 from src.core.base_classes_methods import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulses2DSI
+
 
 
 
@@ -24,23 +25,20 @@ class RetrievePulsesRealFields:
 
     """
 
-    def __init__(self, *args, real_fields=True, **kwargs):
-        self.measurement_info = tree_at(lambda x: x.real_fields, self.measurement_info, real_fields)
-
+    def __init__(self, *args, f_range_fields=(None, None), **kwargs):
+        self.fmin, self.fmax = f_range_fields
         super().__init__(*args, **kwargs)
 
         self.measurement_info = self.measurement_info.expand(frequency_exp = self.frequency_exp, 
-                                                             fcut = jnp.argmin(jnp.abs(self.frequency)))
+                                                             real_fields = True)
         
-        fmin, fmax = jnp.min(self.frequency_exp), jnp.max(self.frequency_exp)
-        self.transfer_matrix = self.get_nonlinear_transfer_matrix((fmin, fmax), self.measurement_info)
-        self.descent_info = self.descent_info.expand(nonlinear_transfer_matrix = self.transfer_matrix)
 
-        if self.measurement_info.real_fields=="flip":
-            self.sk, self.rn = get_sk_rn(self.time, jnp.concatenate((jnp.flip(self.frequency[1:]), self.frequency)))
-            self.measurement_info = tree_at(lambda x: x.sk, self.measurement_info, self.sk)
-            self.measurement_info = tree_at(lambda x: x.rn, self.measurement_info, self.rn)
-
+        f = jnp.abs(self.measurement_info.frequency_exp)
+        df = jnp.mean(jnp.diff(self.measurement_info.frequency_exp))
+        frequency_big = jnp.arange(-1*jnp.max(f), jnp.max(f)+df, df)
+        time_big = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(frequency_big), jnp.mean(jnp.diff(frequency_big))))
+        sk_big, rn_big = get_sk_rn(time_big, frequency_big)
+        self.measurement_info = self.measurement_info.expand(time_big=time_big, frequency_big=frequency_big, sk_big=sk_big, rn_big=rn_big)
 
 
     def get_data(self, x_arr, frequency, measured_trace):
@@ -49,81 +47,97 @@ class RetrievePulsesRealFields:
         self.x_arr = jnp.array(x_arr)
 
         self.frequency_exp = jnp.array(frequency)
-        f = jnp.abs(jnp.array(frequency))
         df = jnp.mean(jnp.diff(jnp.array(frequency)))
-
-        if self.measurement_info.real_fields=="flip":
-            self.frequency = jnp.arange(0, jnp.max(f)+df, df)
-            N = 2*jnp.size(self.frequency)-1
-        elif self.measurement_info.real_fields==True:
-            self.frequency = jnp.arange(-jnp.max(f), jnp.max(f)+df, df)
-            N = jnp.size(self.frequency)
-
+        self.frequency = jnp.arange(self.fmin, self.fmax+df, df)
+        N = jnp.size(self.frequency)
+        
         self.time = jnp.fft.fftshift(jnp.fft.fftfreq(N, df))
         self.measured_trace = jnp.array(measured_trace)
 
         return self.x_arr, self.time, self.frequency, self.measured_trace
-    
-
-    def get_nonlinear_transfer_matrix(self, parameters, measurement_info):
-        frequency = measurement_info.frequency
-        fmin, fmax = parameters
-
-        if self.measurement_info.real_fields=="flip":
-            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
-
-        idxmin, idxmax = jnp.argmin(jnp.abs(frequency-fmin)), jnp.argmin(jnp.abs(frequency-fmax))
-        transfer_matrix = jnp.zeros(jnp.size(frequency))
-        transfer_matrix = transfer_matrix.at[idxmin:idxmax+1].set(1.0)
-        return transfer_matrix
-    
-
-    def apply_nonlinear_transfer_matrix(self, signal_f, descent_info):
-        return signal_f*descent_info.nonlinear_transfer_matrix
 
 
 
     def construct_trace(self, individual, measurement_info, descent_info):
-        x_arr, frequency, trace = super().construct_trace(individual, measurement_info, descent_info)
-        trace = self.apply_nonlinear_transfer_matrix(trace, descent_info)
-
+        x_arr = measurement_info.x_arr
         frequency_exp = measurement_info.frequency_exp
-        if self.measurement_info.real_fields=="flip":
-            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
-        trace = do_interpolation_1d(frequency_exp, frequency, trace.T, method="linear").T
+        frequency_big = measurement_info.frequency_big
+        sk_big, rn_big = measurement_info.sk_big, measurement_info.rn_big
+
+        
+        signal_t = self.calculate_signal_t(individual, measurement_info.transform_arr, measurement_info)
+        signal_f = self.fft(signal_t.signal_t, sk_big, rn_big)
+        trace = calculate_trace(signal_f)
+
+        trace = do_interpolation_1d(frequency_exp, frequency_big, trace.T, method="linear").T
         return x_arr, frequency_exp, trace
     
 
 
 
-    def make_pulse_f_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
-        pulse_f = super().make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate)
-        if self.measurement_info.real_fields=="flip":
-            p_flip = jnp.flip(pulse_f[1:])
-            p_flip = p_flip*jnp.exp(-2j*jnp.angle(p_flip))
-            pulse_f = jnp.concatenate((p_flip, pulse_f))
-        return pulse_f
+    def post_process_center_pulse_and_gate(self, pulse_t, gate_t):
+        sk_big, rn_big = self.measurement_info.sk_big, self.measurement_info.rn_big
+
+        pulse_t = center_signal(pulse_t)
+        gate_t = center_signal(gate_t)
+
+        pulse_f = self.fft(pulse_t, sk_big, rn_big)
+        gate_f = self.fft(gate_t, sk_big, rn_big)
+
+        return pulse_t, gate_t, pulse_f, gate_f
     
 
+    
+
+    def post_process_create_trace(self, individual):
+        sk_big, rn_big = self.measurement_info.sk_big, self.measurement_info.rn_big
+        transform_arr = self.measurement_info.tau_arr
+    
+        signal_t = self.calculate_signal_t(individual, transform_arr, self.measurement_info)
+        signal_f = self.fft(signal_t.signal_t, sk_big, rn_big)
+        trace = calculate_trace(signal_f)
+        return trace
 
 
     def post_process(self, descent_state, error_arr):
         final_result = super().post_process(descent_state, error_arr)
 
-        frequency_exp, frequency = self.measurement_info.frequency_exp, self.measurement_info.frequency
-        if self.measurement_info.real_fields=="flip":
-            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
+        frequency_exp, frequency, frequency_big = self.measurement_info.frequency_exp, self.measurement_info.frequency, self.measurement_info.frequency_big
         trace = final_result.trace
-        trace = self.apply_nonlinear_transfer_matrix(trace, self.descent_info)
-        trace = do_interpolation_1d(frequency_exp, frequency, trace.T, method="linear").T
+        trace = do_interpolation_1d(frequency_exp, frequency_big, trace.T, method="linear").T
         trace = trace/jnp.linalg.norm(trace)
 
         final_result = final_result.expand(frequency_exp = self.measurement_info.frequency_exp, 
-                                           frequency = frequency,
                                            trace = trace)
+
+
+        pulse_f = do_interpolation_1d(frequency, frequency_big, final_result.pulse_f)
+        pulse_t = self.ifft(pulse_f, self.measurement_info.sk, self.measurement_info.rn)
+        final_result = final_result.expand(pulse_t=pulse_t, pulse_f=pulse_f)
+
+        if self.measurement_info.doubleblind==True:
+            gate_f = do_interpolation_1d(frequency, frequency_big, final_result.gate_f)
+            gate_t = self.ifft(gate_f, self.measurement_info.sk, self.measurement_info.rn)
+            final_result = final_result.expand(gate_t=gate_t, gate_f=gate_f)
+
         return final_result
     
 
+
+
+    def make_pulse_f_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
+        signal_f = super().make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate=pulse_or_gate)
+
+        frequency_big, frequency = measurement_info.frequency_big, measurement_info.frequency
+        signal_f = do_interpolation_1d(frequency_big, frequency, signal_f)
+        return signal_f
+    
+
+    def make_pulse_t_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
+        signal_f = self.make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate)
+        signal = self.ifft(signal_f, measurement_info.sk_big, measurement_info.rn_big)
+        return signal
+    
 
 
 
@@ -139,31 +153,23 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
         super().__init__(*args, **kwargs)
 
 
-
-
-    def calculate_shifted_signal(self, signal, frequency, tau_arr, time, in_axes=(None, 0, None, None, None)):
-        if self.measurement_info.real_fields=="flip":
-            frequency = jnp.concatenate((jnp.flip(-1*frequency[1:]), frequency))
-        return super().calculate_shifted_signal(signal, frequency, tau_arr, time, in_axes=in_axes)
-
-
         
     def calculate_signal_t(self, individual, tau_arr, measurement_info):
-        time, frequency = measurement_info.time, measurement_info.frequency
+        time_big, frequency_big = measurement_info.time_big, measurement_info.frequency_big
         cross_correlation, doubleblind, ifrog = measurement_info.cross_correlation, measurement_info.doubleblind, measurement_info.ifrog
         frogmethod = measurement_info.nonlinear_method
 
         pulse, gate = individual.pulse, individual.gate
 
 
-        pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
+        pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency_big, tau_arr, time_big)
 
         if cross_correlation==True:
-            gate_pulse_shifted = self.calculate_shifted_signal(measurement_info.gate, frequency, tau_arr, time)
+            gate_pulse_shifted = self.calculate_shifted_signal(measurement_info.gate, frequency_big, tau_arr, time_big)
             gate_shifted = calculate_gate_with_Real_Fields(gate_pulse_shifted, frogmethod)
 
         elif doubleblind==True:
-            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency, tau_arr, time)
+            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency_big, tau_arr, time_big)
             gate_shifted = calculate_gate_with_Real_Fields(gate_pulse_shifted, frogmethod)
 
         else:
@@ -184,7 +190,10 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
                                gate_shifted = gate_shifted, 
                                gate_pulse_shifted = gate_pulse_shifted)
         return signal_t
+    
 
+
+    
 
 
 
@@ -225,7 +234,8 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
 
 
     def calculate_signal_t(self, individual, tau_arr, measurement_info):
-        time, frequency, nonlinear_method = measurement_info.time, measurement_info.frequency, measurement_info.nonlinear_method
+        time_big, frequency_big = measurement_info.time_big, measurement_info.frequency_big
+        nonlinear_method = measurement_info.nonlinear_method
 
         pulse_t = individual.pulse
 
@@ -239,7 +249,7 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
             gate1 = gate2 = self.apply_phase(pulse_t, measurement_info)
             
 
-        gate2_shifted = self.calculate_shifted_signal(gate2, frequency, tau_arr, time)
+        gate2_shifted = self.calculate_shifted_signal(gate2, frequency_big, tau_arr, time_big)
         gate_pulses = gate1 + gate2_shifted
         gate = calculate_gate_with_Real_Fields(gate_pulses, nonlinear_method)
         signal_t = jnp.real(pulse_t)*gate

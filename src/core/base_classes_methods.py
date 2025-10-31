@@ -248,7 +248,19 @@ class RetrievePulses:
         gate_f = self.fft(gate_t, sk, rn)
 
         return pulse_t, gate_t, pulse_f, gate_f
+    
+    
 
+    def post_process_create_trace(self, individual):
+        """ Post processing to get the final trace """
+        sk, rn = self.measurement_info.sk, self.measurement_info.rn
+        transform_arr = self.measurement_info.tau_arr
+    
+        signal_t = self.calculate_signal_t(individual, transform_arr, self.measurement_info)
+        signal_f = self.fft(signal_t.signal_t, sk, rn)
+        trace = calculate_trace(signal_f)
+        return trace
+    
 
 
 
@@ -258,15 +270,21 @@ class RetrievePulses:
 
         pulse_t, gate_t, pulse_f, gate_f = self.post_process_get_pulse_and_gate(descent_state, self.measurement_info, self.descent_info)
         pulse_t, gate_t, pulse_f, gate_f = self.post_process_center_pulse_and_gate(pulse_t, gate_t)
-        #pulse_t, gate_t = self.post_process_center_pulse_and_gate(pulse_t, gate_t)
 
         measured_trace = self.measurement_info.measured_trace
         measured_trace = measured_trace/jnp.linalg.norm(measured_trace)
+
+        if isinstance(self, (RetrievePulsesFROG, RetrievePulses2DSI)):
+            individual = MyNamespace(pulse=pulse_t, gate=gate_t)
+        elif isinstance(self, RetrievePulsesCHIRPSCAN):
+            individual = MyNamespace(pulse=pulse_f, gate=None)
+        else:
+            raise ValueError(f"self doesnt match. Is {self}")
         
-        trace = self.post_process_create_trace(pulse_t, gate_t)
+        trace = self.post_process_create_trace(individual)
         trace = trace/jnp.linalg.norm(trace)
 
-        x_arr = self.get_x_arr() # this can be just x_arr, there is no need to call it through an extra function.
+        x_arr = self.measurement_info.x_arr
         time, frequency = self.measurement_info.time, self.measurement_info.frequency + self.f0
 
         final_result = MyNamespace(x_arr=x_arr, time=time, frequency=frequency, frequency_exp=frequency,
@@ -441,7 +459,7 @@ class RetrievePulsesFROG(RetrievePulses):
     def calculate_shifted_signal(self, signal, frequency, tau_arr, time, in_axes=(None, 0, None, None, None)):
         """ The Fourier-Shift theorem applied to a list of signals. """
 
-        # im really unhappy with this, but this re-definition/calculation of sk, rn is necessary
+        # im really unhappy with this, but this re-definition/calculation of sk, rn is necessary?
         # in the original case a global phase shift dependent on tau and f[0] occured, which i couldnt figure out
         frequency = frequency - (frequency[-1] + frequency[0])/2
 
@@ -539,22 +557,6 @@ class RetrievePulsesFROG(RetrievePulses):
     
 
 
-    def post_process_create_trace(self, pulse_t, gate_t):
-        """ FROG specific post processing to get the final trace """
-        sk, rn = self.measurement_info.sk, self.measurement_info.rn
-        tau_arr = self.measurement_info.tau_arr
-    
-        signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_t, gate=gate_t), tau_arr, self.measurement_info)
-        signal_f = self.fft(signal_t.signal_t, sk, rn)
-        trace = calculate_trace(signal_f)
-        return trace
-    
-
-    
-    def get_x_arr(self):
-        """ this should be removed """
-        return self.tau_arr
-
     
     def apply_spectrum(self, pulse_t, spectrum, sk, rn):
         """ FROG specific method to project the pulse guess onto a measured spectrum. """
@@ -607,7 +609,8 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
                                                              dt = self.dt,
                                                              df = self.df,
                                                              sk = self.sk,
-                                                             rn = self.rn)
+                                                             rn = self.rn,
+                                                             x_arr = self.x_arr)
         
 
         self.calculate_phase_matrix = phase_matrix_func
@@ -625,8 +628,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
 
         self.measurement_info = self.measurement_info.expand(phase_matrix = self.phase_matrix,
-                                                             transform_arr = self.transform_arr,
-                                                             x_arr = self.x_arr)
+                                                             transform_arr = self.transform_arr)
         return self.phase_matrix
         
 
@@ -726,21 +728,6 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
 
         return pulse_t, gate_t, pulse_f, gate_f
     
-
-
-
-    def post_process_create_trace(self, pulse_t, gate_t):
-        """ Chirp-Scan specific post processing to get the final trace """
-        sk, rn = self.measurement_info.sk, self.measurement_info.rn
-        pulse_f = self.fft(pulse_t, sk, rn)
-        signal_t = self.calculate_signal_t(MyNamespace(pulse=pulse_f, gate=None), self.measurement_info.phase_matrix, self.measurement_info)
-        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
-        return trace
-
-    def get_x_arr(self):
-        """ this should be removed """
-        return self.z_arr
-
 
     def apply_spectrum(self, pulse, spectrum, sk, rn):
         """ Chirp-Scan specific method to project the pulse guess onto a measured spectrum. """

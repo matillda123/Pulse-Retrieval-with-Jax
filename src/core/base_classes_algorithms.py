@@ -579,15 +579,17 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
     def get_pulses_t_from_population(self, population, measurement_info, descent_info):
         """ Evaluates a parametrized population onto the time axis. """
-        pulse_f_arr, gate_arr = self.get_pulses_f_from_population(population, measurement_info, descent_info)
-        pulse_t_arr = self.ifft(pulse_f_arr, measurement_info.sk, measurement_info.rn)
+        make_pulse = Partial(self.make_pulse_t_from_individual, measurement_info=measurement_info, descent_info=descent_info, pulse_or_gate="pulse")
+        pulse_t_arr = jax.vmap(make_pulse)(population)
 
         if measurement_info.doubleblind==True:
-            gate_arr = self.ifft(gate_arr, measurement_info.sk, measurement_info.rn)
+            make_gate = Partial(self.make_pulse_t_from_individual, measurement_info=measurement_info, descent_info=descent_info, pulse_or_gate="gate")
+            gate_arr = jax.vmap(make_gate)(population)
         else:
             gate_arr = pulse_t_arr
 
         return pulse_t_arr, gate_arr
+    
     
 
 
