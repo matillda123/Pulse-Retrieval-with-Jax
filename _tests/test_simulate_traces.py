@@ -31,8 +31,8 @@ for i in range(4):
     parameters.append((pulse_parameters[i], (nonlinear_method[i], cross_correlation[i], ifrog[i], interpolate_fft_conform[i], frequency_range[i], real_fields[i])))
 
 
-@pytest.mark.parametrize("values", parameters)
-def generate_frog(parameters):
+@pytest.mark.parametrize("parameters", parameters)
+def test_generate_frog(parameters):
     pulse_parameters, trace_parameters = parameters
 
     pulse_maker = MakePulse(N=128*4, Delta_f=2)
@@ -77,8 +77,8 @@ for i in range(3):
     parameters.append((pulse_parameters[i], (z_arr[i], nonlinear_method[i], phase_matrix_func[i], phase_parameters[i], frequency_range[i], real_fields[i])))
 
 
-@pytest.mark.parametrize("values", parameters)
-def generate_chirp_scan(parameters):
+@pytest.mark.parametrize("parameters", parameters)
+def test_generate_chirp_scan(parameters):
     pulse_parameters, trace_parameters = parameters
 
     pulse_maker = MakePulse(N=128*4, Delta_f=2)
@@ -107,8 +107,8 @@ for i in range(4):
     parameters.append((pulse_parameters[i], (nonlinear_method[i], cross_correlation[i], frequency_range[i])))
 
 
-@pytest.mark.parametrize("values", parameters)
-def generate_2dsi(parameters):
+@pytest.mark.parametrize("parameters", parameters)
+def test_generate_2dsi(parameters):
     pulse_parameters, trace_parameters = parameters
 
     pulse_maker = MakePulse(N=128*4, Delta_f=2)

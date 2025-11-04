@@ -108,6 +108,7 @@ class RetrievePulses:
         return spectral_amplitude
     
 
+
     def get_gate_pulse(self, frequency, gate_f):
         """ For crosscorrelation=True the actual gate pulse has to be provided. """
         gate_f = do_interpolation_1d(self.frequency, frequency, gate_f)
@@ -254,7 +255,7 @@ class RetrievePulses:
     def post_process_create_trace(self, individual):
         """ Post processing to get the final trace """
         sk, rn = self.measurement_info.sk, self.measurement_info.rn
-        transform_arr = self.measurement_info.tau_arr
+        transform_arr = self.measurement_info.transform_arr
     
         signal_t = self.calculate_signal_t(individual, transform_arr, self.measurement_info)
         signal_f = self.fft(signal_t.signal_t, sk, rn)
@@ -662,9 +663,8 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
 
 
 
-    def get_dispersed_pulse_t(self, pulse_f, phase_matrix, measurement_info):
+    def get_dispersed_pulse_t(self, pulse_f, phase_matrix, sk, rn):
         """ Applies phase-matrix to a signal. """
-        sk, rn = measurement_info.sk, measurement_info.rn
         
         pulse_f = pulse_f*jnp.exp(1j*phase_matrix)
         pulse_t_disp = self.ifft(pulse_f, sk, rn)
@@ -689,7 +689,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
 
         pulse = individual.pulse
 
-        pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info)
+        pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info.sk, measurement_info.rn)
         gate_disp = calculate_gate(pulse_t_disp, measurement_info.nonlinear_method)
         signal_t = pulse_t_disp*gate_disp
 
@@ -756,7 +756,7 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
     """
 
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency=None, anc2_frequency=None, 
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=True, anc1_frequency=None, anc2_frequency=None, 
                  material_thickness=0, refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, ifrog=False, **kwargs)
 
@@ -800,13 +800,11 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
 
 
-    def apply_phase(self, pulse_t, measurement_info):
+    def apply_phase(self, pulse_t, measurement_info, sk, rn):
         """
         For an auto-correlation 2DSI reconstruction one may need to consider effects of a beam splitter in the interferometer.
         This applies a dispersion based on phase_matrix in order to achieve this.
         """
-
-        sk, rn = measurement_info.sk, measurement_info.rn
         
         pulse_f = self.fft(pulse_t, sk, rn)
         pulse_f=pulse_f*jnp.exp(1j*measurement_info.phase_matrix)
@@ -839,7 +837,8 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
             gate1 = gate2 = individual.gate
 
         else:
-            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info)
+            sk, rn = measurement_info.sk, measurement_info.rn
+            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk, rn)
             
 
         gate2_shifted = self.calculate_shifted_signal(gate2, frequency, tau_arr, time)

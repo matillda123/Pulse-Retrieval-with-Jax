@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import jax
 from jax.tree_util import Partial
 
-from scipy.special import factorial # using jax.scipy limits to k=8 because of accuracy
+from scipy.special import factorial # using jax.scipy limits accuracy
 
 
 

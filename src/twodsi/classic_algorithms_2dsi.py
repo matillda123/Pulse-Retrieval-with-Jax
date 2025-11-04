@@ -30,9 +30,14 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         
     """
 
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs):
-        assert cross_correlation==True, "DirectReconstruction cannot work for Doubleblind or Autocorrelation-like methods"
-        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs)
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, anc1_frequency=None, anc2_frequency=None, **kwargs):
+
+        if "cross_correlation" in kwargs:
+            if kwargs["cross_correlation"]!=True:
+                raise KeyError("DirectReconstruction cannot work for Doubleblind or Autocorrelation-like methods. Only cross_correlation=True does.")
+
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=True, 
+                         anc1_frequency=anc1_frequency, anc2_frequency=anc2_frequency, **kwargs)
 
         self.name = "DirectReconstruction"
 
@@ -204,9 +209,9 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         init_arr = jnp.zeros(jnp.size(self.measurement_info.frequency))
         self.descent_state = self.descent_state.expand(population = population, 
                                                        group_delay = init_arr, 
-                                                       spectral_phase=init_arr)
+                                                       spectral_phase = init_arr)
 
-        do_scan = Partial(self.step, measurement_info=self.measurement_info, descent_info=self.descent_info)
+        do_scan = Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
         do_scan = Partial(scan_helper, actual_function=do_scan, number_of_args=1, number_of_xs=0)
         return self.descent_state, do_scan
 
@@ -225,8 +230,8 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulses2DSI):
 
     """
 
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs):
-        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs)
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation, **kwargs)
 
 
     def calculate_Z_gradient_individual(self, signal_t, signal_t_new, population, tau_arr, measurement_info, pulse_or_gate):
@@ -271,9 +276,9 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
     Attributes:
         pie_method: None or str, specifies the PIE variant. Can be one of None, PIE, ePIE, rPIE.
     """
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, pie_method="rPIE", **kwargs):
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, pie_method="rPIE", **kwargs):
         assert cross_correlation!="doubleblind", "Doubleblind is not implemented for 2DSI-TimeDomainPtychography."
-        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs)
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
 
         self.pie_method = pie_method
 
@@ -341,8 +346,8 @@ class COPRA(COPRABASE, RetrievePulses2DSI):
     """
     The Common Pulse Retrieval Algorithm (COPRA) for 2DSI. Inherits from COPRABASE and RetrievePulses2DSI.
     """
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs):
-        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation, anc1_frequency, anc2_frequency, **kwargs)
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
 
 
     def update_individual(self, individual, gamma, descent_direction, measurement_info, descent_info, pulse_or_gate):

@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import jax
 
 from equinox import tree_at
 
@@ -41,20 +42,22 @@ class RetrievePulsesRealFields:
         self.measurement_info = self.measurement_info.expand(time_big=time_big, frequency_big=frequency_big, sk_big=sk_big, rn_big=rn_big)
 
 
+
     def get_data(self, x_arr, frequency, measured_trace):
         measured_trace = measured_trace/jnp.linalg.norm(measured_trace)
 
-        self.x_arr = jnp.array(x_arr)
+        self.x_arr = jnp.asarray(x_arr)
 
-        self.frequency_exp = jnp.array(frequency)
-        df = jnp.mean(jnp.diff(jnp.array(frequency)))
+        self.frequency_exp = jnp.asarray(frequency)
+        df = jnp.mean(jnp.diff(jnp.asarray(frequency)))
         self.frequency = jnp.arange(self.fmin, self.fmax+df, df)
         N = jnp.size(self.frequency)
         
         self.time = jnp.fft.fftshift(jnp.fft.fftfreq(N, df))
-        self.measured_trace = jnp.array(measured_trace)
+        self.measured_trace = jnp.asarray(measured_trace)
 
         return self.x_arr, self.time, self.frequency, self.measured_trace
+    
 
 
 
@@ -91,7 +94,7 @@ class RetrievePulsesRealFields:
 
     def post_process_create_trace(self, individual):
         sk_big, rn_big = self.measurement_info.sk_big, self.measurement_info.rn_big
-        transform_arr = self.measurement_info.tau_arr
+        transform_arr = self.measurement_info.transform_arr
     
         signal_t = self.calculate_signal_t(individual, transform_arr, self.measurement_info)
         signal_f = self.fft(signal_t.signal_t, sk_big, rn_big)
@@ -127,7 +130,7 @@ class RetrievePulsesRealFields:
 
     def make_pulse_f_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
         signal_f = super().make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate=pulse_or_gate)
-
+        
         frequency_big, frequency = measurement_info.frequency_big, measurement_info.frequency
         signal_f = do_interpolation_1d(frequency_big, frequency, signal_f)
         return signal_f
@@ -151,6 +154,16 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+
+
+    def get_gate_pulse(self, frequency, gate_f):
+        """ For crosscorrelation=True the actual gate pulse has to be provided. """
+        gate_f = do_interpolation_1d(self.measurement_info.frequency_big, frequency, gate_f)
+        self.gate = self.ifft(gate_f, self.measurement_info.sk_big, self.measurement_info.rn_big)
+        self.measurement_info = self.measurement_info.expand(gate = self.gate)
+        return self.gate
 
 
         
@@ -205,12 +218,20 @@ class RetrievePulsesCHIRPSCANwithRealFields(RetrievePulsesCHIRPSCAN):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    
+    def _post_init(self):
+        frequency, frequency_big = self.measurement_info.frequency, self.measurement_info.frequency_big
+        self.phase_matrix = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_big, frequency, self.phase_matrix)
+        self.transform_arr = self.phase_matrix
+        self.measurement_info = tree_at(lambda x: x.phase_matrix, self.measurement_info, self.phase_matrix)
+        self.measurement_info = tree_at(lambda x: x.transform_arr, self.measurement_info, self.transform_arr)
     
 
     def calculate_signal_t(self, individual, phase_matrix, measurement_info):
         pulse = individual.pulse
 
-        pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info)
+        pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info.sk_big, measurement_info.rn_big)
         gate_disp = calculate_gate_with_Real_Fields(pulse_t_disp, measurement_info.nonlinear_method)
         signal_t = jnp.real(pulse_t_disp)*gate_disp
 
@@ -227,9 +248,28 @@ class RetrievePulsesCHIRPSCANwithRealFields(RetrievePulsesCHIRPSCAN):
 
 class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
     
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+
+    def _post_init(self):
+        frequency_exp, frequency_big = self.measurement_info.frequency_exp, self.measurement_info.frequency_big
+        self.phase_matrix = do_interpolation_1d(frequency_big, frequency_exp, self.phase_matrix)
+        self.measurement_info = tree_at(lambda x: x.phase_matrix, self.measurement_info, self.phase_matrix)
+
+
+
+    def get_anc_pulse(self, frequency, anc_f, anc_no=1):
+        """ For cross_correlation instead of the gate pulse the two-acillae pulses need to be provided. """
+        anc_f = do_interpolation_1d(self.measurement_info.frequency_big, frequency, anc_f)
+        anc = self.ifft(anc_f, self.measurement_info.sk_big, self.measurement_info.rn_big)
+
+        anc_dict = {1: self.measurement_info.expand(anc_1=anc), 
+                    2: self.measurement_info.expand(anc_2=anc)}
+        self.measurement_info = anc_dict[anc_no]
+        return anc
+
 
 
 
@@ -246,7 +286,8 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
             gate1 = gate2 = individual.gate
 
         else:
-            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info)
+            sk_big, rn_big = measurement_info.sk_big, measurement_info.rn_big
+            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk_big, rn_big)
             
 
         gate2_shifted = self.calculate_shifted_signal(gate2, frequency_big, tau_arr, time_big)

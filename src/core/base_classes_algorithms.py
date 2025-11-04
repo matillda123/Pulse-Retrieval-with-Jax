@@ -14,7 +14,7 @@ class AlgorithmsBASE:
     The Base-Class for all solvers.
 
     Attributes:
-        use_jit: bool, enables/disables jax.jit
+        jit: bool, enables/disables jax.jit
         spectrum_is_being_used: bool,
         fft: Callable, performs an fft, performs an fft of a signal. (Needs to expect signal, sk, rn, axis)
         ifft: Callable, performs an ifft, performs an ifft of a signal. (Needs to expect signal, sk, rn, axis)
@@ -23,7 +23,7 @@ class AlgorithmsBASE:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.use_jit = False
+        self.jit = False
         self.spectrum_is_being_used = False
 
 
@@ -38,7 +38,7 @@ class AlgorithmsBASE:
             assert self.descent_info.measured_spectrum_is_provided.pulse==True or self.descent_info.measured_spectrum_is_provided.gate==True, "you need to provide a spectrum"
 
         carry, do_scan = self.initialize_run(init_vals)
-        carry, error_arr = run_scan(do_scan, carry, no_iterations, self.use_jit)
+        carry, error_arr = run_scan(do_scan, carry, no_iterations, self.jit)
 
         error_arr = jnp.squeeze(error_arr)
         final_result = self.post_process(carry, error_arr)

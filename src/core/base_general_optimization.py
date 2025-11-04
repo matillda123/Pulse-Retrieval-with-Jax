@@ -720,13 +720,7 @@ class LSFBASE(GeneralOptimizationBASE):
     
     
 
-
-    def calculate_error(self, E_arr, population, measurement_info, descent_info, pulse_or_gate):
-        """ 
-        Calculates the trace error. Since pulse and gate are optimized independently the population as provided to calculate_error_individual() 
-        needs to be constructed from the current population and the fields in the cureent optimization.
-        """
-
+    def make_population_bisection_search(self, E_arr, population, measurement_info, descent_info, pulse_or_gate):
         if pulse_or_gate=="pulse":
             pulse_arr, gate_arr = E_arr, population.gate
 
@@ -734,9 +728,17 @@ class LSFBASE(GeneralOptimizationBASE):
             pulse_arr, gate_arr = population.pulse, E_arr
         else:
             raise ValueError(f"pulse_or_gate needs to be pulse or gate. Not {pulse_or_gate}")
+        return MyNamespace(pulse=pulse_arr, gate=gate_arr)
 
+
+    def calculate_error(self, E_arr, population, measurement_info, descent_info, pulse_or_gate):
+        """ 
+        Calculates the trace error. Since pulse and gate are optimized independently the population as provided to calculate_error_individual() 
+        needs to be constructed from the current population and the fields in the cureent optimization.
+        """
+        population = self.make_population_bisection_search(E_arr, population, measurement_info, descent_info, pulse_or_gate)
         error_arr = jax.vmap(self.calculate_error_individual, 
-                             in_axes=(0, None, None))(MyNamespace(pulse=pulse_arr, gate=gate_arr), measurement_info, descent_info)
+                             in_axes=(0, None, None))(population, measurement_info, descent_info)
         return error_arr
     
 
@@ -813,7 +815,7 @@ class LSFBASE(GeneralOptimizationBASE):
 
 
     def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
-        """ Some custom post-processing since the optimization is done in the explicit deiscretized form. """
+        """ Some custom post-processing since the optimization is done in the explicit discretized form. """
         sk, rn = measurement_info.sk, measurement_info.rn
         idx = self.get_idx_best_individual(descent_state)
 

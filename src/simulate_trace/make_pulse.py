@@ -139,6 +139,9 @@ class MakePulse:
             amp_t = self.generate_gaussian_amplitude(self.time, amp, fwhm, shift)
             amp_f = do_fft(amp_t, self.sk, self.rn)
             amp_f = np.abs(amp_f)
+
+        elif isinstance(amp_parameters, CustomPulse):
+            amp_f = do_interpolation_1d(self.frequency, amp_parameters.frequency, amp_parameters.amplitude)
             
         else:
             raise NotImplementedError(f"Amplitude type {amp_parameters} is not implemented.")

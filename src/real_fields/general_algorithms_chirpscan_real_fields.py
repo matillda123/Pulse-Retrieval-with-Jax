@@ -1,7 +1,8 @@
 from src.real_fields.base_classes_methods import RetrievePulsesCHIRPSCANwithRealFields, RetrievePulsesRealFields
 from src.chirp_scan.general_algorithms_chirpscan import (DifferentialEvolution as DifferentialEvolutionCHIRPSCAN, Evosax as EvosaxCHIRPSCAN, 
                                           LSF as LSFCHIRPSCAN, AutoDiff as AutoDiffCHIRPSCAN)
-
+from src.utilities import MyNamespace, do_interpolation_1d
+import jax
 
 
 
@@ -10,6 +11,7 @@ class DifferentialEvolution(RetrievePulsesRealFields, DifferentialEvolutionCHIRP
     Inherits from  RetrievePulsesRealFields, DifferentialEvolutionCHIRPSCAN and RetrievePulsesCHIRPSCANwithRealFields"""
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
+        self._post_init()
 
 
 
@@ -18,6 +20,7 @@ class Evosax(RetrievePulsesRealFields, EvosaxCHIRPSCAN, RetrievePulsesCHIRPSCANw
     Inherits from  RetrievePulsesRealFields, EvosaxCHIRPSCAN and RetrievePulsesCHIRPSCANwithRealFields"""
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
+        self._post_init()
 
 
 
@@ -26,6 +29,62 @@ class LSF(RetrievePulsesRealFields, LSFCHIRPSCAN, RetrievePulsesCHIRPSCANwithRea
     Inherits from  RetrievePulsesRealFields, LSFCHIRPSCAN and RetrievePulsesCHIRPSCANwithRealFields"""
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
+        self._post_init()
+
+    
+    def get_pulses_from_population(self, population, measurement_info, descent_info):
+        pulse_f_arr, gate_f_arr = super().get_pulses_from_population(population, measurement_info, descent_info)
+
+        pulse_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, pulse_f_arr)
+        if measurement_info.doubleblind==True:
+            gate_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, gate_f_arr)
+        else:
+            gate_f_arr = pulse_f_arr
+
+        return pulse_f_arr, gate_f_arr
+
+
+
+    def convert_population(self, population, measurement_info, descent_info):
+        population = super().convert_population(population, measurement_info, descent_info)
+        pulse_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency, measurement_info.frequency_big, population.pulse)
+
+        if measurement_info.doubleblind==True:
+            gate_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency, measurement_info.frequency_big, population.gate)
+        else:
+            gate_f_arr = pulse_f_arr
+
+        return MyNamespace(pulse=pulse_f_arr, gate=gate_f_arr)
+    
+
+
+    def make_population_bisection_search(self, E_arr, population, measurement_info, descent_info, pulse_or_gate):
+        population = super().make_population_bisection_search(E_arr, population, measurement_info, descent_info, pulse_or_gate)
+
+        pulse_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, population.pulse)
+        if measurement_info.doubleblind==True:
+            gate_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, population.gate)
+        else:
+            gate_f_arr = pulse_f_arr
+
+        return MyNamespace(pulse=pulse_f_arr, gate=gate_f_arr)
+    
+
+    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
+        pulse_t, gate_t, pulse_f, gate_f = super().post_process_get_pulse_and_gate(descent_state, measurement_info, descent_info)
+        
+        pulse_f = self.fft(pulse_t, measurement_info.sk, measurement_info.rn)
+        pulse_f = do_interpolation_1d(measurement_info.frequency_big, measurement_info.frequency, pulse_f)
+        pulse_t = self.ifft(pulse_f, measurement_info.sk_big, measurement_info.rn_big)
+
+        if measurement_info.doubleblind==True:
+            gate_f = self.fft(gate_t, measurement_info.sk, measurement_info.rn)
+            gate_f = do_interpolation_1d(measurement_info.frequency_big, measurement_info.frequency, gate_f)
+            gate_t = self.ifft(gate_f, measurement_info.sk_big, measurement_info.rn_big)
+        else:
+            gate_t = pulse_t
+
+        return pulse_t, gate_t, pulse_f, gate_f
 
 
 
@@ -34,3 +93,4 @@ class AutoDiff(RetrievePulsesRealFields, AutoDiffCHIRPSCAN, RetrievePulsesCHIRPS
     Inherits from  RetrievePulsesRealFields, AutoDiffCHIRPSCAN and RetrievePulsesCHIRPSCANwithRealFields"""
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, **kwargs)
+        self._post_init()

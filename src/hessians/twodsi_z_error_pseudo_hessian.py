@@ -6,52 +6,52 @@ from src.utilities import calculate_newton_direction, scan_helper
 
 
 
-def calc_Z_error_pseudo_hessian_subelement_pulse(dummy_element, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+def calc_Z_error_pseudo_hessian_subelement_pulse(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=0.5*jnp.abs(gate_m)**2
     Vzz_k=0
     Hzz_k=Uzz_k-Vzz_k
     
-    res=D_arr_pn*Hzz_k
-    return dummy_element + res, None
+    val = D_arr_pn*Hzz_k
+    return val
 
 
 
 
 
-def calc_Z_error_pseudo_hessian_subelement_shg_gate(dummy_element, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+def calc_Z_error_pseudo_hessian_subelement_shg_gate(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=0.5*(1+jnp.conjugate(exp_arr_mn))*(1+exp_arr_mp)*jnp.abs(pulse_t)**2
     Vzz_k=0
     Hzz_k=Uzz_k-Vzz_k
 
-    res=D_arr_pn*Hzz_k
-    return dummy_element + res, None
+    val = D_arr_pn*Hzz_k
+    return val
 
 
-def calc_Z_error_pseudo_hessian_subelement_thg_gate(dummy_element, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+def calc_Z_error_pseudo_hessian_subelement_thg_gate(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=2*(1+jnp.conjugate(exp_arr_mn))*(1+exp_arr_mp)*jnp.abs(pulse_t*gate_pulses_m)**2
     Vzz_k=0
     Hzz_k=Uzz_k-Vzz_k
 
-    res=D_arr_pn*Hzz_k
-    return dummy_element + res, None
+    val = D_arr_pn*Hzz_k
+    return val
 
 
-def calc_Z_error_pseudo_hessian_subelement_pg_gate(dummy_element, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+def calc_Z_error_pseudo_hessian_subelement_pg_gate(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=(1+jnp.conjugate(exp_arr_mn))*(1+exp_arr_mp)*jnp.abs(pulse_t*gate_pulses_m)**2
     Vzz_k=jnp.real((signal_t_new_m-signal_t_m)*jnp.conjugate(pulse_t))*(1+jnp.conjugate(exp_arr_mn))*(1+exp_arr_mp)
     Hzz_k=Uzz_k-Vzz_k
 
-    res=D_arr_pn*Hzz_k
-    return dummy_element + res, None
+    val = D_arr_pn*Hzz_k
+    return val
 
 
-def calc_Z_error_pseudo_hessian_subelement_sd_gate(dummy_element, pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
+def calc_Z_error_pseudo_hessian_subelement_sd_gate(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn, exp_arr_mn, exp_arr_mp):
     Uzz_k=2*(1+jnp.conjugate(exp_arr_mn))*(1+exp_arr_mp)*jnp.abs(pulse_t*gate_pulses_m)**2
     Vzz_k=0
     Hzz_k=Uzz_k-Vzz_k
 
-    res=D_arr_pn*Hzz_k
-    return dummy_element + res, None
+    val = D_arr_pn*Hzz_k
+    return val
 
 
 
@@ -67,11 +67,13 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
     calc_subelement=Partial(calc_Z_error_pseudo_hessian_subelement_pulse, exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=6)
+    # element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=6)
 
-    carry=0+0j
-    xs=(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
-    hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
+    # carry=0+0j
+    # xs=(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
+    # hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
+    hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0,0,0))(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
+    hessian_element = jnp.sum(hessian_element_arr)
 
     return hessian_element
 

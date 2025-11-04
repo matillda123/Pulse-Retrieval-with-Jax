@@ -379,15 +379,18 @@ class MakeTraceCHIRPSCAN(MakeTraceBASE, RetrievePulsesCHIRPSCAN):
 
 
 
-    def get_dispersed_pulse_t(self, pulse_f, phase_matrix, measurement_info):
-        pulse_t_disp, phase_matrix = super().get_dispersed_pulse_t(pulse_f, phase_matrix, measurement_info)
-        pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)   # THIS FUCKS the retrieval. Only use in generation of traces
+    def get_dispersed_pulse_t(self, pulse_f, phase_matrix, sk, rn):
+        pulse_t_disp, phase_matrix = super().get_dispersed_pulse_t(pulse_f, phase_matrix, sk, rn)
+        pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)   # This FUCKS the retrieval. Only use in generation of traces
         return pulse_t_disp, phase_matrix
 
 
 
     def get_parameters_to_make_signal_t(self):
-        self.measurement_info = MyNamespace(z_arr=self.z_arr, frequency=self.frequency, sk=self.sk, rn=self.rn, nonlinear_method=self.nonlinear_method, doubleblind=False)
+        self.measurement_info = MyNamespace(z_arr=self.z_arr, frequency=self.frequency, 
+                                            frequency_exp=self.frequency, time_big=self.time, frequency_big=self.frequency, 
+                                            sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, 
+                                            nonlinear_method=self.nonlinear_method, doubleblind=False)
         individual = MyNamespace(pulse=self.pulse_f, gate=None)
 
         self.phase_matrix = self.get_phase_matrix(self.parameters)
@@ -473,8 +476,10 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
     
 
     def get_parameters_to_make_signal_t(self):
-        measurement_info = MyNamespace(anc_1=self.anc_1, anc_2=self.anc_2, time=self.time, frequency=self.frequency, cross_correlation=self.cross_correlation, 
-                                       nonlinear_method=self.nonlinear_method, doubleblind=False, sk=self.sk, rn=self.rn, c0=self.c0)
+        measurement_info = MyNamespace(anc_1=self.anc_1, anc_2=self.anc_2, time=self.time, frequency=self.frequency, frequency_exp=self.frequency, 
+                                       time_big=self.time, frequency_big=self.frequency, sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, 
+                                       cross_correlation=self.cross_correlation, 
+                                       nonlinear_method=self.nonlinear_method, doubleblind=False, c0=self.c0)
         
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.material_thickness, measurement_info)
         measurement_info = measurement_info.expand(phase_matrix = self.phase_matrix)

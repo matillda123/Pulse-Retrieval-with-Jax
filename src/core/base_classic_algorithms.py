@@ -733,8 +733,8 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
 
         descent_state, do_local, do_global = self.initialize_run(population)
 
-        descent_state, error_arr_local = run_scan(do_local, descent_state, no_iterations_local, self.use_jit)
-        descent_state, error_arr_global = run_scan(do_global, descent_state, no_iterations_global, self.use_jit)
+        descent_state, error_arr_local = run_scan(do_local, descent_state, no_iterations_local, self.jit)
+        descent_state, error_arr_global = run_scan(do_global, descent_state, no_iterations_global, self.jit)
 
         error_arr = jnp.concatenate([error_arr_local, error_arr_global], axis=0)
         error_arr = jnp.squeeze(error_arr)
@@ -1073,8 +1073,8 @@ class COPRABASE(ClassicAlgorithmsBASE):
 
         descent_state, do_local, do_global = self.initialize_run(population)
 
-        descent_state, error_arr_local = run_scan(do_local, descent_state, no_iterations_local, self.use_jit)
-        descent_state, error_arr_global = run_scan(do_global, descent_state, no_iterations_global, self.use_jit)
+        descent_state, error_arr_local = run_scan(do_local, descent_state, no_iterations_local, self.jit)
+        descent_state, error_arr_global = run_scan(do_global, descent_state, no_iterations_global, self.jit)
 
         error_arr = jnp.concatenate([error_arr_local, error_arr_global], axis=0)
         error_arr = jnp.squeeze(error_arr)

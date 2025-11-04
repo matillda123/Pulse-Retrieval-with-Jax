@@ -101,7 +101,6 @@ class AutoDiff(AutoDiffBASE, RetrievePulsesFROG):
         return self.get_pulses_t_from_population(population, measurement_info, descent_info)
     
 
-
     def make_pulse_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate):
         """ Evaluates a pulse/gate for an individual. """
         signal = self.make_pulse_t_from_individual(individual, measurement_info, descent_info, pulse_or_gate)

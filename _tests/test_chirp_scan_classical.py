@@ -26,14 +26,14 @@ z_arr, frequency, trace, spectra = pulse_maker.generate_chirpscan(z_arr, time, f
                                                                   nonlinear_method="pg", 
                                                                   phase_matrix_func=phase_matrix_material, 
                                                                   parameters=parameters_material_scan, 
-                                                                  N=128, plot_stuff=False, cut_off_val=1e-6, 
+                                                                  N=64, plot_stuff=False, cut_off_val=1e-6, 
                                                                   frequency_range=(0,1), real_fields=False)
 
 
 
 pie_method = (None, "PIE", "ePIE", "rPIE", None, "PIE")
 nonlinear_method = ("shg", "thg", "pg", "sd", "pg", "pg")
-use_jit = (False, True, False, True, False, False)
+jit = (False, True, False, True, False, False)
 guess_type = ("random", "random_phase", "constant", "constant_phase", "random", "random")
 local_scaling = ("pade_10", "pade_20", "pade_11", "pade_01", "pade_02", "pade_10")
 global_scaling = ("pade_10", "pade_20", "pade_11", "pade_01", "pade_02", "pade_10")
@@ -54,7 +54,7 @@ use_momentum = (False, True, False, False, True, False)
 parameters_measurement = (z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan)
 input_vals = []
 for i in range(6):
-    parameters_algorithm = (nonlinear_method[i], pie_method[i], guess_type[i], use_spectrum[i], use_momentum[i], use_jit[i], 
+    parameters_algorithm = (nonlinear_method[i], pie_method[i], guess_type[i], use_spectrum[i], use_momentum[i], jit[i], 
                             local_scaling[i], global_scaling[i], linesearch[i], local_newton[i], global_newton[i], linalg_solver[i], r_local_method[i], 
                             r_global_method[i], r_gradient[i], r_newton[i], r_step_scaling[i], conjugate_gradients[i])
     input_vals.append((parameters_measurement, parameters_algorithm))
@@ -68,11 +68,11 @@ for i in range(6):
 def test_basic(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
     z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
-    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
     print(phase_matrix_parameters)
     basic = Basic(z_arr, frequency, trace, nonlinear_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
-    basic.use_jit = use_jit
+    basic.jit = jit
 
     if use_spectrum==True:
         basic.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -93,7 +93,7 @@ def test_basic(input_vals):
 def test_GeneralizedProjection(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
     z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
-    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
     gp = GeneralizedProjection(z_arr, frequency, trace, nonlinear_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
 
@@ -106,14 +106,14 @@ def test_GeneralizedProjection(input_vals):
     if linesearch=="zoom":
         gp.delta_gamma=1.5
 
-    gp.use_jit = use_jit
+    gp.jit = jit
     gp.no_steps_descent = 5
 
     gp.global_gamma = 0.5
     gp.global_adaptive_scaling = global_scaling
 
     gp.linesearch = linesearch
-    gp.max_steps_linesearch = 25
+    gp.max_steps_linesearch = 15
 
     gp.conjugate_gradients = conjugate_gradients
 
@@ -140,7 +140,7 @@ def test_GeneralizedProjection(input_vals):
 def test_TimeDomainPtychography(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
     z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
-    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
     
     tdp = TimeDomainPtychography(z_arr, frequency, trace, nonlinear_method, pie_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
@@ -154,7 +154,7 @@ def test_TimeDomainPtychography(input_vals):
     if linesearch=="zoom":
         tdp.delta_gamma=1.5
 
-    tdp.use_jit = use_jit
+    tdp.jit = jit
 
     tdp.local_gamma = 0.5
     tdp.global_gamma = 0.5
@@ -197,7 +197,7 @@ def test_TimeDomainPtychography(input_vals):
 def test_COPRA(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
     z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
-    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
         
     copra = COPRA(z_arr, frequency, trace, nonlinear_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
@@ -210,7 +210,7 @@ def test_COPRA(input_vals):
     if linesearch=="zoom":
         copra.delta_gamma=1.5
 
-    copra.use_jit = use_jit
+    copra.jit = jit
 
     copra.local_gamma = 0.5
     copra.global_gamma = 0.5
