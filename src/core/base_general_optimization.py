@@ -814,10 +814,12 @@ class LSFBASE(GeneralOptimizationBASE):
 
 
 
-    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
+    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info, idx=None):
         """ Some custom post-processing since the optimization is done in the explicit discretized form. """
         sk, rn = measurement_info.sk, measurement_info.rn
-        idx = self.get_idx_best_individual(descent_state)
+        
+        if idx==None:
+            idx = self.get_idx_best_individual(descent_state)
 
         individual = self.get_individual_from_idx(idx, descent_state.population)
 

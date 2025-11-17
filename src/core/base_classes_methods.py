@@ -288,11 +288,27 @@ class RetrievePulses:
         x_arr = self.measurement_info.x_arr
         time, frequency = self.measurement_info.time, self.measurement_info.frequency + self.f0
 
+        final_result_population = self.get_final_result_population()
         final_result = MyNamespace(x_arr=x_arr, time=time, frequency=frequency, frequency_exp=frequency,
                                  pulse_t=pulse_t, pulse_f=pulse_f, gate_t=gate_t, gate_f=gate_f,
                                  trace=trace, measured_trace=measured_trace,
-                                 error_arr=error_arr)
+                                 error_arr=error_arr, population=final_result_population)
         return final_result
+    
+
+
+    def get_final_result_population(self):
+        time, frequency = self.measurement_info.time, self.measurement_info.frequency
+        N = self.descent_info.population_size
+
+        final_result_arr = []
+        for idx in range(N):
+            pulse_t, gate_t, pulse_f, gate_f = self.post_process_get_pulse_and_gate(self.descent_state, self.measurement_info, self.descent_info, idx=idx)
+            pulse_t, gate_t, pulse_f, gate_f = self.post_process_center_pulse_and_gate(pulse_t, gate_t)
+            final_result = MyNamespace(time=time, frequency=frequency, pulse_t=pulse_t, pulse_f=pulse_f, gate_t=gate_t, gate_f=gate_f)
+            final_result_arr.append(final_result)
+
+        return final_result_arr
 
 
 
@@ -539,10 +555,12 @@ class RetrievePulsesFROG(RetrievePulses):
 
 
 
-    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
+    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info, idx=None):
         """ FROG specific post processing to get the final pulse/gate """
         sk, rn = measurement_info.sk, measurement_info.rn
-        idx = self.get_idx_best_individual(descent_state)
+
+        if idx==None:
+            idx = self.get_idx_best_individual(descent_state)
 
         individual = self.get_individual_from_idx(idx, descent_state.population)
         pulse_t = individual.pulse
@@ -711,10 +729,12 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
     
 
 
-    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
+    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info, idx=None):
         """ Chirp-Scan specific post processing to get the final pulse/gate """
         sk, rn =  measurement_info.sk, measurement_info.rn
-        idx = self.get_idx_best_individual(descent_state)
+
+        if idx==None:
+            idx = self.get_idx_best_individual(descent_state)
 
         individual = self.get_individual_from_idx(idx, descent_state.population)
         pulse_f = individual.pulse

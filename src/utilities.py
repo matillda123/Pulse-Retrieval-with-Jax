@@ -705,10 +705,16 @@ def loss_function_modifications(trace, measured_trace, tau_or_zarr, frequency, a
 
 
 
+def remove_phase_jumps(phase):
+    """ Checks for jumps of 2*pi in phase, subtracts accordingly to get a smooth phase. """
+    phase_diff = jnp.diff(phase)
+    f = jnp.concatenate((jnp.zeros(1), jnp.sign(phase_diff)*jnp.floor(jnp.abs(phase_diff)/(2*jnp.pi))))
+    phase = phase - 2*jnp.pi*jnp.cumsum(f)
+    return phase
 
 
 
-def get_score_values(final_result, input_pulses):
+def get_score_values(final_result, input_pulses, doubleblind=False):
     """
     Computes different error-metrics for a reconstructed pulse given the exact pulse is known and provided. 
     The error metrics are the maximum cross-correlation between reconstructed and exact pulse in the time and frequency domain. 
@@ -716,16 +722,12 @@ def get_score_values(final_result, input_pulses):
     A weighted and normalized L2-Norm of the GDD difference of reconstructed and exact pulse.
 
     """
-
-    pulse_t, pulse_f = final_result.pulse_t, final_result.pulse_f
-    if hasattr(final_result, "time"):
-        time=final_result.time
-    elif hasattr(final_result, "tau_arr"):
-        time=final_result.tau_arr
+    
+    time, frequency = final_result.time, final_result.frequency
+    if doubleblind==True:
+        pulse_t, pulse_f = final_result.gate_t, final_result.gate_f
     else:
-       raise ValueError("final_result need to contain either time or tau_arr. It contains neither.")
-
-    frequency = final_result.frequency
+        pulse_t, pulse_f = final_result.pulse_t, final_result.pulse_f
 
     time_inp, frequency_inp = input_pulses.time, input_pulses.frequency
     pulse_t_inp, pulse_f_inp = input_pulses.pulse_t, input_pulses.pulse_f
@@ -744,12 +746,18 @@ def get_score_values(final_result, input_pulses):
     
     amp_f_conv = jax.scipy.signal.correlate(jnp.abs(pulse_f), jnp.abs(pulse_f_inp_interp))
     amp_f_score_1 = jnp.max(amp_f_conv)
-    amp_f_score_2 = jnp.sum(jnp.abs(pulse_f)*jnp.abs(pulse_f_inp_interp)) # cross correlation without shift -> how good is central_f ?
+    amp_f_score_2 = jnp.sum(jnp.abs(pulse_f)*jnp.abs(pulse_f_inp_interp)) # cross-correlation without shift -> how good is central_f
 
 
 
     phase_f = jnp.unwrap(jnp.angle(pulse_f))
     phase_f_inp_interp = jnp.unwrap(jnp.angle(pulse_f_inp_interp))
+
+    # one needs to check here for discontinuities and remove them -> for both to guarantee equal treatment
+    # maybe current implementation is too aggressive?
+    phase_f = remove_phase_jumps(phase_f)
+    phase_f_inp_interp = remove_phase_jumps(phase_f_inp_interp)
+
 
     phase_f_grad = jnp.gradient(phase_f, frequency)
     phase_f_inp_interp_grad = jnp.gradient(phase_f_inp_interp, frequency)
@@ -760,9 +768,9 @@ def get_score_values(final_result, input_pulses):
 
     spectrum_norm = (jnp.abs(pulse_f)/jnp.max(jnp.abs(pulse_f)))**2
     mask = jnp.zeros(jnp.size(spectrum_norm))
-    mask = jnp.where(spectrum_norm<0.1, mask, 1)
-    residual = (phase_f_grad_grad-phase_f_inp_interp_grad_grad)*mask
-    residual = residual/jnp.std(residual) # -> a "normalization" to treat different chirps the same
-    error_phase_f = jnp.mean(jnp.abs(residual)**2)
+    mask = spectrum_norm #jnp.where(spectrum_norm<0.1, mask, 1)
+    contrast = (phase_f_grad_grad-phase_f_inp_interp_grad_grad)/(phase_f_grad_grad+phase_f_inp_interp_grad_grad) # normalized difference
+    contrast = contrast*mask
+    error_phase_f = jnp.sqrt(jnp.mean(jnp.abs(contrast)**2))
     
     return 1-amp_t_score, 1-amp_f_score_1, 1-amp_f_score_2, error_phase_f
