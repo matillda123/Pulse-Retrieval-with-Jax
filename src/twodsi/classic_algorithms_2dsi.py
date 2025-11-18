@@ -1,6 +1,5 @@
 import jax.numpy as jnp
 import jax
-from jax.scipy.special import bernoulli, factorial
 from jax.tree_util import Partial
 
 from equinox import tree_at
@@ -8,7 +7,7 @@ from equinox import tree_at
 from src.core.base_classes_methods import RetrievePulses2DSI
 from src.core.base_classes_algorithms import AlgorithmsBASE
 from src.core.base_classic_algorithms import GeneralizedProjectionBASE, TimeDomainPtychographyBASE, COPRABASE
-from src.utilities import scan_helper, center_signal, do_interpolation_1d, calculate_trace, calculate_trace_error
+from src.utilities import scan_helper, center_signal, do_interpolation_1d, integrate_signal_1D, calculate_trace, calculate_trace_error
 
 from src.gradients.twodsi_z_error_gradients import calculate_Z_gradient
 from src.hessians.twodsi_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
@@ -54,43 +53,6 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         n = jnp.arange(N)
         window = a0 - (1-a0)*jnp.cos(2*jnp.pi*n/N)
         return jnp.swapaxes(jnp.swapaxes(signal, -1, axis)*window, axis, -1)
-
-
-    def integrate_signal_1D(self, signal, x, descent_info):
-        """ Calculates the indefinite integral of a signal using the Riemann sum or the Euler-Maclaurin formula. """
-        method, order = descent_info.integration_method, descent_info.integration_order
-
-        dx = jnp.mean(jnp.diff(x))
-
-        if method=="cumsum":
-            signal = jnp.cumsum(signal, axis=-1)*dx
-            
-        elif method=="euler_maclaurin":
-            # def calc_terms():
-            #     f = bn[i+1]/factorial(i+1)
-            #     y_prime = jnp.gradient(jnp.gradient(y_prime, x, axis=-1), x, axis=-1)
-            #     t = t + dx**(i+1)*f*(y_prime[:-1] - y_prime[1:])
-            # maybe use vmap?
-
-            n = order
-            bn = bernoulli(2*n)
-
-            y_prime = jnp.gradient(signal, x, axis=-1)
-            t = dx**2/12*(y_prime[:-1] - y_prime[1:])
-            for i in jnp.arange(3, 2*n+1, 2): 
-                f = bn[i+1]/factorial(i+1)
-                y_prime = jnp.gradient(jnp.gradient(y_prime, x, axis=-1), x, axis=-1)
-                t = t + dx**(i+1)*f*(y_prime[:-1] - y_prime[1:])
-                
-
-            # the addition of t is correct because the gradients are subtracted in reverse
-            yint = dx/2*(signal[:-1] + signal[1:]) + t
-            yint = jnp.concatenate((jnp.zeros(1), yint), axis=-1)
-            signal = jnp.cumsum(yint, axis=-1)
-
-        else:
-            raise ValueError(f"method must be one of cumsum or euler_maclaurin. Not {method}")
-        return signal
     
 
     def interpolate_group_delay_onto_spectral_amplitude(self, spectral_phase, measurement_info):
@@ -131,15 +93,16 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         group_delay = group_delay - jnp.mean(group_delay)
 
         group_delay = self.interpolate_group_delay_onto_spectral_amplitude(group_delay, measurement_info)
-        spectral_phase = self.integrate_signal_1D(group_delay, frequency, descent_info)
-
-        descent_state = tree_at(lambda x: x.group_delay, descent_state, group_delay)
-        descent_state = tree_at(lambda x: x.spectral_phase, descent_state, spectral_phase)
+        spectral_phase = integrate_signal_1D(group_delay, frequency, descent_info.integration_methods, descent_info.integration_order)
 
         pulse_f = pulse_spectral_amplitude*jnp.exp(1j*spectral_phase)
         pulse_t = self.ifft(pulse_f, measurement_info.sk, measurement_info.rn)
         pulse_t = center_signal(pulse_t).reshape(1,-1)
+
+        descent_state = tree_at(lambda x: x.group_delay, descent_state, group_delay)
+        descent_state = tree_at(lambda x: x.spectral_phase, descent_state, spectral_phase)
         descent_state = tree_at(lambda x: x.population.pulse, descent_state, pulse_t)
+
         return descent_state
     
     
@@ -149,7 +112,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
         signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
         trace = calculate_trace(signal_f)
-        # if population is larger than one this may cause an error or bug
+        # if population is larger than one this may cause an error or bug ? 
         trace_error = calculate_trace_error(trace, measurement_info.measured_trace)
         return trace_error
     

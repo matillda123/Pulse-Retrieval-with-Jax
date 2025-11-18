@@ -6,7 +6,7 @@ import lineax as lx
 import equinox
 
 from interpax import interp1d
-
+from jax.scipy.special import bernoulli, factorial
 
 
 
@@ -321,12 +321,59 @@ def get_sk_rn(time, frequency):
 
 
 
+
+
+
 def do_interpolation_1d(x_new, x, y, method="cubic"):
     """
     Wraps around interpax.interp1d
     """
     y_new = interp1d(x_new, x, y, method=method, extrap=1e-12)
     return y_new
+
+
+
+
+def integrate_signal_1D(signal, x, integration_method, integration_order):
+    """ Calculates the indefinite integral of a signal using the Riemann sum or the Euler-Maclaurin formula. """
+
+    dx = jnp.mean(jnp.diff(x))
+
+    if integration_method=="cumsum":
+        signal = jnp.cumsum(signal, axis=-1)*dx
+        
+    elif integration_method=="euler_maclaurin":
+        # one could use vamp instead of a for-loop -> no actually lax.scan because of recursive nature 
+
+        n = integration_order
+        bn = bernoulli(2*n)
+
+        y_prime = jnp.gradient(signal, x, axis=-1)
+        t = dx**2/12*(y_prime[:-1] - y_prime[1:])
+        for i in jnp.arange(3, 2*n+1, 2): 
+            f = bn[i+1]/factorial(i+1)
+            y_prime = jnp.gradient(jnp.gradient(y_prime, x, axis=-1), x, axis=-1)
+            t = t + dx**(i+1)*f*(y_prime[:-1] - y_prime[1:])
+            
+
+        # the addition of t is correct because the gradients are subtracted in reverse
+        yint = dx/2*(signal[:-1] + signal[1:]) + t
+        yint = jnp.concatenate((jnp.zeros(1), yint), axis=-1)
+        signal = jnp.cumsum(yint, axis=-1)
+
+    else:
+        raise ValueError(f"integration_method must be one of cumsum or euler_maclaurin. Not {integration_method}")
+    
+    return signal
+
+
+
+
+
+
+
+
+
 
 
 

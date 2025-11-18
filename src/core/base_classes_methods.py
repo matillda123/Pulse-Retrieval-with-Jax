@@ -8,9 +8,10 @@ import jax.numpy as jnp
 
 from equinox import tree_at
 
-from src.utilities import MyNamespace, center_signal, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_gate_with_Real_Fields, calculate_trace, calculate_trace_error, project_onto_amplitude
+from src.utilities import MyNamespace, center_signal, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_trace, calculate_trace_error, project_onto_amplitude
 from .create_population import create_population_classic
 from src.core.initial_guess_doublepulse import make_population_doublepulse
+from src.chirp_scan.phase_matrix_funcs import calc_sine_phase, calc_gaussian_phase, calc_tanh_phase, calc_MIIPS_phase, calc_G_MIIPS_phase, calculate_phase_matrix, calculate_phase_matrix_material
 
 
 
@@ -610,7 +611,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
 
     """
     
-    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_matrix_func=None, chirp_parameters=None, **kwargs):
+    def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_type=None, chirp_parameters=None, **kwargs):
         super().__init__(nonlinear_method, **kwargs)
 
         self.z_arr, self.time, self.frequency, self.measured_trace = self.get_data(z_arr, frequency, measured_trace)
@@ -632,7 +633,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
                                                              x_arr = self.x_arr)
         
 
-        self.calculate_phase_matrix = phase_matrix_func
+        self.phase_type = phase_type
         self.phase_matrix = self.get_phase_matrix(chirp_parameters)
         
 
@@ -641,7 +642,24 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
     def get_phase_matrix(self, parameters):
         """ Calls phase_matrix_func in order to calculate the phase matrix. """
         self.parameters = parameters
-        self.phase_matrix = self.calculate_phase_matrix(self.measurement_info, parameters)
+
+        if self.phase_type=="material":
+            self.phase_matrix = calculate_phase_matrix_material(self.measurement_info, parameters)
+
+        elif type(self.phase_type)==str:
+            phase_matrix_dict = {"sine": calc_sine_phase,
+                                 "tanh": calc_tanh_phase,
+                                 "gaussian": calc_gaussian_phase,
+                                 "MIIPS": calc_MIIPS_phase,
+                                 "GMIIPS": calc_G_MIIPS_phase}
+            self.phase_matrix = calculate_phase_matrix(self.measurement_info, parameters, phase_func=phase_matrix_dict[self.phase_type])
+
+        elif callable(self.phase_type)==True:
+            self.phase_matrix = self.phase_type(self.measurement_info, parameters)
+
+        else:
+            raise ValueError(f"phase_type needs to be a string or a callable. Not {self.phase_type}")
+
 
         self.transform_arr = self.phase_matrix
         self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
