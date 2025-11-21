@@ -412,3 +412,192 @@ class COPRA(COPRABASE, RetrievePulsesFROG):
         return descent_direction, newton_state
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class ConstrainedPCGPA(RetrievePulses):
+    def __init__(self, tau_arr, frequency, measured_trace, frogmethod, xfrog=False, **kwargs):
+        super().__init__(tau_arr, frequency, measured_trace, frogmethod, xfrog, **kwargs)
+        
+        print("This algorithm doesnt really work for shaped pulses.")
+    
+        self.measurement_info.measured_trace=self.measured_trace
+
+        self.idx_arr=jnp.arange(jnp.size(self.frequency))
+        self.descent_info=MyNamespace(idx_arr=self.idx_arr)
+
+        self.use_constraints=True
+        self.use_svd=False
+
+    
+    def get_outer_product_form(self, pulse_t, gate, pulse_t_prime, gate_prime, iteration):
+
+        opf=jnp.outer(pulse_t, gate.conj())
+        opf=opf + (1-iteration%2)*(jnp.outer(pulse_t_prime, gate.conj()) + jnp.outer(pulse_t, gate_prime.conj()))
+
+        #opf=jnp.outer(pulse_t, gate.conj()) + jnp.outer(pulse_t_prime, gate.conj()) + jnp.outer(pulse_t, gate_prime.conj()) + jnp.outer(pulse_t_prime, gate_prime.conj())
+        return opf
+
+
+    @Partial(jax.vmap, in_axes=(None, 0, 0))
+    def shift_rows(self, row, idx):
+        return jnp.roll(row, idx)
+    
+    def calculate_signal_f(self, opf, idx_arr, sk, rn):
+        temp=self.shift_rows(opf,-idx_arr)
+        signal_t=jnp.roll(jnp.fliplr(jnp.fft.fftshift(temp,axes=1)),1,axis=1)
+        signal_f=do_fft(signal_t, sk, rn, axis=0)
+        return signal_f
+
+    def convert_signal_to_outer_product_form(self, signal_t, idx_arr):
+        signal_t=jnp.roll(signal_t,-1,axis=1)
+        temp=jnp.fft.fftshift(jnp.fliplr(signal_t),axes=1)
+        opf=self.shift_rows(temp, idx_arr)
+        return opf
+
+    def do_anti_alias(self,opf, half_N):
+        opf = opf - jnp.tril(opf, -half_N) - jnp.triu(opf,half_N)
+        return opf
+
+    def decompose_opf(self, opf, pulse_t, gate, use_svd):
+        if use_svd==True:
+            U,S,Vh=jnp.linalg.svd(opf)
+            pulse_t=U[:,0]
+            gate=Vh[0].conj()   # not sure if the conjugate is needed, but Vh is the hermitian conjugate so im guessing it is.
+        else:
+            pulse_t=jnp.dot(opf,jnp.dot(opf.T.conj(),pulse_t))
+            gate=jnp.dot(opf.T.conj(),jnp.dot(opf,gate))
+
+        pulse_t=pulse_t/jnp.linalg.norm(pulse_t)
+        gate=gate/jnp.linalg.norm(gate) # normalizing distorts ratio of gate and pulse -> scale both by some common value?
+
+        return pulse_t, gate
+    
+    def impose_constraints(self, pulse_t, gate, opf, frogmethod):
+        # these are the additional constraints in C-PCGPA
+            # opf maps from gate to pulse_t_prime
+            # opf^dagger maps from pulse_t to gate_prime
+        if frogmethod=="pg":
+            gate=jnp.abs(gate) + 0j
+            pulse_t_prime=jnp.dot(opf,jnp.abs(pulse_t)**2) + 0j 
+            gate_prime=jnp.abs(jnp.dot(opf,gate))**2 + 0j
+        else:
+            pulse_t_prime=jnp.dot(opf, calculate_gate(pulse_t, frogmethod)) + 0j
+            gate_prime=jnp.dot(opf.T.conj(), inverse_gate(gate, frogmethod)) + 0j
+
+            #pulse_t_prime=jnp.dot(opf,calculate_gate(pulse_t, frogmethod)) + 0j 
+            #gate_prime=calculate_gate(jnp.dot(opf, gate), frogmethod) + 0j
+
+
+        return pulse_t_prime, gate_prime
+
+
+
+    def update_pulse_guess(self, opf, pulse_t, gate, use_svd, use_constraints, frogmethod, xfrog, xfrog_gate):
+        pulse_t, gate = self.decompose_opf(opf, pulse_t, gate, use_svd)
+
+        if use_constraints==True and xfrog==False:
+            pulse_t_prime, gate_prime = self.impose_constraints(pulse_t, gate, opf, frogmethod)
+
+        elif xfrog==True:
+            pulse_t_prime=pulse_t
+            gate=gate_prime=calculate_gate(xfrog_gate, frogmethod)
+
+        else:
+            pulse_t_prime, gate_prime = pulse_t, gate
+
+        return pulse_t, gate, pulse_t_prime, gate_prime
+
+
+    def step(self, descent_state, measurement_info, descent_info):
+        measured_trace, frogmethod = measurement_info.measured_trace, measurement_info.frogmethod
+        xfrog, xfrog_gate=measurement_info.xfrog, measurement_info.gate
+        
+        idx_arr, use_svd, use_constraints = descent_info.idx_arr, descent_info.use_svd, descent_info.use_constraints
+
+        pulse_t, gate, pulse_t_prime, gate_prime = descent_state.pulse_t, descent_state.gate, descent_state.pulse_t_prime, descent_state.gate_prime
+        iteration = descent_state.iteration
+
+
+        sk, rn = measurement_info.sk[:, jnp.newaxis], measurement_info.rn[:, jnp.newaxis]
+
+        opf=self.get_outer_product_form(pulse_t, gate, pulse_t_prime, gate_prime, iteration)
+
+        # anti-alias without constant centering of pulse can generate issues
+        half_N=jnp.size(opf[0])//2
+        opf=self.do_anti_alias(opf, half_N)
+
+        signal_f=self.calculate_signal_f(opf, idx_arr, sk, rn)
+       
+
+        trace=calculate_trace(signal_f)
+        trace_error=calculate_trace_error(trace, measured_trace)
+
+        signal_f_new=project_onto_intensity(signal_f, measured_trace)
+        signal_t=do_ifft(signal_f_new, sk, rn, axis=0)
+        
+        opf=self.convert_signal_to_outer_product_form(signal_t, idx_arr)
+        opf=self.do_anti_alias(opf, half_N)
+
+        pulse_t, gate, pulse_t_prime, gate_prime=self.update_pulse_guess(opf, pulse_t, gate, use_svd, use_constraints, frogmethod, xfrog, xfrog_gate)
+
+        descent_state.pulse_t, descent_state.gate, descent_state.pulse_t_prime, descent_state.gate_prime = pulse_t, gate, pulse_t_prime, gate_prime
+        descent_state.iteration = iteration + 1
+        return descent_state, trace_error
+    
+
+
+    def initialize_run(self, pulse_t):
+        self.measurement_info.measured_trace=jnp.transpose(self.measurement_info.measured_trace)
+
+        self.descent_info.use_svd=self.use_svd
+        self.descent_info.use_constraints=self.use_constraints
+
+        measurement_info=self.measurement_info
+        descent_info=self.descent_info
+
+        gate=calculate_gate(pulse_t, self.frogmethod) + 0j
+        N=jnp.size(self.idx_arr)
+        pulse_t_prime=gate_prime=jnp.ones(N, dtype=jnp.complex64)
+
+        self.descent_state.pulse_t=pulse_t
+        self.descent_state.pulse_t_prime=pulse_t_prime
+        self.descent_state.gate=gate
+        self.descent_state.gate_prime=gate_prime
+        self.descent_state.iteration=0
+        descent_state=self.descent_state
+
+        do_step=Partial(self.step, measurement_info=measurement_info, descent_info=descent_info)
+        do_step=Partial(scan_helper, actual_function=do_step, number_of_args=1, number_of_xs=0)
+        return descent_state, do_step
+    
+    
+    def post_process_get_pulse_t_and_gate_t(self, descent_state):
+        measurement_info=self.measurement_info
+        xfrog=measurement_info.xfrog
+
+        pulse_t = descent_state.pulse_t
+        if xfrog=="doubleblind":
+            gate_t = descent_state.gate
+        elif xfrog==True:
+            gate_t=measurement_info.gate
+        else:
+            gate_t = jnp.zeros(jnp.shape(pulse_t))
+
+        return pulse_t, gate_t
