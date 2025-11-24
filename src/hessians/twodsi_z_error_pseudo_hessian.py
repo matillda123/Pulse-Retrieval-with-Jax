@@ -67,11 +67,7 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
     calc_subelement=Partial(calc_Z_error_pseudo_hessian_subelement_pulse, exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    # element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=6)
 
-    # carry=0+0j
-    # xs=(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
-    # hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
     hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0,0,0))(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
     hessian_element = jnp.sum(hessian_element_arr)
 
@@ -96,11 +92,7 @@ def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, om
                              "sd": calc_Z_error_pseudo_hessian_subelement_sd_gate}
 
     calc_subelement=Partial(calc_hessian_subelement[nonlinear_method], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    # element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=6)
 
-    # carry=0+0j
-    # xs=(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
-    # hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
     hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0,0,0))(pulse_t, gate_pulses_m, gate_m, signal_t_m, signal_t_new_m, D_arr_pn)
     hessian_element = jnp.sum(hessian_element_arr)
 
@@ -142,7 +134,7 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t, gate_pulses, gate, signal_t, sign
 
     hessian_all_m=Partial(calc_Z_error_pseudo_hessian_one_m, pulse_t=pulse_t, time=time, omega=omega, nonlinear_method=nonlinear_method, 
                           full_or_diagonal=full_or_diagonal, pulse_or_gate=pulse_or_gate)
-    # h_all_m=jax.vmap(hessian_all_m, in_axes=(0,0,0,0,0))(exp_arr, gate_pulses, gate, signal_t, signal_t_new)
+
     carry = jnp.zeros(1)
     xs = (exp_arr, gate_pulses, gate, signal_t, signal_t_new)
     get_hessian_all_m = Partial(scan_helper, actual_function=hessian_all_m, number_of_args=1, number_of_xs=5)

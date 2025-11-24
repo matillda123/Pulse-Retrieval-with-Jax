@@ -51,12 +51,7 @@ def calc_Z_error_pseudo_hessian_element(exp_arr_mp, exp_arr_mn, omega_p, omega_n
                              "tg": calc_Z_error_pseudo_hessian_subelement_pg}
 
 
-    calc_subelement=Partial(calc_hessian_subelement[nonlinear_method], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    # element_scan=Partial(scan_helper, actual_function=calc_subelement, number_of_args=1, number_of_xs=4)
-
-    # carry=0+0j
-    # xs=(pulse_t_dispersed, signal_t_m, signal_t_new_m, D_arr_pn)
-    # hessian_element, _ =jax.lax.scan(element_scan, carry, xs)
+    calc_subelement = Partial(calc_hessian_subelement[nonlinear_method], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
     hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0))(pulse_t_dispersed, signal_t_m, signal_t_new_m, D_arr_pn)
     hessian_element = jnp.sum(hessian_element_arr)
     return hessian_element
@@ -84,10 +79,9 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t_dispersed, signal_t, signal_t_new,
     """ jax.vmap over shifts """
     time, omega, nonlinear_method = measurement_info.time, 2*jnp.pi*measurement_info.frequency, measurement_info.nonlinear_method
 
-    exp_arr=jnp.exp(-1j*phase_matrix)
+    exp_arr = jnp.exp(-1j*phase_matrix)
 
-    hessian_all_m=Partial(calc_Z_error_pseudo_hessian_one_m, time=time, omega=omega, nonlinear_method=nonlinear_method, full_or_diagonal=full_or_diagonal)
-    #h_all_m=jax.vmap(hessian_all_m, in_axes=(0,0,0,0))(exp_arr, pulse_t_dispersed, signal_t, signal_t_new)
+    hessian_all_m = Partial(calc_Z_error_pseudo_hessian_one_m, time=time, omega=omega, nonlinear_method=nonlinear_method, full_or_diagonal=full_or_diagonal)
 
     carry = jnp.zeros(1)
     xs = (exp_arr, pulse_t_dispersed, signal_t, signal_t_new)

@@ -15,14 +15,8 @@ def PIE_get_pseudo_hessian_element(probe_k, probe_j, time_k, time_j, omega, sign
     """ Sum over frequency axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
 
     D_arr_kj=jnp.exp(1j*omega*(time_k-time_j))
-    # get_subelement=Partial(scan_helper, actual_function=PIE_get_pseudo_hessian_subelement, number_of_args=1, number_of_xs=3)
-
-    # carry = 0+0j
-    # xs = (signal_f, measured_trace, D_arr_kj)
-    # val_subelement, _ = jax.lax.scan(get_subelement, carry, xs)
 
     val_subelement_arr = D_arr_kj*(2 - jnp.sign(measured_trace)*jnp.sqrt(jnp.abs(measured_trace))/(jnp.abs(signal_f) + 1e-9))
-    #jax.vmap(PIE_get_pseudo_hessian_subelement, in_axes=(0,0,0))(signal_f, measured_trace, D_arr_kj)
     val_subelement = jnp.sum(val_subelement_arr)
 
     hess_element = 0.25*jnp.conjugate(probe_k)*probe_j*val_subelement
@@ -50,7 +44,6 @@ def PIE_get_pseudo_hessian_all_m(probe_all_m, signal_f, measured_trace, measurem
     """ jax.vmap over delays/shifts """
     get_hessian = Partial(PIE_get_pseudo_hessian_one_m, measurement_info=measurement_info, use_hessian=use_hessian)
     
-    # hessian_all_m = jax.vmap(get_hessian, in_axes=(0,0,0))(probe_all_m, signal_f, measured_trace)
     xs = (probe_all_m, signal_f, measured_trace)
     carry = jnp.zeros(1)
     get_hessian_all_m = Partial(scan_helper, actual_function=get_hessian, number_of_args=1, number_of_xs=3)
@@ -73,13 +66,13 @@ def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measur
         grad: jnp.array, the current (weighted) gradient
         probe: jnp.array, the PIE probe
         signal_f: jnp.array, the signal field in the frequency domain
-        transform_arr: jnp.array, the delays or phase matrix
+        transform_arr: jnp.array, the delays or phase matrix, unused
         measured_trace: jnp.array, the measured intensity
         reverse_transform: Callable, unused
         newton_direction_prev: jnp.array, the previous pseudo-newton direction
         measurement_info: Pytree, holds measurement data and parameters
         descent_info: Pytree, holds algorithm parameters
-        pulse_or_gate: str, pulse or gate?
+        pulse_or_gate: str, pulse or gate, unused
         local_or_global: str, local or global iteration?
 
     Returns:

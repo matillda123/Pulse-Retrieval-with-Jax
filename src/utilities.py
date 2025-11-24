@@ -428,6 +428,31 @@ def calculate_gate_with_Real_Fields(pulse_t, method):
     return gate
 
 
+def calculate_gate_inverse(gate, method):
+    """
+    Invert the gate for the nonlinear process. Uses a pseudo-inverse for PG.
+    """
+    assert method!="tg", "For TG, depending on the definition either pg or sd needs to be used."
+
+    if method == "shg":
+        pulse_t = gate
+
+    elif method == "thg":
+        pulse_t = jnp.sqrt(gate)
+
+    elif method =="pg":
+        pulse_t = jnp.sqrt(jnp.abs(gate))*jnp.exp(1j*jnp.angle(gate))
+        
+    elif method == "sd":
+        pulse_t = jnp.conjugate(jnp.sqrt(gate))
+
+    else:
+        raise NotImplementedError(f"method={method} is not implemented")
+    
+    return pulse_t
+
+
+
 
 
 def project_onto_intensity(signal_f, measured_intensity):
