@@ -22,11 +22,10 @@ def calculate_phase_matrix_material(measurement_info, parameters):
     refractive_index, c0 = parameters
     z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
 
-    c0 = c0*1e-12 # speed of light in mm/fs
-    wavelength = c0/frequency
-    n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
+    wavelength = c0/frequency*1e-6 # wavelength in nm
+    n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength) + 1e-9, bounds_error=False) # wavelength needs to be in nm
     n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
-    k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
+    k_arr = 2*jnp.pi/(wavelength*1e-6 + 1e-9)*n_arr #wavelength is needed in mm
     phase_matrix = z_arr[:, jnp.newaxis]*k_arr[jnp.newaxis, :]
     return phase_matrix
 

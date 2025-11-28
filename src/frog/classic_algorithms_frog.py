@@ -220,9 +220,9 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         if nonlinear_method=="shg" or nonlinear_method=="thg":
             opf = jnp.outer(pulse_t, gate) + jnp.outer(pulse_t_prime, gate) + jnp.outer(pulse_t, gate_prime)
         elif nonlinear_method=="pg" or nonlinear_method=="sd":
-            is_ac = 1 # (1-measurement_info.cross_correlation) & (1-measurement_info.doubleblind)
+            #is_ac = (1-measurement_info.cross_correlation) & (1-measurement_info.doubleblind)
             opf = jnp.outer(pulse_t, gate.conj())
-            opf = opf + (1-iteration%2)*(jnp.outer(pulse_t_prime, gate.conj()) + jnp.outer(pulse_t, gate_prime.conj()))*is_ac
+            opf = opf + (1-iteration%2)*(jnp.outer(pulse_t_prime, gate.conj()) + jnp.outer(pulse_t, gate_prime.conj()))#*is_ac
         else:
             raise ValueError(f"nonlinear_method needs to be shg, thg, pg or sd. Not {nonlinear_method}")
         

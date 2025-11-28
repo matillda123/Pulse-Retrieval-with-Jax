@@ -241,6 +241,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
     """
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, pie_method="rPIE", **kwargs):
         assert cross_correlation!="doubleblind", "Doubleblind is not implemented for 2DSI-TimeDomainPtychography."
+        
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
 
         self.pie_method = pie_method

@@ -155,16 +155,17 @@ class RetrievePulses:
     
 
 
-    def plot_results(self, final_result, exact_pulse=None):
+    def plot_results(self, final_result, exact_pulse=None, doubleblind=False):
         pulse_t, pulse_f, trace = final_result.pulse_t, final_result.pulse_f, final_result.trace
+        gate_t, gate_f = final_result.gate_t, final_result.gate_f
         error_arr = final_result.error_arr
 
         x_arr, time, frequency, measured_trace = final_result.x_arr, final_result.time, final_result.frequency, final_result.measured_trace
         frequency_exp = final_result.frequency_exp
         
-        trace=trace/jnp.max(trace)
-        measured_trace=measured_trace/jnp.max(measured_trace)
-        trace_difference=measured_trace-trace
+        trace = trace/jnp.max(trace)
+        measured_trace = measured_trace/jnp.max(measured_trace)
+        trace_difference = measured_trace-trace
 
         fig=plt.figure(figsize=(22,14))
         ax1=plt.subplot(2,3,1)
@@ -176,6 +177,10 @@ class RetrievePulses:
         ax2.plot(time, np.unwrap(np.angle(pulse_t))*1/np.pi, c="tab:orange", label="Phase")
         ax2.set_ylabel(r"Phase [$\pi$]")
         ax2.legend(loc=1)
+
+        if doubleblind==True:
+            ax1.plot(time, np.abs(gate_t), label="Gate-Pulse", c="tab:red")
+            ax2.plot(time, np.unwrap(np.angle(gate_t))*1/np.pi, label="Gate-Pulse", c="tab:green")
 
         if exact_pulse!=None:
             ax1.plot(exact_pulse.time, np.abs(exact_pulse.pulse_t)*np.max(np.abs(pulse_t))/np.max(np.abs(exact_pulse.pulse_t)), 
@@ -191,6 +196,10 @@ class RetrievePulses:
         ax2.plot(frequency, jnp.unwrap(jnp.angle(pulse_f))*1/np.pi, c="tab:orange", label="Phase")
         ax2.set_ylabel(r"Phase [$\pi$]")
         ax2.legend(loc=1)
+
+        if doubleblind==True:
+            ax1.plot(frequency, np.abs(gate_f), label="Gate-Pulse", c="tab:red")
+            ax2.plot(frequency, np.unwrap(np.angle(gate_f))*1/np.pi, label="Gate-Pulse", c="tab:green")
 
         if exact_pulse!=None:
             ax1.plot(exact_pulse.frequency, np.abs(exact_pulse.pulse_f)*np.max(np.abs(pulse_f))/np.max(np.abs(exact_pulse.pulse_f)),
@@ -794,7 +803,8 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
     """
 
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=True, anc1_frequency=None, anc2_frequency=None, 
-                 material_thickness=0, refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), **kwargs):
+                 spectral_filter1=None, spectral_filter2=None,
+                 material_thickness=0, refractive_index=refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, ifrog=False, **kwargs)
 
         self.anc1_frequency = anc1_frequency
@@ -802,16 +812,23 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         self.c0 = c0
         self.refractive_index = refractive_index
 
+        if spectral_filter1==None:
+            spectral_filter1 = jnp.ones(self.frequency)
+        if spectral_filter2==None:
+            spectral_filter2 = jnp.ones(self.frequency)
+
         self.measurement_info = self.measurement_info.expand(c0=self.c0)
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, material_thickness, self.measurement_info)
-        self.measurement_info = self.measurement_info.expand(anc1_frequency = self.anc1_frequency, anc2_frequency = self.anc2_frequency, 
-                                                             phase_matrix=self.phase_matrix)
+        self.measurement_info = self.measurement_info.expand(anc1_frequency=self.anc1_frequency, anc2_frequency=self.anc2_frequency, 
+                                                             phase_matrix=self.phase_matrix,
+                                                             spectral_filter1=spectral_filter1,
+                                                             spectral_filter2=spectral_filter2)
         
 
 
 
     def get_anc_pulse(self, frequency, anc_f, anc_no=1):
-        """ For cross_correlation instead of the gate pulse the two-acillae pulses need to be provided. """
+        """ For cross_correlation instead of the gate-pulse the two-acillae pulses need to be provided. """
         anc_f = do_interpolation_1d(self.frequency, frequency, anc_f)
         anc = self.ifft(anc_f, self.sk, self.rn)
 
@@ -827,11 +844,10 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         Calculates the phase matrix that is applied of a pulse passes through a material.
         """
         frequency, c0 = measurement_info.frequency, measurement_info.c0
-        c0 = c0*1e-12 # speed of light in mm/fs
-        wavelength = c0/(frequency+1e-15)
-        n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength)*1e6 + 1e-9, bounds_error=False) # wavelength needs to be in nm
+        wavelength = c0/frequency*1e-6 # wavelength in nm
+        n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength) + 1e-9, bounds_error=False) # wavelength needs to be in nm
         n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
-        k_arr = 2*jnp.pi/(wavelength + 1e-9)*n_arr
+        k_arr = 2*jnp.pi/(wavelength*1e-6 + 1e-9)*n_arr #wavelength is needed in mm
         phase_matrix = k_arr*material_thickness
         return phase_matrix
 
@@ -842,12 +858,22 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         For an auto-correlation 2DSI reconstruction one may need to consider effects of a beam splitter in the interferometer.
         This applies a dispersion based on phase_matrix in order to achieve this.
         """
+        idx0 = jnp.argmax(jnp.abs(pulse_t))
         
         pulse_f = self.fft(pulse_t, sk, rn)
-        pulse_f=pulse_f*jnp.exp(1j*measurement_info.phase_matrix)
-        pulse_t_disp=self.ifft(pulse_f, sk, rn)
+        pulse_f = pulse_f*jnp.exp(1j*measurement_info.phase_matrix)
+        pulse_t_disp = self.ifft(pulse_f, sk, rn)
+
+        idx1 = jnp.argmax(jnp.abs(pulse_t_disp))
+        pulse_t_disp = jnp.roll(pulse_t_disp, (idx0-idx1))
         return pulse_t_disp
     
+
+    def apply_spectral_filter(self, signal, spectral_filter, sk, rn):
+        signal_f = self.fft(signal, sk, rn)
+        signal_f = signal_f*spectral_filter
+        signal = self.ifft(signal_f, sk, rn)
+        return signal
 
 
     def calculate_signal_t(self, individual, tau_arr, measurement_info):
@@ -875,8 +901,11 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
         else:
             sk, rn = measurement_info.sk, measurement_info.rn
-            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk, rn)
-            
+            # shift in time is solved, by jnp.roll -> isnt exact
+            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk, rn) 
+
+        gate1 = self.apply_spectral_filter(gate1, measurement_info.spectral_filter1, sk, rn)
+        gate2 = self.apply_spectral_filter(gate2, measurement_info.spectral_filter2, sk, rn)
 
         gate2_shifted = self.calculate_shifted_signal(gate2, frequency, tau_arr, time)
         gate_pulses = gate1 + gate2_shifted
@@ -903,3 +932,106 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
 
 
+
+
+
+
+
+
+
+
+
+
+class RetrievePulsesVAMPIRE(RetrievePulsesFROG):
+    """
+    The reconstruction class for VAMPIRE. Inherits from RetrievePulsesFROG.
+
+    Attributes:
+        c0: float, the speed of light
+        refractive_index: refractiveindex.RefractiveIndexMaterial, returns the refractive index for a material given a wavelength in um
+        phase_matrix: jnp.array, a 2D-array with phase values that could potentially have been applied to a pulse
+
+    """
+
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, 
+                 material_thickness=0, refractive_index=refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, ifrog=False, **kwargs)
+
+        self.c0 = c0
+        self.refractive_index = refractive_index
+
+        self.measurement_info = self.measurement_info.expand(c0=self.c0)
+        self.phase_matrix = self.get_phase_matrix(self.refractive_index, material_thickness, self.measurement_info)
+        self.measurement_info = self.measurement_info.expand(phase_matrix=self.phase_matrix)
+        
+
+
+
+    def get_phase_matrix(self, refractive_index, material_thickness, measurement_info):
+        """ 
+        Calculates the phase matrix that is applied of a pulse passes through a material.
+        """
+        frequency, c0 = measurement_info.frequency, measurement_info.c0
+        wavelength = c0/frequency*1e-6 # wavelength in nm
+        n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength) + 1e-9, bounds_error=False) # wavelength needs to be in nm
+        n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
+        k_arr = 2*jnp.pi/(wavelength*1e-6 + 1e-9)*n_arr #wavelength is needed in mm
+        phase_matrix = k_arr*material_thickness
+        return phase_matrix
+
+
+
+    def apply_phase(self, pulse_t, measurement_info, sk, rn):
+        """
+        For an auto-correlation 2DSI reconstruction one may need to consider effects of a beam splitter in the interferometer.
+        This applies a dispersion based on phase_matrix in order to achieve this.
+        """
+
+        idx0 = jnp.argmax(jnp.abs(pulse_t))
+
+        pulse_f = self.fft(pulse_t, sk, rn)
+        pulse_f = pulse_f*jnp.exp(1j*measurement_info.phase_matrix)
+        pulse_t_disp = self.ifft(pulse_f, sk, rn)
+
+        idx1 = jnp.argmax(jnp.abs(pulse_t_disp))
+        pulse_t_disp = jnp.roll(pulse_t_disp, (idx0-idx1))
+        return pulse_t_disp
+    
+
+
+    def calculate_signal_t(self, individual, tau_arr, measurement_info):
+        """
+        Calculates the signal field in the time domain. 
+
+        Args:
+            individual: Pytree, a population containing only one member. (jax.vmap over whole population)
+            tau_arr: jnp.array, the delays
+            measurement_info: Pytree, contains the measurement parameters (e.g. nonlinear method, ... )
+
+        Returns:
+            Pytree, contains the signal field in the time domain as well as the fields used to calculate it.
+        """
+
+        time, frequency, nonlinear_method = measurement_info.time, measurement_info.frequency, measurement_info.nonlinear_method
+        sk, rn = measurement_info.sk, measurement_info.rn
+
+        pulse_t = individual.pulse
+
+        if measurement_info.cross_correlation==True:
+            gate_pulse = measurement_info.gate
+
+        elif measurement_info.doubleblind==True:
+            gate_pulse = individual.gate
+
+        else:
+            gate_pulse = pulse_t
+
+        gate_disp = self.apply_phase(gate_pulse, measurement_info, sk, rn) 
+        gate_pulses = gate_pulse + gate_disp # unknown delay between these -> Z-grad with respect to group delay of gate_disp?
+        gate = calculate_gate(gate_pulses, nonlinear_method)
+
+        pulse_t_shifted = self.calculate_shifted_signal(pulse_t, frequency, tau_arr, time)
+        signal_t = gate*pulse_t_shifted
+
+        signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate)
+        return signal_t
