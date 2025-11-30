@@ -6,7 +6,7 @@ from equinox import tree_at
 
 from src.core.base_classes_methods import RetrievePulsesFROG 
 from src.core.base_classes_algorithms import ClassicAlgorithmsBASE
-from src.core.base_classic_algorithms import GeneralizedProjectionBASE, TimeDomainPtychographyBASE, COPRABASE, initialize_S_prime_params
+from src.core.base_classic_algorithms import GeneralizedProjectionBASE, PtychographicIterativeEngineBASE, COPRABASE, initialize_S_prime_params
 
 from src.utilities import MyNamespace, scan_helper, get_com, get_sk_rn, calculate_gate, calculate_trace, calculate_mu, calculate_trace_error, do_interpolation_1d
 from src.core.construct_s_prime import calculate_S_prime_projection, calculate_S_prime
@@ -200,6 +200,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
     def __init__(self, delay, frequency, trace, nonlinear_method, cross_correlation=False, **kwargs):
         super().__init__(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
         assert self.ifrog==False, "PCGPA is not intended for interferometric measurements."
+        #assert nonlinear_method!="sd", "Doesnt work for SD. Which is weird."
 
         self.name = "CPCGPA"
         
@@ -220,9 +221,12 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         if nonlinear_method=="shg" or nonlinear_method=="thg":
             opf = jnp.outer(pulse_t, gate) + jnp.outer(pulse_t_prime, gate) + jnp.outer(pulse_t, gate_prime)
         elif nonlinear_method=="pg" or nonlinear_method=="sd":
-            #is_ac = (1-measurement_info.cross_correlation) & (1-measurement_info.doubleblind)
-            opf = jnp.outer(pulse_t, gate.conj())
-            opf = opf + (1-iteration%2)*(jnp.outer(pulse_t_prime, gate.conj()) + jnp.outer(pulse_t, gate_prime.conj()))#*is_ac
+            opf = jnp.outer(pulse_t, gate)
+            opf = opf + (1-iteration%2)*(jnp.outer(pulse_t_prime, gate) + jnp.outer(pulse_t, gate_prime))
+        # elif nonlinear_method=="sd":
+        #     opf = jnp.outer(pulse_t, gate)# + 
+        #     #opf = jnp.outer(pulse_t_prime, gate) + jnp.outer(pulse_t, gate_prime)
+        #     #opf = opf + (1-iteration%2)*(jnp.outer(pulse_t_prime, gate) + jnp.outer(pulse_t, gate_prime))
         else:
             raise ValueError(f"nonlinear_method needs to be shg, thg, pg or sd. Not {nonlinear_method}")
         
@@ -287,6 +291,9 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
                 gate = None
 
         else:
+            # if measurement_info.nonlinear_method=="sd":
+            #     pulse_t = jnp.dot(opf.conj, jnp.dot(opf.T.conj(), pulse_t))
+            # else:
             pulse_t = jnp.dot(opf, jnp.dot(opf.T.conj(), pulse_t))
             pulse_t = pulse_t/jnp.linalg.norm(pulse_t) # needed. otherwise amplitude goes to zero.
 
@@ -480,9 +487,9 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulsesFROG):
 
 
 
-class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulsesFROG):
+class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePulsesFROG):
     """
-    The Ptychographic Iterative Engine (PIE) for FROG. Inherits from TimeDomainPtychographyBASE and RetrievePulsesFROG.
+    The Ptychographic Iterative Engine (PIE) for FROG. Inherits from PtychographicIterativeEngineBASE and RetrievePulsesFROG.
 
     Attributes:
         pie_method: None or str, specifies the PIE variant. Can be one of None, PIE, ePIE, rPIE.

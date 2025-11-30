@@ -382,8 +382,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
 
 
 
-
-class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
+class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
     """
     Implements a version of the Ptychographic Iterative Engine (PIE). Inherits from ClassicalAlgorithmsBASE.
 
@@ -395,7 +394,7 @@ class TimeDomainPtychographyBASE(ClassicAlgorithmsBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "TimeDomainPtychography"
+        self.name = "PtychographicIterativeEngine"
 
         self.alpha = 1.0
 

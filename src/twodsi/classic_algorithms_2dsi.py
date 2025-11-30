@@ -6,7 +6,7 @@ from equinox import tree_at
 
 from src.core.base_classes_methods import RetrievePulses2DSI
 from src.core.base_classes_algorithms import AlgorithmsBASE
-from src.core.base_classic_algorithms import GeneralizedProjectionBASE, TimeDomainPtychographyBASE, COPRABASE
+from src.core.base_classic_algorithms import GeneralizedProjectionBASE, PtychographicIterativeEngineBASE, COPRABASE
 from src.utilities import scan_helper, center_signal, do_interpolation_1d, integrate_signal_1D, calculate_trace, calculate_trace_error
 
 from src.gradients.twodsi_z_error_gradients import calculate_Z_gradient
@@ -230,9 +230,9 @@ class GeneralizedProjection(GeneralizedProjectionBASE, RetrievePulses2DSI):
 
 
 
-class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
+class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePulses2DSI):
     """
-    The Ptychographic Iterative Engine (PIE) for 2DSI. Inherits from TimeDomainPtychographyBASE and RetrievePulses2DSI.
+    The Ptychographic Iterative Engine (PIE) for 2DSI. Inherits from PtychographicIterativeEngineBASE and RetrievePulses2DSI.
 
     Is not set up to be used for doubleblind. The PIE was not invented for reconstruction of interferometric signals.
 
@@ -240,7 +240,7 @@ class TimeDomainPtychography(TimeDomainPtychographyBASE, RetrievePulses2DSI):
         pie_method: None or str, specifies the PIE variant. Can be one of None, PIE, ePIE, rPIE.
     """
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, pie_method="rPIE", **kwargs):
-        assert cross_correlation!="doubleblind", "Doubleblind is not implemented for 2DSI-TimeDomainPtychography."
+        assert cross_correlation!="doubleblind", "Doubleblind is not implemented for 2DSI-PtychographicIterativeEngine."
         
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
 

@@ -1,5 +1,5 @@
 from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.frog import Vanilla, LSGPA, GeneralizedProjection, TimeDomainPtychography, COPRA
+from src.frog import Vanilla, LSGPA, CPCGPA, GeneralizedProjection, TimeDomainPtychography, COPRA
 
 import numpy as np
 import lineax
@@ -25,7 +25,7 @@ delay, frequency, trace, spectra = pulse_maker.generate_frog(time, frequency, pu
 pie_method = (None, "PIE", "ePIE", "rPIE", None, "PIE")
 nonlinear_method = ("shg", "thg", "pg", "sd", "pg", "pg")
 cross_correlation = (False, True, "doubleblind", False, True, False)
-use_jit = (False, True, False, True, False, False)
+jit = (False, True, False, True, False, False)
 guess_type = ("random", "random_phase", "constant", "constant_phase", "random", "random")
 local_scaling = ("pade_10", "pade_20", "pade_11", "pade_01", "pade_02", "pade_10")
 global_scaling = ("pade_10", "pade_20", "pade_11", "pade_01", "pade_02", "pade_10")
@@ -41,14 +41,16 @@ r_newton = (False, True, False, False, True, False)
 r_step_scaling = ("pade_10", "pade_20", "pade_11", "pade_01", "pade_02", "pade_10")
 use_spectrum = (False, True, False, True, False, True)
 use_momentum = (False, True, False, False, True, False)
+constraints = (True, False, True, True, False, False)
+svd = (False, False, True, False, False, True)
 
 
 parameters_measurement = (delay, frequency, trace, spectra, gate)
 parameters = []
 for i in range(6):
-    parameters_algorithm = (nonlinear_method[i], pie_method[i], cross_correlation[i], guess_type[i], use_spectrum[i], use_momentum[i], use_jit[i], 
+    parameters_algorithm = (nonlinear_method[i], pie_method[i], cross_correlation[i], guess_type[i], use_spectrum[i], use_momentum[i], jit[i], 
                             local_scaling[i], global_scaling[i], linesearch[i], local_newton[i], global_newton[i], linalg_solver[i], r_local_method[i], 
-                            r_global_method[i], r_gradient[i], r_newton[i], r_step_scaling[i], conjugate_gradients[i])
+                            r_global_method[i], r_gradient[i], r_newton[i], r_step_scaling[i], conjugate_gradients[i], constraints[i], svd[i])
     parameters.append((parameters_measurement, parameters_algorithm))
 
 
@@ -60,10 +62,10 @@ for i in range(6):
 def test_vanilla(parameters):
     parameters_measurement, parameters_algorithm = parameters
     delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
 
     vanilla = Vanilla(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
-    vanilla.use_jit = use_jit
+    vanilla.jit = jit
 
     if use_spectrum==True:
         vanilla.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -86,11 +88,11 @@ def test_vanilla(parameters):
 def test_lsgpa(parameters):
     parameters_measurement, parameters_algorithm = parameters
     delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
 
 
     lsgpa = LSGPA(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
-    lsgpa.use_jit = use_jit
+    lsgpa.jit = jit
 
     if use_spectrum==True:
         lsgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -111,12 +113,44 @@ def test_lsgpa(parameters):
 
 
 
+@pytest.mark.parametrize("parameters", parameters)
+def test_cpcgpa(parameters):
+    parameters_measurement, parameters_algorithm = parameters
+    delay, frequency, trace, spectra, gate = parameters_measurement
+    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
+
+
+    pcgpa = CPCGPA(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
+    pcgpa.jit = jit
+
+    if use_spectrum==True:
+        pcgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
+        if cross_correlation=="doubleblind":
+            pcgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "gate")
+
+    if use_momentum==True:
+        pcgpa.momentum(population_size=5, eta=0.5)
+
+    if cross_correlation==True:
+        frequency_gate, pulse_gate = gate
+        gate = pcgpa.get_gate_pulse(frequency_gate, pulse_gate)
+
+    pcgpa.constraints = constraints
+    pcgpa.svd = svd
+
+    population = pcgpa.create_initial_population(population_size=5, guess_type=guess_type)
+    final_result = pcgpa.run(population, no_iterations=5)
+
+
+
+
+
 
 @pytest.mark.parametrize("parameters", parameters)
 def test_GeneralizedProjection(parameters):
     parameters_measurement, parameters_algorithm = parameters
     delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
 
     gp = GeneralizedProjection(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
 
@@ -135,7 +169,7 @@ def test_GeneralizedProjection(parameters):
     if linesearch=="zoom":
         gp.delta_gamma=1.5
 
-    gp.use_jit = use_jit
+    gp.jit = jit
     gp.no_steps_descent = 5
 
     gp.global_gamma = 0.5
@@ -169,7 +203,7 @@ def test_GeneralizedProjection(parameters):
 def test_TimeDomainPtychography(parameters):
     parameters_measurement, parameters_algorithm = parameters
     delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
 
     
     tdp = TimeDomainPtychography(delay, frequency, trace, nonlinear_method, pie_method, cross_correlation=cross_correlation)
@@ -188,7 +222,7 @@ def test_TimeDomainPtychography(parameters):
     if linesearch=="zoom":
         tdp.delta_gamma=1.5
 
-    tdp.use_jit = use_jit
+    tdp.jit = jit
 
     tdp.local_gamma = 0.5
     tdp.global_gamma = 0.5
@@ -226,7 +260,7 @@ def test_TimeDomainPtychography(parameters):
 def test_COPRA(parameters):
     parameters_measurement, parameters_algorithm = parameters
     delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, use_jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
+    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
 
         
     copra = COPRA(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
@@ -245,7 +279,7 @@ def test_COPRA(parameters):
     if linesearch=="zoom":
         copra.delta_gamma=1.5
 
-    copra.use_jit = use_jit
+    copra.jit = jit
 
     copra.local_gamma = 0.5
     copra.global_gamma = 0.5

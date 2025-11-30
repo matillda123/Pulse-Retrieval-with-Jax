@@ -532,7 +532,7 @@ class RetrievePulsesFROG(RetrievePulses):
         pulse_t_shifted=self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
 
         if cross_correlation==True:
-            gate_pulse_shifted =self.calculate_shifted_signal(measurement_info.gate, frequency, tau_arr, time)
+            gate_pulse_shifted = self.calculate_shifted_signal(measurement_info.gate, frequency, tau_arr, time)
             gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
 
         elif doubleblind==True:
@@ -540,16 +540,16 @@ class RetrievePulsesFROG(RetrievePulses):
             gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
 
         else:
-            gate_pulse_shifted=None
-            gate_shifted=calculate_gate(pulse_t_shifted, frogmethod)
+            gate_pulse_shifted = None
+            gate_shifted = calculate_gate(pulse_t_shifted, frogmethod)
 
 
         if ifrog==True and cross_correlation==False and doubleblind==False:
-            signal_t=(pulse + pulse_t_shifted)*calculate_gate(pulse + pulse_t_shifted, frogmethod)
+            signal_t = (pulse + pulse_t_shifted)*calculate_gate(pulse + pulse_t_shifted, frogmethod)
         elif ifrog==True:
-            signal_t=(pulse + gate_pulse_shifted)*calculate_gate(pulse + gate_pulse_shifted, frogmethod)
+            signal_t = (pulse + gate_pulse_shifted)*calculate_gate(pulse + gate_pulse_shifted, frogmethod)
         else:
-            signal_t=pulse*gate_shifted
+            signal_t = pulse*gate_shifted
             
 
         signal_t = MyNamespace(signal_t=signal_t, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
@@ -813,16 +813,20 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         self.refractive_index = refractive_index
 
         if spectral_filter1==None:
-            spectral_filter1 = jnp.ones(self.frequency)
+            self.spectral_filter1 = jnp.ones(self.frequency)
+        else:
+            self.spectral_filter1 = spectral_filter1
         if spectral_filter2==None:
-            spectral_filter2 = jnp.ones(self.frequency)
+            self.spectral_filter2 = jnp.ones(self.frequency)
+        else:
+            self.spectral_filter2 = spectral_filter2
 
         self.measurement_info = self.measurement_info.expand(c0=self.c0)
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, material_thickness, self.measurement_info)
         self.measurement_info = self.measurement_info.expand(anc1_frequency=self.anc1_frequency, anc2_frequency=self.anc2_frequency, 
                                                              phase_matrix=self.phase_matrix,
-                                                             spectral_filter1=spectral_filter1,
-                                                             spectral_filter2=spectral_filter2)
+                                                             spectral_filter1=self.spectral_filter1,
+                                                             spectral_filter2=self.spectral_filter2)
         
 
 
@@ -914,6 +918,100 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
         signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate)
         return signal_t
+
+
+
+
+
+
+
+
+
+
+
+
+class RetrievePulsesTDP(RetrievePulsesFROG):
+    """
+    The reconstruction class for Time-Domain-Ptychography. Inherits from RetrievePulsesFROG.
+
+    Attributes:
+
+    """
+
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, spectral_filter=None, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
+
+        if spectral_filter==None:
+            self.spectral_filter = jnp.ones(self.frequency)
+            print("If spectral_filter=None, then TDP is the same as FROG.")
+        else:
+            self.spectral_filter = spectral_filter
+
+        self.measurement_info = self.measurement_info.expand(spectral_filter=self.spectral_filter)
+        
+
+
+    def apply_spectral_filter(self, signal, spectral_filter, sk, rn):
+        signal_f = self.fft(signal, sk, rn)
+        signal_f = signal_f*spectral_filter
+        signal = self.ifft(signal_f, sk, rn)
+        return signal
+    
+
+    
+
+    def calculate_signal_t(self, individual, tau_arr, measurement_info):
+        """
+        Calculates the signal field of TDP in the time domain. 
+
+        Args:
+            individual: Pytree, a population containing only one member. (jax.vmap over whole population)
+            tau_arr: jnp.array, the delays
+            measurement_info: Pytree, contains the measurement parameters (e.g. nonlinear method, interferometric, ... )
+
+        Returns:
+            Pytree, contains the signal field in the time domain as well as the fields used to calculate it.
+        """
+
+        time, frequency = measurement_info.time, measurement_info.frequency
+        cross_correlation, doubleblind, ifrog = measurement_info.cross_correlation, measurement_info.doubleblind, measurement_info.ifrog
+        frogmethod = measurement_info.nonlinear_method
+
+        spectral_filter, sk, rn = measurement_info.spectral_filter, measurement_info.sk, measurement_info.rn
+
+
+        pulse, gate = individual.pulse, individual.gate
+        pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
+
+        if cross_correlation==True:
+            gate_pulse = measurement_info.gate
+            gate_pulse = self.apply_spectral_filter(gate_pulse, spectral_filter, sk, rn)
+            gate_pulse_shifted = self.calculate_shifted_signal(gate_pulse, frequency, tau_arr, time)
+            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
+
+        elif doubleblind==True:
+            gate = self.apply_spectral_filter(gate, spectral_filter, sk, rn)
+            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency, tau_arr, time)
+            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
+
+        else:
+            pulse_t_shifted = self.apply_spectral_filter(pulse_t_shifted, spectral_filter, sk, rn)
+            gate_pulse_shifted = None
+            gate_shifted = calculate_gate(pulse_t_shifted, frogmethod)
+
+
+        if ifrog==True and cross_correlation==False and doubleblind==False:
+            signal_t = (pulse + pulse_t_shifted)*calculate_gate(pulse + pulse_t_shifted, frogmethod)
+        elif ifrog==True:
+            signal_t = (pulse + gate_pulse_shifted)*calculate_gate(pulse + gate_pulse_shifted, frogmethod)
+        else:
+            signal_t = pulse*gate_shifted
+            
+
+        signal_t = MyNamespace(signal_t=signal_t, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
+        return signal_t
+
+
 
 
 

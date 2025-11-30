@@ -304,6 +304,11 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
         self.phase_matrix = do_interpolation_1d(frequency_big, frequency_exp, self.phase_matrix)
         self.measurement_info = tree_at(lambda x: x.phase_matrix, self.measurement_info, self.phase_matrix)
 
+        self.spectral_filter1 = do_interpolation_1d(frequency_big, frequency_exp, self.spectral_filter1)
+        self.spectral_filter2 = do_interpolation_1d(frequency_big, frequency_exp, self.spectral_filter2)
+        self.measurement_info = tree_at(lambda x: x.spectral_filter1, self.measurement_info, self.spectral_filter1)
+        self.measurement_info = tree_at(lambda x: x.spectral_filter2, self.measurement_info, self.spectral_filter2)
+
 
 
     def get_anc_pulse(self, frequency, anc_f, anc_no=1):
@@ -345,9 +350,12 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
 
         else:
             sk_big, rn_big = measurement_info.sk_big, measurement_info.rn_big
-            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk_big, rn_big)
-            
+            # shift in time is solved, by jnp.roll -> isnt exact
+            gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk_big, rn_big) 
 
+        gate1 = self.apply_spectral_filter(gate1, measurement_info.spectral_filter1, sk_big, rn_big)
+        gate2 = self.apply_spectral_filter(gate2, measurement_info.spectral_filter2, sk_big, rn_big)
+            
         gate2_shifted = self.calculate_shifted_signal(gate2, frequency_big, tau_arr, time_big)
         gate_pulses = gate1 + gate2_shifted
         gate = calculate_gate_with_Real_Fields(gate_pulses, nonlinear_method)

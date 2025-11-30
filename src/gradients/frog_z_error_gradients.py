@@ -156,12 +156,17 @@ def Z_gradient_pg_ifrog_cross_correlation_gate(deltaS, pulse_t, pulse_t_shifted,
 
 
 
-def calculate_Z_gradient_pulse(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info):
+def calculate_Z_gradient_pulse(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, is_tdp):
     frequency, sk, rn = measurement_info.frequency, measurement_info.sk, measurement_info.rn
     cross_correlation, doubleblind, ifrog, frogmethod = measurement_info.cross_correlation, measurement_info.doubleblind, measurement_info.ifrog, measurement_info.nonlinear_method
 
-    omega_arr=2*jnp.pi*frequency
-    exp_arr=jnp.exp(1j*jnp.outer(tau_arr, omega_arr))
+    omega_arr = 2*jnp.pi*frequency
+    exp_arr = jnp.exp(1j*jnp.outer(tau_arr, omega_arr))
+
+    if is_tdp==True:
+        exp_arr = exp_arr*jnp.conjugate(measurement_info.spectral_filter)
+    else:
+        pass
 
     deltaS = signal_t_new - signal_t
 
@@ -186,7 +191,7 @@ def calculate_Z_gradient_pulse(signal_t, signal_t_new, pulse_t, pulse_t_shifted,
     grad_func={False: grad_func_ifrog_False,
                True: grad_func_ifrog_True}
     
-    grad=grad_func[ifrog][cross_correlation][frogmethod](deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn)
+    grad = grad_func[ifrog][cross_correlation][frogmethod](deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn)
     return grad
 
 
@@ -197,12 +202,17 @@ def calculate_Z_gradient_pulse(signal_t, signal_t_new, pulse_t, pulse_t_shifted,
 
 
 
-def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info):
+def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, is_tdp):
     frequency, sk, rn = measurement_info.frequency, measurement_info.sk, measurement_info.rn
     ifrog, frogmethod = measurement_info.ifrog, measurement_info.nonlinear_method
 
-    omega_arr=2*jnp.pi*frequency
-    exp_arr=jnp.exp(1j*jnp.outer(tau_arr, omega_arr))
+    omega_arr = 2*jnp.pi*frequency
+    exp_arr = jnp.exp(1j*jnp.outer(tau_arr, omega_arr))
+
+    if is_tdp==True:
+        exp_arr = exp_arr*jnp.conjugate(measurement_info.spectral_filter)
+    else:
+        pass
 
     deltaS = signal_t_new-signal_t
 
@@ -219,7 +229,7 @@ def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, 
     grad_func={False: grad_func_ifrog_False_cross_correlation_gate,
                True: grad_func_ifrog_True_cross_correlation_gate}
     
-    grad=grad_func[ifrog][frogmethod](deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn)
+    grad = grad_func[ifrog][frogmethod](deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn)
     return grad
 
 
@@ -234,7 +244,7 @@ def calculate_Z_gradient_gate(signal_t, signal_t_new, pulse_t, pulse_t_shifted, 
 
 
 
-def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, pulse_or_gate):
+def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, pulse_or_gate, is_tdp=False):
     """
     Calculates the Z-error gradient with respect to the pulse or the gate-pulse for a given FROG measurement. 
     The gradient is calculated in the frequency domain.
@@ -254,4 +264,4 @@ def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_
     """
     calculate_Z_gradient_dict={"pulse": calculate_Z_gradient_pulse,
                                "gate": calculate_Z_gradient_gate}
-    return calculate_Z_gradient_dict[pulse_or_gate](signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info)
+    return calculate_Z_gradient_dict[pulse_or_gate](signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, is_tdp)
