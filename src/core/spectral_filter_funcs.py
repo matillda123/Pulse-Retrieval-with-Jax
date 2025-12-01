@@ -1,0 +1,45 @@
+import jax.numpy as jnp
+
+
+def gaussian_filter(frequency, parameters, filter_dict):
+    a, f0, fwhm = parameters
+    sigma = fwhm/2.355
+    y = a*jnp.exp(-(frequency-f0)**2/(2*sigma**2))
+    return y
+
+
+def lorentzian_filter(frequency, parameters, fitler_dict):
+    a, f0, fwhm = parameters
+    gamma = fwhm/2
+    y = a*gamma/((frequency-f0)**2 + gamma**2)
+    return y
+
+
+def rectangular_filter(frequency, parameters, filter_dict):
+    y = jnp.arange(jnp.size(frequency))
+
+    a, f0, width = parameters
+    idx1 = jnp.argmin(jnp.abs(frequency-(f0-width/2)))
+    idx2 = jnp.argmin(jnp.abs(frequency-(f0+width/2)))
+    y1 = jnp.where(y<idx1, 0, 1)
+    y2 = jnp.where(y>idx2, 0, 1)
+    y = a*y1*y2
+    return y
+
+
+def multi_filter(frequency, parameters, filter_dict):
+    N = len(parameters)
+    y = jnp.zeros(jnp.size(frequency))
+    for i in range(N):
+        filter_func = parameters[0]
+        y = y + filter_dict[filter_func](frequency, parameters[i][1:])
+    return y
+
+
+def get_filter(filter_func, frequency, parameters, custom_func=None):
+    filter_dict = dict(gaussian=gaussian_filter,
+                       lorentzian=lorentzian_filter,
+                       rectangular=rectangular_filter,
+                       multi=multi_filter,
+                       custom=custom_func)
+    return filter_dict[filter_func](frequency, parameters, filter_dict)

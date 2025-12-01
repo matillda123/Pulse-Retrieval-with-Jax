@@ -111,7 +111,7 @@ class MakePulse(MakePulseBase):
 
 
 
-    def generate_chirpscan(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, phase_matrix_func, parameters, N=256, plot_stuff=True, 
+    def generate_chirpscan(self, z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, phase_type, parameters, N=256, plot_stuff=True, 
                                           cut_off_val=0.001, frequency_range=None, real_fields=False):
 
         if real_fields==True:
@@ -119,7 +119,7 @@ class MakePulse(MakePulseBase):
         else:
             maketrace = MakeTraceCHIRPSCAN
 
-        self.maketrace = maketrace(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_matrix_func, parameters)
+        self.maketrace = maketrace(z_arr, time, frequency, pulse_t, pulse_f, nonlinear_method, N, cut_off_val, frequency_range, phase_type, parameters)
         
         
         time_trace, frequency_trace, trace, spectra = self.maketrace.generate_trace()
@@ -135,7 +135,7 @@ class MakePulse(MakePulseBase):
 
     def generate_2dsi(self, time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation=True, anc=((None,None),(None,None)), N=256, scale_time_range=1, 
                                          plot_stuff=True, 
-                                         cut_off_val=0.001, frequency_range=None, real_fields=False):
+                                         cut_off_val=0.001, frequency_range=None, real_fields=False, spectral_filter1=None, spectral_filter2=None):
         
 
         if real_fields==True:
@@ -143,7 +143,7 @@ class MakePulse(MakePulseBase):
         else:
             maketrace = MakeTrace2DSI
 
-        self.maketrace = maketrace(time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation, N, scale_time_range, cut_off_val, frequency_range)
+        self.maketrace = maketrace(time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation, N, scale_time_range, cut_off_val, frequency_range, spectral_filter1, spectral_filter2)
 
         if self.maketrace.cross_correlation==True:
             anc_1, anc_2 = anc
@@ -515,7 +515,7 @@ class MakeTraceCHIRPSCAN(MakeTraceBASE, RetrievePulsesCHIRPSCAN):
 
 class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
     def __init__(self, time, frequency, pulse_t, pulse_f, nonlinear_method, cross_correlation, N, scale_time_range, cut_off_val, frequency_range,
-                 material_thickness = 0,
+                 spectral_filter1, spectral_filter2, material_thickness = 0,
                  refractive_index = refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson")):
         super().__init__()
 
@@ -540,6 +540,17 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
         self.refractive_index, self.material_thickness = refractive_index, material_thickness
 
+        if spectral_filter1==None:
+            self.spectral_filter1 = jnp.ones(jnp.size(self.frequency))
+        else:
+            self.spectral_filter1 = spectral_filter1
+
+        if spectral_filter2==None:
+            self.spectral_filter2 = jnp.ones(jnp.size(self.frequency))
+        else:
+            self.spectral_filter2 = spectral_filter2
+                
+
 
 
 
@@ -558,7 +569,7 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
         measurement_info = MyNamespace(anc_1=self.anc_1, anc_2=self.anc_2, time=self.time, frequency=self.frequency, frequency_exp=self.frequency, 
                                        time_big=self.time, frequency_big=self.frequency, sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, 
                                        cross_correlation=self.cross_correlation, 
-                                       nonlinear_method=self.nonlinear_method, doubleblind=False, c0=self.c0)
+                                       nonlinear_method=self.nonlinear_method, doubleblind=False, c0=self.c0, spectral_filter1=self.spectral_filter1, spectral_filter2=self.spectral_filter2)
         
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.material_thickness, measurement_info)
         measurement_info = measurement_info.expand(phase_matrix = self.phase_matrix)

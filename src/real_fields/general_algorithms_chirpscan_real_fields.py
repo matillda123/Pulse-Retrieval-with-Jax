@@ -83,9 +83,9 @@ class LSF(RetrievePulsesRealFields, LSFCHIRPSCAN, RetrievePulsesCHIRPSCANwithRea
         return MyNamespace(pulse=pulse_f_arr, gate=gate_f_arr)
     
 
-    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
+    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info, idx=None):
         """ Another interpolation onto time_big/frequency_big to calculate the signal field for the final trace. """
-        pulse_t, gate_t, pulse_f, gate_f = super().post_process_get_pulse_and_gate(descent_state, measurement_info, descent_info)
+        pulse_t, gate_t, pulse_f, gate_f = super().post_process_get_pulse_and_gate(descent_state, measurement_info, descent_info, idx=idx)
         
         pulse_f = self.fft(pulse_t, measurement_info.sk, measurement_info.rn)
         pulse_f = do_interpolation_1d(measurement_info.frequency_big, measurement_info.frequency, pulse_f)

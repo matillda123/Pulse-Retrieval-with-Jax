@@ -247,8 +247,8 @@ class RetrievePulsesTDPwithRealFields(RetrievePulsesTDP):
         The phase-matrix needs to be interpolated onto frequency_big. 
         Overwriting its creation would be possible but a bit cumbersome. 
         """
-        frequency_exp, frequency_big = self.measurement_info.frequency_exp, self.measurement_info.frequency_big
-        self.spectral_filter = do_interpolation_1d(frequency_big, frequency_exp, self.spectral_filter)
+        frequency, frequency_big = self.frequency, self.measurement_info.frequency_big
+        self.spectral_filter = do_interpolation_1d(frequency_big, frequency, self.spectral_filter)
         self.measurement_info = tree_at(lambda x: x.spectral_filter, self.measurement_info, self.spectral_filter)
 
 
@@ -280,7 +280,6 @@ class RetrievePulsesTDPwithRealFields(RetrievePulsesTDP):
         sk_big, rn_big = measurement_info.sk_big, measurement_info.rn_big
 
         pulse, gate = individual.pulse, individual.gate
-
 
         pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency_big, tau_arr, time_big)
 

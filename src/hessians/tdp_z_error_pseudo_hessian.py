@@ -43,7 +43,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, pulse_t_shifted, gate_s
 
     # vmap over population here -> only for small populations since memory will explode. 
     calc_hessian = Partial(calc_Z_error_pseudo_hessian_all_m, is_tdp=True)
-    hessian_m=jax.vmap(calc_hessian, in_axes=(0,0,0,0,0,0,None,None,None))(pulse_t, pulse_t_shifted, gate_shifted, deltaS, 
+    hessian_m=jax.vmap(calc_hessian, in_axes=(0,0,0,0,0,None,None,None))(pulse_t, pulse_t_shifted, gate_shifted, deltaS, 
                                                                                                 tau_arr, measurement_info, full_or_diagonal, pulse_or_gate)
     
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)

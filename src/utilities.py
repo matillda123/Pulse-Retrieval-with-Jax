@@ -751,8 +751,8 @@ def loss_function_modifications(trace, measured_trace, tau_or_zarr, frequency, a
         measured_trace = jnp.asarray([measured_trace_0, measured_trace_1])
         trace = jnp.asarray([trace_0, trace_1])
 
-        measured_trace = measured_trace/(jnp.max(jnp.abs(measured_trace, axis=0), axis=0))[:,jnp.newaxis]
-        trace = trace/(jnp.max(jnp.abs(trace, axis=0), axis=0))[:,jnp.newaxis]
+        measured_trace = measured_trace/jnp.max(jnp.abs(measured_trace), axis=(1,2))[:,jnp.newaxis,jnp.newaxis]
+        trace = trace/jnp.max(jnp.abs(trace), axis=(1,2))[:,jnp.newaxis,jnp.newaxis]
     else:
         measured_trace = measured_trace/jnp.max(jnp.abs(measured_trace))
         trace = trace/jnp.max(jnp.abs(trace))

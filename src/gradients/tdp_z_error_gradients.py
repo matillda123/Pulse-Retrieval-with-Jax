@@ -21,4 +21,4 @@ def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_
     Returns:
         jnp.array, the Z-error gradient
     """
-    return calculate_Z_gradient_FROG(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, is_tdp)
+    return calculate_Z_gradient_FROG(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, pulse_or_gate, is_tdp)

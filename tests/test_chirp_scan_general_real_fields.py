@@ -11,8 +11,8 @@ import jax.numpy as jnp
 
 
 # only testing one phase matrix func shoud be fine. They are all tested in test_simulate_trace.py
-from src.chirp_scan import phase_matrix_material
-#from src.chirp_scan.phase_matrix_funcs import 
+#from src.chirp_scan import phase_matrix_material
+#from src.chirp_scan.phase_types import 
 import refractiveindex
 from scipy.constants import c as c0
 parameters_material_scan = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)
@@ -27,7 +27,7 @@ time, pulse_t, frequency, pulse_f = pulse_maker.generate_pulse((amp_g, phase_p))
 z_arr = jnp.linspace(-1,5,128)
 z_arr, frequency, trace, spectra = pulse_maker.generate_chirpscan(z_arr, time, frequency, pulse_t, pulse_f, 
                                                                   nonlinear_method="pg", 
-                                                                  phase_matrix_func=phase_matrix_material, 
+                                                                  phase_type="material", 
                                                                   parameters=parameters_material_scan, 
                                                                   N=64, plot_stuff=False, cut_off_val=1e-6, 
                                                                   frequency_range=(0,1), real_fields=True)
@@ -43,7 +43,7 @@ amplitude_or_intensity = ("intensity", "amplitude", 3, 0.25, 1.5)
 amp_type = ("gaussian", "lorentzian", "bsplines_5", "discrete", "gaussian")
 phase_type = ("polynomial", "sinusoidal", "sigmoidal", "bsplines_5", "discrete")
 
-parameters_measurement = (z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan)
+parameters_measurement = (z_arr, frequency, trace, spectra, "material", parameters_material_scan)
 
 
 
@@ -68,7 +68,7 @@ def test_DifferentialEvolution(parameters):
     z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan = parameters_measurement
     nonlinear_method, strategy, selection_mechanism, amp_type, phase_type, fd_grad, amplitude_or_intensity = parameters_algorithm
 
-    de = chirp_scan.DifferentialEvolution(z_arr, frequency, trace, nonlinear_method, phase_matrix_func = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
+    de = chirp_scan.DifferentialEvolution(z_arr, frequency, trace, nonlinear_method, phase_type = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
 
     if use_measured_spectrum==True:
         de.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -107,7 +107,7 @@ def test_Evosax(parameters):
     z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan = parameters_measurement
     nonlinear_method, solver, amp_type, phase_type, fd_grad, amplitude_or_intensity = parameters_algorithm
     
-    evo = chirp_scan.Evosax(z_arr, frequency, trace, nonlinear_method, phase_matrix_func = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
+    evo = chirp_scan.Evosax(z_arr, frequency, trace, nonlinear_method, phase_type = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
 
     if use_measured_spectrum==True:
         evo.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -141,7 +141,7 @@ def test_LSF(parameters):
     z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan = parameters_measurement
     nonlinear_method, random_direction_mode, amp_type, phase_type, fd_grad, amplitude_or_intensity = parameters_algorithm
 
-    lsf = chirp_scan.LSF(z_arr, frequency, trace, nonlinear_method, phase_matrix_func = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
+    lsf = chirp_scan.LSF(z_arr, frequency, trace, nonlinear_method, phase_type = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
 
     if use_measured_spectrum==True:
         lsf.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -180,7 +180,7 @@ def test_AutoDiff(parameters):
     z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan = parameters_measurement
     nonlinear_method, solver, alternating_optimization, amp_type, phase_type, fd_grad, amplitude_or_intensity = parameters_algorithm
 
-    ad = chirp_scan.AutoDiff(z_arr, frequency, trace, nonlinear_method, phase_matrix_func = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
+    ad = chirp_scan.AutoDiff(z_arr, frequency, trace, nonlinear_method, phase_type = phase_matrix_material, chirp_parameters=parameters_material_scan, f_range_fields=(0,1))
 
     if use_measured_spectrum==True:
         ad.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")

@@ -633,11 +633,13 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         self.df = jnp.mean(jnp.diff(self.frequency))
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
 
+        self.cross_correlation = False
 
         self.measurement_info = self.measurement_info.expand(z_arr = self.z_arr,
                                                              frequency = self.frequency,
                                                              time = self.time,
                                                              measured_trace = self.measured_trace,
+                                                             cross_correlation = self.cross_correlation,
                                                              doubleblind = self.doubleblind,
                                                              dt = self.dt,
                                                              df = self.df,
@@ -813,11 +815,11 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         self.refractive_index = refractive_index
 
         if spectral_filter1==None:
-            self.spectral_filter1 = jnp.ones(self.frequency)
+            self.spectral_filter1 = jnp.ones(jnp.size(self.frequency))
         else:
             self.spectral_filter1 = spectral_filter1
         if spectral_filter2==None:
-            self.spectral_filter2 = jnp.ones(self.frequency)
+            self.spectral_filter2 = jnp.ones(jnp.size(self.frequency))
         else:
             self.spectral_filter2 = spectral_filter2
 
@@ -894,7 +896,8 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
         """
 
         time, frequency, nonlinear_method = measurement_info.time, measurement_info.frequency, measurement_info.nonlinear_method
-
+        sk, rn = measurement_info.sk, measurement_info.rn
+        
         pulse_t = individual.pulse
 
         if measurement_info.cross_correlation==True:
@@ -904,7 +907,6 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
             gate1 = gate2 = individual.gate
 
         else:
-            sk, rn = measurement_info.sk, measurement_info.rn
             # shift in time is solved, by jnp.roll -> isnt exact
             gate1 = gate2 = self.apply_phase(pulse_t, measurement_info, sk, rn) 
 

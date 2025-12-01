@@ -2,8 +2,8 @@ from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
 from src.chirp_scan import Basic, GeneralizedProjection, PtychographicIterativeEngine, COPRA
 
 # only testing one phase matrix func shoud be fine. They are all tested in test_simulate_trace.py
-from src.chirp_scan import phase_matrix_material
-#from src.chirp_scan.phase_matrix_funcs import 
+#from src.phase_types import phase_types
+#from src.chirp_scan.phase_types import 
 import refractiveindex
 from scipy.constants import c as c0
 parameters_material_scan = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)
@@ -24,7 +24,7 @@ time, pulse_t, frequency, pulse_f = pulse_maker.generate_pulse((amp_g, phase_p))
 z_arr = jnp.linspace(-1,5,128)
 z_arr, frequency, trace, spectra = pulse_maker.generate_chirpscan(z_arr, time, frequency, pulse_t, pulse_f, 
                                                                   nonlinear_method="pg", 
-                                                                  phase_matrix_func=phase_matrix_material, 
+                                                                  phase_type="material", 
                                                                   parameters=parameters_material_scan, 
                                                                   N=64, plot_stuff=False, cut_off_val=1e-6, 
                                                                   frequency_range=(0,1), real_fields=False)
@@ -51,7 +51,7 @@ use_spectrum = (False, True, False, True, False, True)
 use_momentum = (False, True, False, False, True, False)
 
 
-parameters_measurement = (z_arr, frequency, trace, spectra, phase_matrix_material, parameters_material_scan)
+parameters_measurement = (z_arr, frequency, trace, spectra, "material", parameters_material_scan)
 input_vals = []
 for i in range(6):
     parameters_algorithm = (nonlinear_method[i], pie_method[i], guess_type[i], use_spectrum[i], use_momentum[i], jit[i], 
@@ -67,11 +67,11 @@ for i in range(6):
 @pytest.mark.parametrize("input_vals", input_vals)
 def test_basic(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
-    z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
+    z_arr, frequency, trace, spectra, phase_type, phase_matrix_parameters = parameters_measurement
     nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
     print(phase_matrix_parameters)
-    basic = Basic(z_arr, frequency, trace, nonlinear_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
+    basic = Basic(z_arr, frequency, trace, nonlinear_method, phase_type=phase_type, chirp_parameters=phase_matrix_parameters)
     basic.jit = jit
 
     if use_spectrum==True:
@@ -92,10 +92,10 @@ def test_basic(input_vals):
 @pytest.mark.parametrize("input_vals", input_vals)
 def test_GeneralizedProjection(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
-    z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
+    z_arr, frequency, trace, spectra, phase_type, phase_matrix_parameters = parameters_measurement
     nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
-    gp = GeneralizedProjection(z_arr, frequency, trace, nonlinear_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
+    gp = GeneralizedProjection(z_arr, frequency, trace, nonlinear_method, phase_type=phase_type, chirp_parameters=phase_matrix_parameters)
 
     if use_spectrum==True:
         gp.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
@@ -139,11 +139,11 @@ def test_GeneralizedProjection(input_vals):
 @pytest.mark.parametrize("input_vals", input_vals)
 def test_PtychographicIterativeEngine(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
-    z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
+    z_arr, frequency, trace, spectra, phase_type, phase_matrix_parameters = parameters_measurement
     nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
     
-    tdp = PtychographicIterativeEngine(z_arr, frequency, trace, nonlinear_method, pie_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
+    tdp = PtychographicIterativeEngine(z_arr, frequency, trace, nonlinear_method, pie_method, phase_type=phase_type, chirp_parameters=phase_matrix_parameters)
     if use_spectrum==True:
         tdp.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
 
@@ -196,11 +196,11 @@ def test_PtychographicIterativeEngine(input_vals):
 @pytest.mark.parametrize("input_vals", input_vals)
 def test_COPRA(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
-    z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
+    z_arr, frequency, trace, spectra, phase_type, phase_matrix_parameters = parameters_measurement
     nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
         
-    copra = COPRA(z_arr, frequency, trace, nonlinear_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
+    copra = COPRA(z_arr, frequency, trace, nonlinear_method, phase_type=phase_type, chirp_parameters=phase_matrix_parameters)
     if use_spectrum==True:
         copra.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
 

@@ -88,7 +88,7 @@ class AlgorithmsBASE:
         else:
             names_list = ["DifferentialEvolution", "Evosax", "AutoDiff", "DirectReconstruction"]
 
-            if self.name=="COPRA" or self.name=="TimeDomainPtychography":
+            if self.name=="COPRA" or self.name=="PtychographicIterativeEngine":
                 self._local_step = self.local_step
                 self._global_step = self.global_step
                 self.local_step = Partial(self.do_step_and_apply_spectrum, do_step=self._local_step)
@@ -263,7 +263,7 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
                                                                                   gate = MyNamespace(update_for_velocity_map=init_arr, velocity_map=init_arr)))
             
             names_list = ["DifferentialEvolution", "Evosax", "LSF", "AutoDiff"]
-            if self.name=="COPRA" or self.name=="TimeDomainPtychography":
+            if self.name=="COPRA" or self.name=="PtychographicIterativeEngine":
                 self._local_step = self.local_step
                 self._global_step = self.global_step
                 self.local_step = Partial(self.do_step_and_apply_momentum, do_step = self._local_step)
@@ -674,9 +674,10 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
 
 
-    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info):
+    def post_process_get_pulse_and_gate(self, descent_state, measurement_info, descent_info, idx=None):
         """ Post-processing to evaluate parametrized individuals. """
-        idx = self.get_idx_best_individual(descent_state)
+        if idx==None:
+            idx = self.get_idx_best_individual(descent_state)
         individual = self.get_individual_from_idx(idx, descent_state.population)
 
         pulse_t = self.make_pulse_t_from_individual(individual, measurement_info, descent_info, "pulse")

@@ -52,7 +52,7 @@ def calc_Z_error_pseudo_hessian_element(exp_arr_mp, exp_arr_mn, omega_p, omega_n
 
 
     calc_subelement = Partial(calc_hessian_subelement[nonlinear_method], exp_arr_mn=exp_arr_mn, exp_arr_mp=exp_arr_mp)
-    hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0,0))(pulse_t_dispersed, deltaS_m, D_arr_pn)
+    hessian_element_arr = jax.vmap(calc_subelement, in_axes=(0,0,0))(pulse_t_dispersed, deltaS_m, D_arr_pn)
     hessian_element = jnp.sum(hessian_element_arr)
     return hessian_element
 
@@ -121,7 +121,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_dispersed, signal_t, sig
     deltaS = signal_t_new-signal_t
 
     # vmap over population here -> only for small populations since memory will explode. 
-    hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=(0,0,0,0,None,None))(pulse_t_dispersed, deltaS, phase_matrix, measurement_info, 
+    hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=(0,0,0,None,None))(pulse_t_dispersed, deltaS, phase_matrix, measurement_info, 
                                                                                        full_or_diagonal)
 
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)

@@ -93,7 +93,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
         group_delay = group_delay - jnp.mean(group_delay)
 
         group_delay = self.interpolate_group_delay_onto_spectral_amplitude(group_delay, measurement_info)
-        spectral_phase = integrate_signal_1D(group_delay, frequency, descent_info.integration_methods, descent_info.integration_order)
+        spectral_phase = integrate_signal_1D(group_delay, frequency, descent_info.integration_method, descent_info.integration_order)
 
         pulse_f = pulse_spectral_amplitude*jnp.exp(1j*spectral_phase)
         pulse_t = self.ifft(pulse_f, measurement_info.sk, measurement_info.rn)

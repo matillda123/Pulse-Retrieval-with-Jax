@@ -196,7 +196,7 @@ def calc_Z_error_pseudo_hessian_all_m(pulse_t, gate_pulses, gate, deltaS, tau_ar
 
     hessian_all_m=Partial(calc_Z_error_pseudo_hessian_one_m, pulse_t=pulse_t, time=time, omega=omega, nonlinear_method=nonlinear_method, 
                           cross_correlation=cross_correlation,
-                          full_or_diagonal=full_or_diagonal, pulse_or_gate=pulse_or_gate, spectral_filter1=spectral_filter1, spectral_filter2=spectral_filter2)
+                          full_or_diagonal=full_or_diagonal, pulse_or_gate=pulse_or_gate)
 
     carry = jnp.zeros(1)
     xs = (exp_arr, gate_pulses, gate, deltaS)
@@ -241,7 +241,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, gate_pulses, gate, sign
     deltaS = signal_t_new-signal_t
 
     # vmap over population here -> only for small populations since memory will explode. 
-    hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=(0,0,0,0,0,0,None,None,None))(pulse_t, gate_pulses, gate, deltaS, 
+    hessian_m=jax.vmap(calc_Z_error_pseudo_hessian_all_m, in_axes=(0,0,0,0,0,None,None,None))(pulse_t, gate_pulses, gate, deltaS, 
                                                                                                 tau_arr, measurement_info, full_or_diagonal, pulse_or_gate)
 
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)
