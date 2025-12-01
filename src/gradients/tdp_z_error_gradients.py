@@ -1,4 +1,4 @@
-from frog_z_error_gradients import calculate_Z_gradient as calculate_Z_gradient_FROG
+from .frog_z_error_gradients import calculate_Z_gradient as calculate_Z_gradient_FROG
 
 
 

@@ -1,5 +1,5 @@
 from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.twodsi import DirectReconstruction, GeneralizedProjection, TimeDomainPtychography, COPRA
+from src.twodsi import DirectReconstruction, GeneralizedProjection, PtychographicIterativeEngine, COPRA
 
 import numpy as np
 import lineax
@@ -177,7 +177,7 @@ def test_GeneralizedProjection(parameters):
 
 
 @pytest.mark.parametrize("parameters", parameters)
-def test_TimeDomainPtychography(parameters):
+def test_PtychographicIterativeEngine(parameters):
     parameters_measurement, parameters_algorithm = parameters
     delay, frequency, trace, spectra, gate = parameters_measurement
     nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
@@ -185,7 +185,7 @@ def test_TimeDomainPtychography(parameters):
     if cross_correlation=="doubleblind":
         cross_correlation=True
 
-    tdp = TimeDomainPtychography(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation, pie_method=pie_method)
+    tdp = PtychographicIterativeEngine(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation, pie_method=pie_method)
     if use_spectrum==True:
         tdp.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
         if cross_correlation=="doubleblind":

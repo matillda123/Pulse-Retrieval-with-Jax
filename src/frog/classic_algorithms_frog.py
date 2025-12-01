@@ -200,7 +200,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
     def __init__(self, delay, frequency, trace, nonlinear_method, cross_correlation=False, **kwargs):
         super().__init__(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
         assert self.ifrog==False, "PCGPA is not intended for interferometric measurements."
-        #assert nonlinear_method!="sd", "Doesnt work for SD. Which is weird."
+        assert nonlinear_method!="sd", "Doesnt work for SD. Which is weird."
 
         self.name = "CPCGPA"
         

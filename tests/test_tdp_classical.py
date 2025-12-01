@@ -1,5 +1,5 @@
 from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.frog import Vanilla, LSGPA, CPCGPA, GeneralizedProjection, PtychographicIterativeEngine, COPRA
+from src.tdp import GeneralizedProjection, PtychographicIterativeEngine, COPRA
 
 import numpy as np
 import lineax
@@ -15,7 +15,7 @@ pulse_maker = MakePulse(N=128*10, Delta_f=2)
 time, pulse_t, frequency, pulse_f = pulse_maker.generate_pulse((amp_g, phase_p))
 gate = (frequency, pulse_f)
 
-delay, frequency, trace, spectra = pulse_maker.generate_frog(time, frequency, pulse_t, pulse_f, nonlinear_method="pg", N=64, 
+delay, frequency, trace, spectra = pulse_maker.generate_tdp(time, frequency, pulse_t, pulse_f, nonlinear_method="pg", spectral_filter=None, N=64, 
                                                              scale_time_range=1, plot_stuff=False, cross_correlation=False, 
                                                              gate=gate, ifrog=False, interpolate_fft_conform=True, 
                                                              cut_off_val=1e-1, frequency_range=(0,1), real_fields=False)
@@ -52,97 +52,6 @@ for i in range(6):
                             local_scaling[i], global_scaling[i], linesearch[i], local_newton[i], global_newton[i], linalg_solver[i], r_local_method[i], 
                             r_global_method[i], r_gradient[i], r_newton[i], r_step_scaling[i], conjugate_gradients[i], constraints[i], svd[i])
     parameters.append((parameters_measurement, parameters_algorithm))
-
-
-
-
-
-
-@pytest.mark.parametrize("parameters", parameters)
-def test_vanilla(parameters):
-    parameters_measurement, parameters_algorithm = parameters
-    delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
-
-    vanilla = Vanilla(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
-    vanilla.jit = jit
-
-    if use_spectrum==True:
-        vanilla.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
-    if use_momentum==True:
-        vanilla.momentum(population_size=5, eta=0.5)
-
-    if cross_correlation==True:
-        frequency_gate, pulse_gate = gate
-        gate = vanilla.get_gate_pulse(frequency_gate, pulse_gate)
-
-    population = vanilla.create_initial_population(population_size=5, guess_type=guess_type)
-    final_result = vanilla.run(population, no_iterations=5)
-
-
-
-
-
-
-@pytest.mark.parametrize("parameters", parameters)
-def test_lsgpa(parameters):
-    parameters_measurement, parameters_algorithm = parameters
-    delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
-
-
-    lsgpa = LSGPA(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
-    lsgpa.jit = jit
-
-    if use_spectrum==True:
-        lsgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
-        if cross_correlation=="doubleblind":
-            lsgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "gate")
-
-    if use_momentum==True:
-        lsgpa.momentum(population_size=5, eta=0.5)
-
-    if cross_correlation==True:
-        frequency_gate, pulse_gate = gate
-        gate = lsgpa.get_gate_pulse(frequency_gate, pulse_gate)
-
-    population = lsgpa.create_initial_population(population_size=5, guess_type=guess_type)
-    final_result = lsgpa.run(population, no_iterations=5)
-
-
-
-
-
-@pytest.mark.parametrize("parameters", parameters)
-def test_cpcgpa(parameters):
-    parameters_measurement, parameters_algorithm = parameters
-    delay, frequency, trace, spectra, gate = parameters_measurement
-    nonlinear_method, pie_method, cross_correlation, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients, constraints, svd = parameters_algorithm
-
-    if nonlinear_method=="sd":
-        nonlinear_method="pg"
-
-    pcgpa = CPCGPA(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation)
-    pcgpa.jit = jit
-
-    if use_spectrum==True:
-        pcgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
-        if cross_correlation=="doubleblind":
-            pcgpa.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "gate")
-
-    if use_momentum==True:
-        pcgpa.momentum(population_size=5, eta=0.5)
-
-    if cross_correlation==True:
-        frequency_gate, pulse_gate = gate
-        gate = pcgpa.get_gate_pulse(frequency_gate, pulse_gate)
-
-    pcgpa.constraints = constraints
-    pcgpa.svd = svd
-
-    population = pcgpa.create_initial_population(population_size=5, guess_type=guess_type)
-    final_result = pcgpa.run(population, no_iterations=5)
-
 
 
 

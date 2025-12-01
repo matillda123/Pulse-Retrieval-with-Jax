@@ -619,8 +619,15 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
         x_arr, y_arr, trace = self.construct_trace(individual, measurement_info, descent_info)
         trace, measured_trace = loss_function_modifications(trace, measured_trace, x_arr, y_arr, amplitude_or_intensity, fd_grad)
-        trace_error = error_metric(trace, measured_trace)
+
+        if fd_grad!=False:
+            trace_error = jax.vmap(error_metric)(trace, measured_trace)
+            trace_error = jnp.sum(trace_error, axis=0)
+        else:
+            trace_error = error_metric(trace, measured_trace)
+        
         return trace_error
+            
     
 
 

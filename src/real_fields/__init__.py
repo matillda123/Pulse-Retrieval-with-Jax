@@ -1,3 +1,4 @@
 from src.real_fields import general_algorithms_frog_real_fields as frog
 from src.real_fields import general_algorithms_chirpscan_real_fields as chirp_scan
 from src.real_fields import general_algorithms_2dsi_real_fields as twodsi
+from src.real_fields import general_algorithms_tdp_real_fields as tdp

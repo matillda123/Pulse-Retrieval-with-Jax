@@ -744,10 +744,20 @@ def loss_function_modifications(trace, measured_trace, tau_or_zarr, frequency, a
         trace_0, _ = jax.lax.scan(fd_x, trace, xs=x)
         trace_1, _ = jax.lax.scan(fd_y, trace, xs=y)
 
-        measured_trace = jnp.abs(measured_trace_0) + jnp.abs(measured_trace_1)
-        trace = jnp.abs(trace_0) + jnp.abs(trace_1)
 
-    return trace/jnp.max(jnp.abs(trace)), measured_trace/jnp.max(jnp.abs(measured_trace))
+        # can one use the actual "vector" instead of this -> would allow to incorporate sign of gradient
+        # measured_trace = jnp.abs(measured_trace_0) + jnp.abs(measured_trace_1)
+        # trace = jnp.abs(trace_0) + jnp.abs(trace_1)
+        measured_trace = jnp.asarray([measured_trace_0, measured_trace_1])
+        trace = jnp.asarray([trace_0, trace_1])
+
+        measured_trace = measured_trace/(jnp.max(jnp.abs(measured_trace, axis=0), axis=0))[:,jnp.newaxis]
+        trace = trace/(jnp.max(jnp.abs(trace, axis=0), axis=0))[:,jnp.newaxis]
+    else:
+        measured_trace = measured_trace/jnp.max(jnp.abs(measured_trace))
+        trace = trace/jnp.max(jnp.abs(trace))
+
+    return trace, measured_trace
 
 
 

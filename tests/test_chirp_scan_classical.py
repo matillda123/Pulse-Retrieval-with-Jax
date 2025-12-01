@@ -1,5 +1,5 @@
 from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.chirp_scan import Basic, GeneralizedProjection, TimeDomainPtychography, COPRA
+from src.chirp_scan import Basic, GeneralizedProjection, PtychographicIterativeEngine, COPRA
 
 # only testing one phase matrix func shoud be fine. They are all tested in test_simulate_trace.py
 from src.chirp_scan import phase_matrix_material
@@ -137,13 +137,13 @@ def test_GeneralizedProjection(input_vals):
 
 
 @pytest.mark.parametrize("input_vals", input_vals)
-def test_TimeDomainPtychography(input_vals):
+def test_PtychographicIterativeEngine(input_vals):
     parameters_measurement, parameters_algorithm = input_vals
     z_arr, frequency, trace, spectra, phase_matrix_func, phase_matrix_parameters = parameters_measurement
     nonlinear_method, pie_method, guess_type, use_spectrum, use_momentum, jit, local_scaling, global_scaling, linesearch, local_newton, global_newton, linalg_solver,r_local_method, r_global_method, r_gradient, r_newton, r_step_scaling, conjugate_gradients = parameters_algorithm
 
     
-    tdp = TimeDomainPtychography(z_arr, frequency, trace, nonlinear_method, pie_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
+    tdp = PtychographicIterativeEngine(z_arr, frequency, trace, nonlinear_method, pie_method, phase_matrix_func=phase_matrix_func, chirp_parameters=phase_matrix_parameters)
     if use_spectrum==True:
         tdp.use_measured_spectrum(spectra.pulse[0], spectra.pulse[1], "pulse")
 

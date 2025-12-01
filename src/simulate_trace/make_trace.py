@@ -7,8 +7,8 @@ import jax.numpy as jnp
 import jax
 
 from src.utilities import MyNamespace, do_fft, do_ifft, get_sk_rn, do_interpolation_1d, center_signal_to_max, center_signal
-from src.core.base_classes_methods import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulses2DSI
-from src.real_fields.base_classes_methods import RetrievePulsesFROGwithRealFields, RetrievePulsesCHIRPSCANwithRealFields, RetrievePulses2DSIwithRealFields
+from src.core.base_classes_methods import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulses2DSI, RetrievePulsesTDP
+from src.real_fields.base_classes_methods import RetrievePulsesFROGwithRealFields, RetrievePulsesCHIRPSCANwithRealFields, RetrievePulses2DSIwithRealFields, RetrievePulsesTDPwithRealFields
 from .make_pulse import MakePulse as MakePulseBase
 
 
@@ -68,6 +68,32 @@ class MakePulse(MakePulseBase):
         
         self.maketrace = maketrace(time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
                                    interpolate_fft_conform, cut_off_val, frequency_range)
+
+
+        if cross_correlation==True:
+            frequency_gate, gate_f = gate
+            gate = self.maketrace.get_gate_pulse(frequency_gate, gate_f, time, frequency)
+
+        time_trace, frequency_trace, trace, spectra = self.maketrace.generate_trace()
+
+        if plot_stuff==True:
+            self.maketrace.plot_trace(time, pulse_t, frequency, pulse_f, time_trace, frequency_trace, trace, spectra)
+
+        return time_trace, frequency_trace, trace, spectra
+    
+
+
+    def generate_tdp(self, time, frequency, pulse_t, pulse_f, nonlinear_method, spectral_filter, N=256, scale_time_range=1, plot_stuff=True, 
+                                    cross_correlation=False, gate=(None, None), ifrog=False, interpolate_fft_conform=True, cut_off_val=0.001, frequency_range=None, 
+                                    real_fields=False):
+        
+        if real_fields==True:
+            maketrace = MakeTraceTDPReal
+        else:
+            maketrace = MakeTraceTDP
+        
+        self.maketrace = maketrace(time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
+                                   interpolate_fft_conform, cut_off_val, frequency_range, spectral_filter)
 
 
         if cross_correlation==True:
@@ -352,7 +378,59 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
                               gate=(frequency_gate_spectrum, spectrum_gate))
 
         return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
+
+
+
+
+
+class MakeTraceTDP(MakeTraceBASE, RetrievePulsesTDP):
+    def __init__(self, time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
+                                             interpolate_fft_conform, cut_off_val, frequency_range, spectral_filter):
+        super().__init__()
+        
+        self.time=time
+        self.frequency=frequency
+        self.pulse_t=pulse_t
+        self.pulse_f=pulse_f
+        self.nonlinear_method=nonlinear_method
+        self.N=N
+        self.scale_time_range=scale_time_range
+        self.interpolate_fft_conform=interpolate_fft_conform
+        self.cut_off_val = cut_off_val
+        self.frequency_range = frequency_range
+        self.cross_correlation=cross_correlation
+        self.ifrog=ifrog
+        self.gate = None
+
+        self.x_arr = time
+
+        self.sk, self.rn = get_sk_rn(self.time, self.frequency)
+        if spectral_filter==None:
+            self.spectral_filter = jnp.ones(jnp.size(frequency))
+        else:
+            self.spectral_filter = spectral_filter
+        
+        
+
+    def get_gate_pulse(self, frequency_gate, gate_f, time, frequency):
+        return MakeTraceFROG.get_gate_pulse(self, frequency_gate, gate_f, time, frequency)
+
+
+    def get_parameters_to_make_signal_t(self):
+        individual, measurement_info, time = MakeTraceFROG.get_parameters_to_make_signal_t(self)
+        measurement_info = measurement_info.expand(spectral_filter=self.spectral_filter)
+        return individual, measurement_info, time
     
+
+    def interpolate_trace(self):
+        return MakeTraceFROG.interpolate_trace(self)
+    
+
+
+
+
+
+
 
 
 
@@ -563,6 +641,54 @@ class MakeTraceFROGReal(RetrievePulsesFROGwithRealFields, MakeTraceFROG):
         return RetrievePulsesFROG.calculate_shifted_signal(self, signal, frequency, tau_arr, time, in_axes=in_axes)
     
 
+
+
+
+
+
+class MakeTraceTDPReal(MakeTraceBASE, RetrievePulsesTDPwithRealFields):
+    def __init__(self, time, frequency, pulse_t, pulse_f, nonlinear_method, N, scale_time_range, cross_correlation, ifrog, 
+                                             interpolate_fft_conform, cut_off_val, frequency_range, spectral_filter):
+        super().__init__()
+        
+        self.time=time
+        self.frequency=frequency
+        self.pulse_t=pulse_t
+        self.pulse_f=pulse_f
+        self.nonlinear_method=nonlinear_method
+        self.N=N
+        self.scale_time_range=scale_time_range
+        self.interpolate_fft_conform=interpolate_fft_conform
+        self.cut_off_val = cut_off_val
+        self.frequency_range = frequency_range
+        self.cross_correlation=cross_correlation
+        self.ifrog=ifrog
+        self.gate = None
+
+        self.x_arr = time
+
+        self.sk, self.rn = get_sk_rn(self.time, self.frequency)
+        if spectral_filter==None:
+            self.spectral_filter = jnp.ones(jnp.size(frequency))
+        else:
+            self.spectral_filter = spectral_filter
+        
+
+
+    def get_gate_pulse(self, frequency_gate, gate_f, time, frequency):
+        return MakeTraceFROGReal.get_gate_pulse(self, frequency_gate, gate_f, time, frequency)
+
+
+    def get_parameters_to_make_signal_t(self):
+        individual, measurement_info, time = MakeTraceFROGReal.get_parameters_to_make_signal_t(self)
+        measurement_info = measurement_info.expand(spectral_filter=self.spectral_filter)
+        return individual, measurement_info, time
+    
+
+    def interpolate_trace(self):
+        return MakeTraceFROGReal.interpolate_trace(self)
+    
+    
 
 
 

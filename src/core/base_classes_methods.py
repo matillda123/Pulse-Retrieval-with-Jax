@@ -942,7 +942,7 @@ class RetrievePulsesTDP(RetrievePulsesFROG):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
 
         if spectral_filter==None:
-            self.spectral_filter = jnp.ones(self.frequency)
+            self.spectral_filter = jnp.ones(jnp.size(self.frequency))
             print("If spectral_filter=None, then TDP is the same as FROG.")
         else:
             self.spectral_filter = spectral_filter

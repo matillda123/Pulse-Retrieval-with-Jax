@@ -2,7 +2,7 @@ import jax
 from jax.tree_util import Partial
 
 from src.utilities import calculate_newton_direction
-from frog_z_error_pseudo_hessian import calc_Z_error_pseudo_hessian_all_m
+from .frog_z_error_pseudo_hessian import calc_Z_error_pseudo_hessian_all_m
 
 
 
