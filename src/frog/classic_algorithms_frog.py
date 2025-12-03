@@ -11,9 +11,9 @@ from src.core.base_classic_algorithms import GeneralizedProjectionBASE, Ptychogr
 from src.utilities import MyNamespace, scan_helper, get_com, get_sk_rn, calculate_gate, calculate_trace, calculate_mu, calculate_trace_error, do_interpolation_1d
 from src.core.construct_s_prime import calculate_S_prime_projection, calculate_S_prime
 
-from src.gradients.frog_z_error_gradients import calculate_Z_gradient
-from src.hessians.frog_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
-from src.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
+from src.core.gradients.frog_z_error_gradients import calculate_Z_gradient
+from src.core.hessians.frog_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
+from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 
 

@@ -11,9 +11,9 @@ from src.core.base_classic_algorithms import GeneralizedProjectionBASE, Ptychogr
 from src.utilities import scan_helper, calculate_mu, calculate_trace, calculate_trace_error, integrate_signal_1D, do_interpolation_1d
 from src.core.construct_s_prime import calculate_S_prime_projection
 
-from src.gradients.chirpscan_z_error_gradients import calculate_Z_gradient
-from src.hessians.chirpscan_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
-from src.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
+from src.core.gradients.chirpscan_z_error_gradients import calculate_Z_gradient
+from src.core.hessians.chirpscan_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
+from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 
 from src.core.phase_matrix_funcs import phase_func_dict, calc_GDD

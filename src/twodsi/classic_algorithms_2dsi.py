@@ -9,9 +9,9 @@ from src.core.base_classes_algorithms import AlgorithmsBASE
 from src.core.base_classic_algorithms import GeneralizedProjectionBASE, PtychographicIterativeEngineBASE, COPRABASE
 from src.utilities import scan_helper, center_signal, do_interpolation_1d, integrate_signal_1D, calculate_trace, calculate_trace_error
 
-from src.gradients.twodsi_z_error_gradients import calculate_Z_gradient
-from src.hessians.twodsi_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
-from src.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
+from src.core.gradients.twodsi_z_error_gradients import calculate_Z_gradient
+from src.core.hessians.twodsi_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
+from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 
 

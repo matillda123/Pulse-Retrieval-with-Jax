@@ -3,8 +3,8 @@ from equinox import tree_at
 from src.core.base_classes_methods import RetrievePulsesTDP
 from src.core.base_classic_algorithms import GeneralizedProjectionBASE, COPRABASE
 
-from src.gradients.tdp_z_error_gradients import calculate_Z_gradient
-from src.hessians.tdp_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
+from src.core.gradients.tdp_z_error_gradients import calculate_Z_gradient
+from src.core.hessians.tdp_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
 
 from src.frog import PtychographicIterativeEngine as PtychgraphicIterativeEngineFROG
 
