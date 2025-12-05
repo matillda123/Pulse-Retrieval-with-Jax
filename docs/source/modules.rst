@@ -1,7 +1,7 @@
-src
-===
+frog
+====
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   frog

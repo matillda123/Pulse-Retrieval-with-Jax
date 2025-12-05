@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utilities &mdash; PulseRetrievalwithJAX 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="core.hessians package" href="core.hessians.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PulseRetrievalwithJAX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html">Definitions and Derived Formulas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#Z-Gradients">Z-Gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#Z-Pseudo-Hessian">Z-Pseudo Hessian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#PIE-Gradient">PIE Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#PIE---Pseudo-Hessian">PIE - Pseudo Hessian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frog.html">frog package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chirp_scan.html">chirp_scan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdp.html">tdp package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="twodsi.html">twodsi package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vampire.html">vampire package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulate_trace.html">simulate_trace package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="real_fields.html">real_fields package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.flatten_MyNamespace"><code class="docutils literal notranslate"><span class="pre">flatten_MyNamespace()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.unflatten_MyNamespace"><code class="docutils literal notranslate"><span class="pre">unflatten_MyNamespace()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.MyNamespace"><code class="docutils literal notranslate"><span class="pre">MyNamespace</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#utilities.MyNamespace.expand"><code class="docutils literal notranslate"><span class="pre">MyNamespace.expand()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.run_scan"><code class="docutils literal notranslate"><span class="pre">run_scan()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.scan_helper"><code class="docutils literal notranslate"><span class="pre">scan_helper()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.while_loop_helper"><code class="docutils literal notranslate"><span class="pre">while_loop_helper()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.optimistix_helper_loss_function"><code class="docutils literal notranslate"><span class="pre">optimistix_helper_loss_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.scan_helper_equinox"><code class="docutils literal notranslate"><span class="pre">scan_helper_equinox()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.do_fft"><code class="docutils literal notranslate"><span class="pre">do_fft()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.do_ifft"><code class="docutils literal notranslate"><span class="pre">do_ifft()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.get_sk_rn"><code class="docutils literal notranslate"><span class="pre">get_sk_rn()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.do_interpolation_1d"><code class="docutils literal notranslate"><span class="pre">do_interpolation_1d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.integrate_signal_1D"><code class="docutils literal notranslate"><span class="pre">integrate_signal_1D()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_gate"><code class="docutils literal notranslate"><span class="pre">calculate_gate()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_gate_with_Real_Fields"><code class="docutils literal notranslate"><span class="pre">calculate_gate_with_Real_Fields()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.project_onto_intensity"><code class="docutils literal notranslate"><span class="pre">project_onto_intensity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.project_onto_amplitude"><code class="docutils literal notranslate"><span class="pre">project_onto_amplitude()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_trace"><code class="docutils literal notranslate"><span class="pre">calculate_trace()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_mu"><code class="docutils literal notranslate"><span class="pre">calculate_mu()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_trace_error"><code class="docutils literal notranslate"><span class="pre">calculate_trace_error()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_Z_error"><code class="docutils literal notranslate"><span class="pre">calculate_Z_error()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.generate_random_continuous_function"><code class="docutils literal notranslate"><span class="pre">generate_random_continuous_function()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.solve_linear_system"><code class="docutils literal notranslate"><span class="pre">solve_linear_system()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.calculate_newton_direction"><code class="docutils literal notranslate"><span class="pre">calculate_newton_direction()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.get_idx_arr"><code class="docutils literal notranslate"><span class="pre">get_idx_arr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.get_com"><code class="docutils literal notranslate"><span class="pre">get_com()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.center_signal"><code class="docutils literal notranslate"><span class="pre">center_signal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.center_signal_to_max"><code class="docutils literal notranslate"><span class="pre">center_signal_to_max()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.loss_function_modifications"><code class="docutils literal notranslate"><span class="pre">loss_function_modifications()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.remove_phase_jumps"><code class="docutils literal notranslate"><span class="pre">remove_phase_jumps()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities.get_score_values"><code class="docutils literal notranslate"><span class="pre">get_score_values()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PulseRetrievalwithJAX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">utilities</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/utilities.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-utilities">
+<span id="utilities"></span><h1>utilities<a class="headerlink" href="#module-utilities" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.flatten_MyNamespace">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">flatten_MyNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MyNamespace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.flatten_MyNamespace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.unflatten_MyNamespace">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">unflatten_MyNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aux_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaves</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.unflatten_MyNamespace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utilities.MyNamespace">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">MyNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.MyNamespace" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The central Pytree.
+Does not have a fixed shaped/structure at initialization. Because it would be tedious and cumbersome to keep
+track of this for all different pytree types/version used.
+To solve the issues arising from this MyNamespace.expand() can be used to add attributes by returning a
+new MyNamespace object.
+On top inside jax-transformations one needs to make sure to keep the structure static. (If not jax may hopefully catch it.)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utilities.MyNamespace.expand">
+<span class="sig-name descname"><span class="pre">expand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.MyNamespace.expand" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.run_scan">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">run_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">do_scan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_jit</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.run_scan" title="Link to this definition"></a></dt>
+<dd><p>Run a solver iteratively using lax.scan with or without jax.jit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>do_scan</strong> – Callable, the callable needs to take carry its argument</p></li>
+<li><p><strong>carry</strong> – Pytree, the initial state of the iteration</p></li>
+<li><p><strong>no_iterations</strong> – int, the number of iterations</p></li>
+<li><p><strong>use_jit</strong> – bool, whether jax.jit is supposed to be used or not</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[Carry, Y], the output of jax.lax.scan</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.scan_helper">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">scan_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_xs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.scan_helper" title="Link to this definition"></a></dt>
+<dd><p>jax.lax.scan expects the provided callable to accept two arguments carry and possibly xs.
+This wraps around the function to be iterated by lax.scan, such that its inputs do not have to conform to lax.scan’s requirements.
+The provided carry and xs are unpacked and provided to actual_function.
+All arguments except carry and xs have to be fixed via partial. The resulting callable is then provided to lax.scan.
+The output of actual_function needs to be of the same structure as carry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>carry</strong> – any or tuple, the initial state of the iteration</p></li>
+<li><p><strong>xs</strong> – any or tuple, the xs used by jax.lax.scan</p></li>
+<li><p><strong>actual_function</strong> – Callable, the function that is to be iterated over</p></li>
+<li><p><strong>number_of_args</strong> – int, the number of individual arguments in carry</p></li>
+<li><p><strong>number_of_xs</strong> – int, the number of individual arguments in xs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any, the output of actual_function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.while_loop_helper">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">while_loop_helper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.while_loop_helper" title="Link to this definition"></a></dt>
+<dd><p>Similar to scan_helper. Unpacks carry, such that the input of actual_function does not have to conform to lax.while_loop’s requirements.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>carry</strong> – any or tuple, the initial state of the iteration</p></li>
+<li><p><strong>actual_function</strong> – Callable, the function to be iterated over</p></li>
+<li><p><strong>number_of_args</strong> – int, the number of individual arguments in carry</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any, the output of actual_function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.optimistix_helper_loss_function">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">optimistix_helper_loss_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_of_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.optimistix_helper_loss_function" title="Link to this definition"></a></dt>
+<dd><p>Optimistix’s interactive solver API expects loss-functions which take two variables and returns a tuple with the error
+and auxilary information. This wraps around function to adhere to this.
+function and no_of_args have to be fixed via partial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – any, the input the function</p></li>
+<li><p><strong>args</strong> – any, the args of function</p></li>
+<li><p><strong>function</strong> – Callable, the actual loss function</p></li>
+<li><p><strong>no_of_args</strong> – int, the number of extra arguments</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple, a tuple which contains the calculated error twice, since there is no auxilary information</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.scan_helper_equinox">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">scan_helper_equinox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">carry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.scan_helper_equinox" title="Link to this definition"></a></dt>
+<dd><p>This function wraps around step, which is to be iterated over via lax.scan. In some cases the carry contains static not jax compatible parts.
+(e.g. some of the optimistix solvers contain jaxpr). These need to be filtered out to be jax compatible which can be done through equinox.
+The function takes carry merges the static part and removes the static part once the iteration is done.
+step and static have to be fixed via partial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>carry</strong> – any or tuple, the carry to be iterated over</p></li>
+<li><p><strong>xs</strong> – any or tuple, unused but required by lax.scan</p></li>
+<li><p><strong>step</strong> – Callable, the function to be iterated over</p></li>
+<li><p><strong>static</strong> – any, a static non-jax-compatible object which is to be merged before calling step and removed afterwards</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple, the output of step</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.do_fft">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">do_fft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.do_fft" title="Link to this definition"></a></dt>
+<dd><p>Do a complex-valued 1D-FFT. Does not use fftshift. Instead sk and rn obtained from get_sk_rn are
+applied which have the same effect and make the fft work any frequency range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> – jnp.array, the signal on which the fft is applied</p></li>
+<li><p><strong>sk</strong> – jnp.array, corrective values which “shift” the signal to the correct frequencies</p></li>
+<li><p><strong>rn</strong> – jnp.array, corrective values which “shift” the signal to the correct frequencies</p></li>
+<li><p><strong>axis</strong> – int, the axis over which the fft is applied (Default is -1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, the fourier transformed signal</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.do_ifft">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">do_ifft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.do_ifft" title="Link to this definition"></a></dt>
+<dd><p>Do a complex-valued 1D-IFFT. Does not use fftshift. Instead sk and rn obtained from get_sk_rn are
+applied which have the same effect and make the fft work any frequency range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> – jnp.array, the signal on which the ifft is applied</p></li>
+<li><p><strong>sk</strong> – jnp.array, corrective values which “shift” the signal to the correct positions</p></li>
+<li><p><strong>rn</strong> – jnp.array, corrective values which “shift” the signal to the correct positions</p></li>
+<li><p><strong>axis</strong> – int, the axis over which the ifft is applied (Default is -1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, the inverse fourier transformed signal</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.get_sk_rn">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">get_sk_rn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.get_sk_rn" title="Link to this definition"></a></dt>
+<dd><p>The definition of the FFT differs from the discrete fourier transform. In order to correct for this the input and result
+of fft/ifft can be multiplied by the values calculated here. This essentially results in the fourier shift theorem.
+time and frequency have to fullfill N=1/(df*dt).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> – jnp.array, the time axis</p></li>
+<li><p><strong>frequency</strong> – jnp.array, the frequency axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[jnp.array, jnp.array], the corrections used by do_fft/do_ifft</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.do_interpolation_1d">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">do_interpolation_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.do_interpolation_1d" title="Link to this definition"></a></dt>
+<dd><p>Wraps around interpax.interp1d</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.integrate_signal_1D">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">integrate_signal_1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">integration_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.integrate_signal_1D" title="Link to this definition"></a></dt>
+<dd><p>Calculates the indefinite integral of a signal using the Riemann sum or the Euler-Maclaurin formula.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_gate">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_gate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_gate" title="Link to this definition"></a></dt>
+<dd><p>Calculate the gate field/signal for the nonlinear process.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_gate_with_Real_Fields">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_gate_with_Real_Fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_gate_with_Real_Fields" title="Link to this definition"></a></dt>
+<dd><p>Calculate the gate field/signal for the nonlinear process using real input fields.
+This allows for the description of difference frequency generation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.project_onto_intensity">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">project_onto_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_intensity</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.project_onto_intensity" title="Link to this definition"></a></dt>
+<dd><p>Project the current complex guess signal onto the measured intensity.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.project_onto_amplitude">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">project_onto_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_amplitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.project_onto_amplitude" title="Link to this definition"></a></dt>
+<dd><p>Project the current complex guess signal onto the measured amplitude.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_trace">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_trace" title="Link to this definition"></a></dt>
+<dd><p>Calculates intensity from a complex signal.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_mu">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_mu" title="Link to this definition"></a></dt>
+<dd><p>Calculates scaling factor between measured intensity and intensity of current guess.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_trace_error">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_trace_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_trace_error" title="Link to this definition"></a></dt>
+<dd><p>Calculates the mean of the squared L2-Norm between the measured intensity and intensity of the current guess.
+With the current guess being scaled by mu.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_Z_error">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_Z_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_Z_error" title="Link to this definition"></a></dt>
+<dd><p>Calculates the squared L2-Norm between the complex signal fields in the time domain before and after projection onto the measured signal.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.generate_random_continuous_function">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">generate_random_continuous_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.generate_random_continuous_function" title="Link to this definition"></a></dt>
+<dd><p>Generates a 1D-array with random but continuous values. Uses on cubic inter/extrapolation of random values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – jnp.array, a jax.random.PRNGKey</p></li>
+<li><p><strong>no_points</strong> – int, the number of random points to use for the interpolation</p></li>
+<li><p><strong>x</strong> – jnp.array, the x-values from which to choose the location of random values</p></li>
+<li><p><strong>minval</strong> – int or float, the minimal random y-value, the interpolation may lead to lower values</p></li>
+<li><p><strong>maxval</strong> – int or float, the maximal random y-value, the interpolation may lead to higher values</p></li>
+<li><p><strong>distribution</strong> – jnp.array, a probability distribution for the x-location of the random values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, the interpolated random y-values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.solve_linear_system">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">solve_linear_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_prev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.solve_linear_system" title="Link to this definition"></a></dt>
+<dd><p>Solve a stack of linear equation Ax=b using scipy or lineax.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> – jnp.array, stack of 2D-arrays</p></li>
+<li><p><strong>b</strong> – jnp.array, stack of 1D-arrays</p></li>
+<li><p><strong>x_prev</strong> – jnp.array, stack of 1D-arrays with approximate solutions.</p></li>
+<li><p><strong>solver</strong> – str or lineax-solver, which library/method to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, stack of 1D-arrays with the solution to Ax=b</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.calculate_newton_direction">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">calculate_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad_m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hessian_m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_lm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newton_direction_prev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_or_diagonal</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.calculate_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the newton-direction give a gradient and a hessian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grad_m</strong> – jnp.array,</p></li>
+<li><p><strong>hessian_m</strong> – jnp.array,</p></li>
+<li><p><strong>lambda_lm</strong> – float,</p></li>
+<li><p><strong>newton_direction_prev</strong> – jnp.array,</p></li>
+<li><p><strong>solver</strong> – str or lineax-solver,</p></li>
+<li><p><strong>full_or_diagonal</strong> – str.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[jnp.array, Pytree]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.get_idx_arr">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">get_idx_arr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.get_idx_arr" title="Link to this definition"></a></dt>
+<dd><p>Create a stack of size M with randomized arrays with indices with range 0, N.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> – int, the maximum index</p></li>
+<li><p><strong>M</strong> – int, the number of randomizations</p></li>
+<li><p><strong>key</strong> – jnp.array, a jax.random.PRNGKey</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, a stack of 1D-arrays with randomized indices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.get_com">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">get_com</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx_arr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.get_com" title="Link to this definition"></a></dt>
+<dd><p>Calculate the center of mass of a signal.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.center_signal">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">center_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.center_signal" title="Link to this definition"></a></dt>
+<dd><p>Center a signal to the middle of an array via its center of mass.
+Is done in two stages since periodic boundaries distort the actual center of mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>signal</strong> – jnp.array, the signal to be centered.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, the signal with its center of mass located at index N/2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.center_signal_to_max">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">center_signal_to_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.center_signal_to_max" title="Link to this definition"></a></dt>
+<dd><p>Center a signal to the middle of an array via jnp.argmax.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.loss_function_modifications">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">loss_function_modifications</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_or_zarr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude_or_intensity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fd_grad</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.loss_function_modifications" title="Link to this definition"></a></dt>
+<dd><p>General optimization algorithms are not limited to a specific loss function. This function modifies the given trace and measured_trace
+such that residuals based on the amplitude instead of the intensity are optimized. Alternatively finite difference derivatives of the trace
+can be optimized instead.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.remove_phase_jumps">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">remove_phase_jumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phase</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.remove_phase_jumps" title="Link to this definition"></a></dt>
+<dd><p>Checks for jumps of 2*pi in phase, subtracts accordingly to get a smooth phase.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utilities.get_score_values">
+<span class="sig-prename descclassname"><span class="pre">utilities.</span></span><span class="sig-name descname"><span class="pre">get_score_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">final_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_pulses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.get_score_values" title="Link to this definition"></a></dt>
+<dd><p>Computes different error-metrics for a reconstructed pulse given the exact pulse is known and provided.
+The error metrics are the maximum cross-correlation between reconstructed and exact pulse in the time and frequency domain.
+The cross-correlation in the frequency domain without any shifts. This evaluates the efficacy of the retrived central freqeuncy.
+A weighted and normalized L2-Norm of the GDD difference of reconstructed and exact pulse.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core.hessians.html" class="btn btn-neutral float-left" title="core.hessians package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Till Stehling.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

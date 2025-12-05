@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>src &mdash; PulseRetrievalwithJAX 2025 documentation</title>
+  <title>frog &mdash; PulseRetrievalwithJAX 2025 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -16,6 +16,7 @@
       <script src="_static/documentation_options.js?v=cb975c41"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -40,11 +41,24 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">src</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html">Definitions and Derived Formulas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#Z-Gradients">Z-Gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#Z-Pseudo-Hessian">Z-Pseudo Hessian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#PIE-Gradient">PIE Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#PIE---Pseudo-Hessian">PIE - Pseudo Hessian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frog.html">frog package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chirp_scan.html">chirp_scan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdp.html">tdp package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="twodsi.html">twodsi package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vampire.html">vampire package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulate_trace.html">simulate_trace package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="real_fields.html">real_fields package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">utilities</a></li>
 </ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -59,7 +73,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">src</li>
+      <li class="breadcrumb-item active">frog</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -69,125 +83,89 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="src">
-<h1>src<a class="headerlink" href="#src" title="Link to this heading"></a></h1>
+  <section id="frog">
+<h1>frog<a class="headerlink" href="#frog" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="src.html">src package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="src.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="src.chirp_scan.html">src.chirp_scan package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.chirp_scan.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.chirp_scan.html#module-src.chirp_scan.classic_algorithms_chirpscan">src.chirp_scan.classic_algorithms_chirpscan module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.chirp_scan.html#module-src.chirp_scan.general_algorithms_chirpscan">src.chirp_scan.general_algorithms_chirpscan module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.chirp_scan.html#module-src.chirp_scan">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frog.html">frog package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="frog.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frog.html#module-frog.classic_algorithms_frog">frog.classic_algorithms_frog module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.Vanilla"><code class="docutils literal notranslate"><span class="pre">Vanilla</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.Vanilla.update_pulse"><code class="docutils literal notranslate"><span class="pre">Vanilla.update_pulse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.Vanilla.update_gate"><code class="docutils literal notranslate"><span class="pre">Vanilla.update_gate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.Vanilla.step"><code class="docutils literal notranslate"><span class="pre">Vanilla.step()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.Vanilla.initialize_run"><code class="docutils literal notranslate"><span class="pre">Vanilla.initialize_run()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="src.core.html">src.core package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.base_classes_algorithms">src.core.base_classes_algorithms module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.base_classes_methods">src.core.base_classes_methods module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.base_classic_algorithms">src.core.base_classic_algorithms module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.base_general_optimization">src.core.base_general_optimization module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.bsplines_1d">src.core.bsplines_1d module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.construct_s_prime">src.core.construct_s_prime module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.create_population">src.core.create_population module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.initial_guess_doublepulse">src.core.initial_guess_doublepulse module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.lbfgs">src.core.lbfgs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.nonlinear_cg">src.core.nonlinear_cg module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.phase_matrix_funcs">src.core.phase_matrix_funcs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.spectral_filter_funcs">src.core.spectral_filter_funcs module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core.stepsize">src.core.stepsize module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.core.html#module-src.core">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.LSGPA"><code class="docutils literal notranslate"><span class="pre">LSGPA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.LSGPA.update_pulse"><code class="docutils literal notranslate"><span class="pre">LSGPA.update_pulse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.LSGPA.update_gate"><code class="docutils literal notranslate"><span class="pre">LSGPA.update_gate()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="src.frog.html">src.frog package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.frog.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.frog.html#module-src.frog.classic_algorithms_frog">src.frog.classic_algorithms_frog module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.frog.html#module-src.frog.general_algorithms_frog">src.frog.general_algorithms_frog module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.frog.html#module-src.frog">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA"><code class="docutils literal notranslate"><span class="pre">CPCGPA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.constraints"><code class="docutils literal notranslate"><span class="pre">CPCGPA.constraints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.svd"><code class="docutils literal notranslate"><span class="pre">CPCGPA.svd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.antialias"><code class="docutils literal notranslate"><span class="pre">CPCGPA.antialias</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.do_anti_alias"><code class="docutils literal notranslate"><span class="pre">CPCGPA.do_anti_alias()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.calculate_opf"><code class="docutils literal notranslate"><span class="pre">CPCGPA.calculate_opf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.shift_rows"><code class="docutils literal notranslate"><span class="pre">CPCGPA.shift_rows()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.convert_opf_to_signal_t"><code class="docutils literal notranslate"><span class="pre">CPCGPA.convert_opf_to_signal_t()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.calculate_signal_t_using_opf"><code class="docutils literal notranslate"><span class="pre">CPCGPA.calculate_signal_t_using_opf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.convert_signal_t_to_opf"><code class="docutils literal notranslate"><span class="pre">CPCGPA.convert_signal_t_to_opf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.decompose_opf"><code class="docutils literal notranslate"><span class="pre">CPCGPA.decompose_opf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.impose_constraints"><code class="docutils literal notranslate"><span class="pre">CPCGPA.impose_constraints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.update_individual"><code class="docutils literal notranslate"><span class="pre">CPCGPA.update_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.step"><code class="docutils literal notranslate"><span class="pre">CPCGPA.step()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.initialize_run"><code class="docutils literal notranslate"><span class="pre">CPCGPA.initialize_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.CPCGPA.post_process_create_trace"><code class="docutils literal notranslate"><span class="pre">CPCGPA.post_process_create_trace()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="src.real_fields.html">src.real_fields package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields.base_classes_methods">src.real_fields.base_classes_methods module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields.general_algorithms_2dsi_real_fields">src.real_fields.general_algorithms_2dsi_real_fields module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields.general_algorithms_chirpscan_real_fields">src.real_fields.general_algorithms_chirpscan_real_fields module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields.general_algorithms_frog_real_fields">src.real_fields.general_algorithms_frog_real_fields module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields.general_algorithms_tdp_real_fields">src.real_fields.general_algorithms_tdp_real_fields module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields.general_algorithms_vampire_real_fields">src.real_fields.general_algorithms_vampire_real_fields module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.real_fields.html#module-src.real_fields">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.GeneralizedProjection"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.GeneralizedProjection.calculate_Z_gradient_individual"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.calculate_Z_gradient_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.GeneralizedProjection.calculate_Z_newton_direction"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.calculate_Z_newton_direction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.GeneralizedProjection.update_individual"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.update_individual()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="src.simulate_trace.html">src.simulate_trace package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.simulate_trace.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.simulate_trace.html#module-src.simulate_trace.make_pulse">src.simulate_trace.make_pulse module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.simulate_trace.html#module-src.simulate_trace.make_trace">src.simulate_trace.make_trace module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.simulate_trace.html#module-src.simulate_trace">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.pie_method"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.pie_method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.reverse_transform_grad"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.reverse_transform_grad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.modify_grad_for_gate_pulse"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.modify_grad_for_gate_pulse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.calculate_PIE_descent_direction_m"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.calculate_PIE_descent_direction_m()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.update_individual"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.update_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.get_gate_probe_for_hessian"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.get_gate_probe_for_hessian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.PtychographicIterativeEngine.calculate_PIE_newton_direction"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.calculate_PIE_newton_direction()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="src.tdp.html">src.tdp package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.tdp.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.tdp.html#module-src.tdp.classic_algorithms_tdp">src.tdp.classic_algorithms_tdp module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.tdp.html#module-src.tdp.general_algorithms_tdp">src.tdp.general_algorithms_tdp module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.tdp.html#module-src.tdp">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="src.twodsi.html">src.twodsi package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.twodsi.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.twodsi.html#module-src.twodsi.classic_algorithms_2dsi">src.twodsi.classic_algorithms_2dsi module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.twodsi.html#module-src.twodsi.general_algorithms_2dsi">src.twodsi.general_algorithms_2dsi module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.twodsi.html#module-src.twodsi">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="src.vampire.html">src.vampire package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.vampire.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.vampire.html#module-src.vampire.classic_algorithms_vampire">src.vampire.classic_algorithms_vampire module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.vampire.html#module-src.vampire.general_algorithms_vampire">src.vampire.general_algorithms_vampire module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="src.vampire.html#module-src.vampire">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.COPRA"><code class="docutils literal notranslate"><span class="pre">COPRA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.COPRA.update_individual"><code class="docutils literal notranslate"><span class="pre">COPRA.update_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.COPRA.get_Z_gradient_individual"><code class="docutils literal notranslate"><span class="pre">COPRA.get_Z_gradient_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.classic_algorithms_frog.COPRA.get_Z_newton_direction"><code class="docutils literal notranslate"><span class="pre">COPRA.get_Z_newton_direction()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="src.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src.html#module-src.utilities">src.utilities module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.MyNamespace"><code class="docutils literal notranslate"><span class="pre">MyNamespace</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="src.html#src.utilities.MyNamespace.expand"><code class="docutils literal notranslate"><span class="pre">MyNamespace.expand()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="frog.html#module-frog.general_algorithms_frog">frog.general_algorithms_frog module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.DifferentialEvolution"><code class="docutils literal notranslate"><span class="pre">DifferentialEvolution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.DifferentialEvolution.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">DifferentialEvolution.get_pulses_from_population()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_Z_error"><code class="docutils literal notranslate"><span class="pre">calculate_Z_error()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_gate"><code class="docutils literal notranslate"><span class="pre">calculate_gate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_gate_with_Real_Fields"><code class="docutils literal notranslate"><span class="pre">calculate_gate_with_Real_Fields()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_mu"><code class="docutils literal notranslate"><span class="pre">calculate_mu()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_newton_direction"><code class="docutils literal notranslate"><span class="pre">calculate_newton_direction()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_trace"><code class="docutils literal notranslate"><span class="pre">calculate_trace()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.calculate_trace_error"><code class="docutils literal notranslate"><span class="pre">calculate_trace_error()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.center_signal"><code class="docutils literal notranslate"><span class="pre">center_signal()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.center_signal_to_max"><code class="docutils literal notranslate"><span class="pre">center_signal_to_max()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.do_fft"><code class="docutils literal notranslate"><span class="pre">do_fft()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.do_ifft"><code class="docutils literal notranslate"><span class="pre">do_ifft()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.do_interpolation_1d"><code class="docutils literal notranslate"><span class="pre">do_interpolation_1d()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.flatten_MyNamespace"><code class="docutils literal notranslate"><span class="pre">flatten_MyNamespace()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.generate_random_continuous_function"><code class="docutils literal notranslate"><span class="pre">generate_random_continuous_function()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.get_com"><code class="docutils literal notranslate"><span class="pre">get_com()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.get_idx_arr"><code class="docutils literal notranslate"><span class="pre">get_idx_arr()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.get_score_values"><code class="docutils literal notranslate"><span class="pre">get_score_values()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.get_sk_rn"><code class="docutils literal notranslate"><span class="pre">get_sk_rn()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.integrate_signal_1D"><code class="docutils literal notranslate"><span class="pre">integrate_signal_1D()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.loss_function_modifications"><code class="docutils literal notranslate"><span class="pre">loss_function_modifications()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.optimistix_helper_loss_function"><code class="docutils literal notranslate"><span class="pre">optimistix_helper_loss_function()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.project_onto_amplitude"><code class="docutils literal notranslate"><span class="pre">project_onto_amplitude()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.project_onto_intensity"><code class="docutils literal notranslate"><span class="pre">project_onto_intensity()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.remove_phase_jumps"><code class="docutils literal notranslate"><span class="pre">remove_phase_jumps()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.run_scan"><code class="docutils literal notranslate"><span class="pre">run_scan()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.scan_helper"><code class="docutils literal notranslate"><span class="pre">scan_helper()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.scan_helper_equinox"><code class="docutils literal notranslate"><span class="pre">scan_helper_equinox()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.solve_linear_system"><code class="docutils literal notranslate"><span class="pre">solve_linear_system()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.unflatten_MyNamespace"><code class="docutils literal notranslate"><span class="pre">unflatten_MyNamespace()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#src.utilities.while_loop_helper"><code class="docutils literal notranslate"><span class="pre">while_loop_helper()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.Evosax"><code class="docutils literal notranslate"><span class="pre">Evosax</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.Evosax.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">Evosax.get_pulses_from_population()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="src.html#module-src">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.LSF"><code class="docutils literal notranslate"><span class="pre">LSF</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.LSF.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">LSF.get_pulses_from_population()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.LSF.convert_population"><code class="docutils literal notranslate"><span class="pre">LSF.convert_population()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.AutoDiff"><code class="docutils literal notranslate"><span class="pre">AutoDiff</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.AutoDiff.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">AutoDiff.get_pulses_from_population()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="frog.html#frog.general_algorithms_frog.AutoDiff.make_pulse_from_individual"><code class="docutils literal notranslate"><span class="pre">AutoDiff.make_pulse_from_individual()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="frog.html#module-frog">Module contents</a></li>
 </ul>
 </li>
 </ul>

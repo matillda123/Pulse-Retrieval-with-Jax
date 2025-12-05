@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>twodsi package &mdash; PulseRetrievalwithJAX 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="vampire package" href="vampire.html" />
+    <link rel="prev" title="tdp package" href="tdp.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PulseRetrievalwithJAX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html">Definitions and Derived Formulas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#Z-Gradients">Z-Gradients</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#Z-Pseudo-Hessian">Z-Pseudo Hessian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#PIE-Gradient">PIE Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Definitions_and_Derivations.html#PIE---Pseudo-Hessian">PIE - Pseudo Hessian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frog.html">frog package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chirp_scan.html">chirp_scan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdp.html">tdp package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">twodsi package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-twodsi.classic_algorithms_2dsi">twodsi.classic_algorithms_2dsi module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.integration_method"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.integration_method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.integration_order"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.integration_order</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.windowing"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.windowing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.cut_off_intensity_for_GD"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.cut_off_intensity_for_GD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.apply_windowing"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.apply_windowing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.interpolate_group_delay_onto_spectral_amplitude"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.interpolate_group_delay_onto_spectral_amplitude()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.reconstruct_2dsi_1dfft"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.reconstruct_2dsi_1dfft()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.calc_error_of_reconstruction"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.calc_error_of_reconstruction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.step"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.step()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.initialize_run"><code class="docutils literal notranslate"><span class="pre">DirectReconstruction.initialize_run()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection.calculate_Z_gradient_individual"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.calculate_Z_gradient_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection.calculate_Z_newton_direction"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.calculate_Z_newton_direction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection.update_individual"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.update_individual()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.pie_method"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.pie_method</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.calculate_PIE_descent_direction_m"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.calculate_PIE_descent_direction_m()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.update_individual"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.update_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.calculate_PIE_newton_direction"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.calculate_PIE_newton_direction()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.COPRA"><code class="docutils literal notranslate"><span class="pre">COPRA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.COPRA.update_individual"><code class="docutils literal notranslate"><span class="pre">COPRA.update_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.COPRA.get_Z_gradient_individual"><code class="docutils literal notranslate"><span class="pre">COPRA.get_Z_gradient_individual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.classic_algorithms_2dsi.COPRA.get_Z_newton_direction"><code class="docutils literal notranslate"><span class="pre">COPRA.get_Z_newton_direction()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-twodsi.general_algorithms_2dsi">twodsi.general_algorithms_2dsi module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.DifferentialEvolution"><code class="docutils literal notranslate"><span class="pre">DifferentialEvolution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.DifferentialEvolution.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">DifferentialEvolution.get_pulses_from_population()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.Evosax"><code class="docutils literal notranslate"><span class="pre">Evosax</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.Evosax.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">Evosax.get_pulses_from_population()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.LSF"><code class="docutils literal notranslate"><span class="pre">LSF</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.LSF.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">LSF.get_pulses_from_population()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.LSF.convert_population"><code class="docutils literal notranslate"><span class="pre">LSF.convert_population()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.AutoDiff"><code class="docutils literal notranslate"><span class="pre">AutoDiff</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.AutoDiff.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">AutoDiff.get_pulses_from_population()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#twodsi.general_algorithms_2dsi.AutoDiff.make_pulse_from_individual"><code class="docutils literal notranslate"><span class="pre">AutoDiff.make_pulse_from_individual()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-twodsi">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vampire.html">vampire package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulate_trace.html">simulate_trace package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="real_fields.html">real_fields package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">utilities</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PulseRetrievalwithJAX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">twodsi package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/twodsi.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="twodsi-package">
+<h1>twodsi package<a class="headerlink" href="#twodsi-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-twodsi.classic_algorithms_2dsi">
+<span id="twodsi-classic-algorithms-2dsi-module"></span><h2>twodsi.classic_algorithms_2dsi module<a class="headerlink" href="#module-twodsi.classic_algorithms_2dsi" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.classic_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">DirectReconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AlgorithmsBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>Reconstructs a 2DSI trace non-iteratively by extracting the relative phase of the fringes for each frequency. Inherits from AlgorithmsBASE and RetrievePulses2DSI.</p>
+<ol class="upperalpha simple" start="10">
+<li><ol class="upperalpha simple" start="18">
+<li><p>Birge et al., Opt. Lett. 31, 2063-2065, 10.1364/OL.31.002063 (2006)</p></li>
+</ol>
+</li>
+</ol>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.integration_method">
+<span class="sig-name descname"><span class="pre">integration_method</span></span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.integration_method" title="Link to this definition"></a></dt>
+<dd><p>str, the integration method for the group delay. Has to be one of cumsum or euler_maclaurin_n</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.integration_order">
+<span class="sig-name descname"><span class="pre">integration_order</span></span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.integration_order" title="Link to this definition"></a></dt>
+<dd><p>None or int, the euler_maclaurin order</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.windowing">
+<span class="sig-name descname"><span class="pre">windowing</span></span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.windowing" title="Link to this definition"></a></dt>
+<dd><p>bool or str, windowing type for the FFT. Can be one of False, hamming or hann.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.cut_off_intensity_for_GD">
+<span class="sig-name descname"><span class="pre">cut_off_intensity_for_GD</span></span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.cut_off_intensity_for_GD" title="Link to this definition"></a></dt>
+<dd><p>float, a cut-off which sets the GD to zero for smaller intensities. (Needed for stable numerics)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.apply_windowing">
+<span class="sig-name descname"><span class="pre">apply_windowing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.apply_windowing" title="Link to this definition"></a></dt>
+<dd><p>Applies a windowing on a signal along a given axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.interpolate_group_delay_onto_spectral_amplitude">
+<span class="sig-name descname"><span class="pre">interpolate_group_delay_onto_spectral_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spectral_phase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.interpolate_group_delay_onto_spectral_amplitude" title="Link to this definition"></a></dt>
+<dd><p>The group delay is obtained on the wrong position on the frequency axis. This is solved by shifted/interpolation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.reconstruct_2dsi_1dfft">
+<span class="sig-name descname"><span class="pre">reconstruct_2dsi_1dfft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.reconstruct_2dsi_1dfft" title="Link to this definition"></a></dt>
+<dd><p>Performs the standard 2DSI reconstruction by integrating over the group delay.
+Which is obtained as the phase of an fft of the measured trace along the delay axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.calc_error_of_reconstruction">
+<span class="sig-name descname"><span class="pre">calc_error_of_reconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.calc_error_of_reconstruction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the error of the reconstruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.step" title="Link to this definition"></a></dt>
+<dd><p>Performs the reconstruction in one interation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descent_state</strong> – Pytree,</p></li>
+<li><p><strong>measurement_info</strong> – Pytree,</p></li>
+<li><p><strong>descent_info</strong> – Pytree,</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[Pytree, jnp.array], the updated descent state and the current errors</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.DirectReconstruction.initialize_run">
+<span class="sig-name descname"><span class="pre">initialize_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.DirectReconstruction.initialize_run" title="Link to this definition"></a></dt>
+<dd><p>Prepares all provided data and parameters for the reconstruction.
+Here the final shape/structure of descent_state, measurement_info and descent_info are determined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>population</strong> – Pytree, the initial guess as created by self.create_initial_population()</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[Pytree, Callable], the initial descent state and the step-function of the algorithm.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.GeneralizedProjection">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.classic_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">GeneralizedProjection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedProjectionBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The Generalized Projection Algorithm for 2DSI. Inherits from GeneralizedProjectionBASE and RetrievePulses2DSI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.GeneralizedProjection.calculate_Z_gradient_individual">
+<span class="sig-name descname"><span class="pre">calculate_Z_gradient_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection.calculate_Z_gradient_individual" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error gradient for an individual.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.GeneralizedProjection.calculate_Z_newton_direction">
+<span class="sig-name descname"><span class="pre">calculate_Z_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_or_diagonal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection.calculate_Z_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error newton direction for a population.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.GeneralizedProjection.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.GeneralizedProjection.update_individual" title="Link to this definition"></a></dt>
+<dd><p>Updates an individual based on a descent direction and step size.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.classic_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">PtychographicIterativeEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pie_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rPIE'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PtychographicIterativeEngineBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The Ptychographic Iterative Engine (PIE) for 2DSI. Inherits from PtychographicIterativeEngineBASE and RetrievePulses2DSI.</p>
+<p>Is not set up to be used for doubleblind. The PIE was not invented for reconstruction of interferometric signals.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.pie_method">
+<span class="sig-name descname"><span class="pre">pie_method</span></span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.pie_method" title="Link to this definition"></a></dt>
+<dd><p>None or str, specifies the PIE variant. Can be one of None, PIE, ePIE, rPIE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.calculate_PIE_descent_direction_m">
+<span class="sig-name descname"><span class="pre">calculate_PIE_descent_direction_m</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pie_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.calculate_PIE_descent_direction_m" title="Link to this definition"></a></dt>
+<dd><p>Calculates the PIE direction for a given shift.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.update_individual" title="Link to this definition"></a></dt>
+<dd><p>Updates an individual based on a descent direction and step size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.calculate_PIE_newton_direction">
+<span class="sig-name descname"><span class="pre">calculate_PIE_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_or_global_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_or_global</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.PtychographicIterativeEngine.calculate_PIE_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the PIE newton direction for a population.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.COPRA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.classic_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">COPRA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.COPRA" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">COPRABASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The Common Pulse Retrieval Algorithm (COPRA) for 2DSI. Inherits from COPRABASE and RetrievePulses2DSI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.COPRA.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.COPRA.update_individual" title="Link to this definition"></a></dt>
+<dd><p>Updates an individual via a descent direction and a step size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.COPRA.get_Z_gradient_individual">
+<span class="sig-name descname"><span class="pre">get_Z_gradient_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.COPRA.get_Z_gradient_individual" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error gradient for an individual.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.classic_algorithms_2dsi.COPRA.get_Z_newton_direction">
+<span class="sig-name descname"><span class="pre">get_Z_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_or_global_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_or_diagonal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.classic_algorithms_2dsi.COPRA.get_Z_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error newton direction for a population.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-twodsi.general_algorithms_2dsi">
+<span id="twodsi-general-algorithms-2dsi-module"></span><h2>twodsi.general_algorithms_2dsi module<a class="headerlink" href="#module-twodsi.general_algorithms_2dsi" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.DifferentialEvolution">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.general_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">DifferentialEvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.DifferentialEvolution" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DifferentialEvolutionBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The Differential Evolution Algorithm applied to 2DSI. Inherits from DifferentialEvolutionBASE and RetrievePulses2DSI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.DifferentialEvolution.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.DifferentialEvolution.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd><p>Calls get_pulses_t_from_population()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.Evosax">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.general_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">Evosax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.Evosax" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">EvosaxBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The Evosax package utilized for pulse reconstruction from 2DSI. Inherits from EvosaxBASE and RetrievePulses2DSI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.Evosax.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.Evosax.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd><p>Calls get_pulses_t_from_population()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.LSF">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.general_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">LSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.LSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LSFBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The LSF Algorithm applied to 2DSI. Inherits from LSFBASE and RetrievePulses2DSI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.LSF.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.LSF.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd><p>Returns the pulse and gate population. Does not need to call get_pulses_t_from_population() since LSF works with discetized fields only.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.LSF.convert_population">
+<span class="sig-name descname"><span class="pre">convert_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.LSF.convert_population" title="Link to this definition"></a></dt>
+<dd><p>Converts any population into a discretized one.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.AutoDiff">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">twodsi.general_algorithms_2dsi.</span></span><span class="sig-name descname"><span class="pre">AutoDiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.AutoDiff" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AutoDiffBASE</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></p>
+<p>The Optimistix package utilized for pulse reconstruction from 2DSI. Inherits from AutoDiffBASE and RetrievePulses2DSI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.AutoDiff.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.AutoDiff.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="twodsi.general_algorithms_2dsi.AutoDiff.make_pulse_from_individual">
+<span class="sig-name descname"><span class="pre">make_pulse_from_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#twodsi.general_algorithms_2dsi.AutoDiff.make_pulse_from_individual" title="Link to this definition"></a></dt>
+<dd><p>Evaluates a pulse/gate for an individual.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-twodsi">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-twodsi" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tdp.html" class="btn btn-neutral float-left" title="tdp package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vampire.html" class="btn btn-neutral float-right" title="vampire package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Till Stehling.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
