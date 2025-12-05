@@ -343,7 +343,7 @@ def integrate_signal_1D(signal, x, integration_method, integration_order):
         signal = jnp.cumsum(signal, axis=-1)*dx
         
     elif integration_method=="euler_maclaurin":
-        # one could use vamp instead of a for-loop -> no actually lax.scan because of recursive nature 
+        # one could use jax.lax.scan instead of a for-loop -> but its usually 1-2 iterations -> not worth it.
 
         n = integration_order
         bn = bernoulli(2*n)
@@ -775,7 +775,7 @@ def remove_phase_jumps(phase):
 
 
 
-def get_score_values(final_result, input_pulses, doubleblind=False, factor=-1):
+def get_score_values(final_result, input_pulses, gate=False, factor=-1):
     """
     Computes different error-metrics for a reconstructed pulse given the exact pulse is known and provided. 
     The error metrics are the maximum cross-correlation between reconstructed and exact pulse in the time and frequency domain. 
@@ -785,7 +785,7 @@ def get_score_values(final_result, input_pulses, doubleblind=False, factor=-1):
     """
     
     time, frequency = final_result.time, final_result.frequency
-    if doubleblind==True:
+    if gate==True:
         pulse_t, pulse_f = final_result.gate_t, final_result.gate_f
     else:
         pulse_t, pulse_f = final_result.pulse_t, final_result.pulse_f

@@ -75,7 +75,6 @@ class AlgorithmsBASE:
     def use_measured_spectrum(self, frequency, spectrum, pulse_or_gate="pulse"):
         """ 
         Needs to be called if a pulse spectrum is meant to be used in the reconstruction. 
-        Can be used via method-chaining. 
 
         Args:
             frequency: jnp.array, the frequency axis of spectrum
@@ -200,8 +199,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
 
     def shuffle_data_along_m(self, descent_state, measurement_info, descent_info):
         """ 
-        Some solvers randomize local iterations. This is done by through this method. 
-        It returns shuffled but consistent measurement data.
+        Some solvers randomize local iterations. This is done through this method. 
+        It returns shuffled but consistent(!) data.
         """
         descent_state.key, subkey=jax.random.split(descent_state.key, 2)
         keys = jax.random.split(subkey, descent_info.population_size)
@@ -213,8 +212,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
         transform_arr = jax.vmap(Partial(jnp.take, axis=0), in_axes=(None, 0), out_axes=1)(transform_arr, idx_arr)
         measured_trace = jax.vmap(Partial(jnp.take, axis=0), in_axes=(None, 0), out_axes=1)(measured_trace, idx_arr)
 
-        transform_arr=jnp.expand_dims(transform_arr, axis=2)
-        measured_trace=jnp.expand_dims(measured_trace, axis=2)
+        transform_arr = jnp.expand_dims(transform_arr, axis=2)
+        measured_trace = jnp.expand_dims(measured_trace, axis=2)
         return transform_arr, measured_trace, descent_state
 
 
@@ -247,7 +246,6 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
     def momentum(self, population_size, eta):
         """ 
         Needs to be called if momentum is meant to be used in the reconstruction. 
-        Can be used via method-chaining. 
 
         Args:
             population_size: int, is needed for some initialization 
@@ -266,15 +264,15 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
             self.descent_state = self.descent_state.expand(momentum = MyNamespace(pulse = MyNamespace(update_for_velocity_map=init_arr, velocity_map=init_arr), 
                                                                                   gate = MyNamespace(update_for_velocity_map=init_arr, velocity_map=init_arr)))
             
-            names_list = ["DifferentialEvolution", "Evosax", "LSF", "AutoDiff"]
+            #names_list = ["DifferentialEvolution", "Evosax", "LSF", "AutoDiff"]
             if self.name=="COPRA" or self.name=="PtychographicIterativeEngine":
                 self._local_step = self.local_step
                 self._global_step = self.global_step
                 self.local_step = Partial(self.do_step_and_apply_momentum, do_step = self._local_step)
                 self.global_step = Partial(self.do_step_and_apply_momentum, do_step = self._global_step)
                 
-            elif any([self.name==name for name in names_list])==True:
-                pass
+            # elif any([self.name==name for name in names_list])==True:
+            #     pass
 
             else:
                 self._step = self.step
@@ -326,7 +324,8 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         fd_grad: bool or int,
         amplitude_or_intensity: str,
         error_metric: Callable,
-        bspline_info: Pytree,
+        make_bsplines_phase: Callable,
+        make_bsplines_amp: Callable,
     
     """
 
@@ -397,10 +396,10 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
         classical_guess_types=["random", "random_phase", "constant", "constant_phase"]
         if any([guess==phase_type for guess in classical_guess_types])==True:
-            phase_type = "discrete"
+            phase_type = "continuous"
             
         if any([guess==amp_type for guess in classical_guess_types])==True:
-            amp_type = "discrete"
+            amp_type = "continuous"
         
         self.descent_info = self.descent_info.expand(population_size=population_size, phase_type=phase_type, amp_type=amp_type)
         return population
@@ -515,7 +514,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
                                   "sinusoidal": self.sinusoidal_phase,
                                   "sigmoidal": self.tanh_phase,
                                   "bsplines": self.bspline_phase,
-                                  "discrete": self.discrete_phase}
+                                  "continuous": self.discrete_phase}
         
         spectral_phase_func = spectral_phase_func_dict[descent_info.phase_type]
         return spectral_phase_func(coefficients, central_f, measurement_info)
@@ -527,7 +526,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
         amp_func_dict={"gaussian": self.gaussian_amplitude,
                        "lorentzian": self.lorentzian_amplitude,
                        "bsplines": self.bspline_amplitude,
-                       "discrete": self.discrete_amplitude}
+                       "continuous": self.discrete_amplitude}
             
         amp_func = amp_func_dict[descent_info.amp_type]
         amp_f = amp_func(coefficients, measurement_info)

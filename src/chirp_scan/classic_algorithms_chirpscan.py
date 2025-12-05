@@ -15,14 +15,16 @@ from src.core.gradients.chirpscan_z_error_gradients import calculate_Z_gradient
 from src.core.hessians.chirpscan_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
 from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
-
 from src.core.phase_matrix_funcs import phase_func_dict, calc_GDD
 
 
 
-
-# this implementation should be correct, but the algorithm doesnt seem to work.
 class MIIPS(ClassicAlgorithmsBASE, RetrievePulsesCHIRPSCAN):
+    """
+    The (improoved)-MIIPS Algorithm as described in A. Comin et al., Opt. Express 24, 2505-2512 (2016).
+    Doesnt seem to work though.
+    
+    """
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_type=None, chirp_parameters=None, **kwargs):
         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, phase_type=phase_type, chirp_parameters=chirp_parameters, **kwargs)
 
@@ -122,7 +124,8 @@ class MIIPS(ClassicAlgorithmsBASE, RetrievePulsesCHIRPSCAN):
 class Basic(ClassicAlgorithmsBASE, RetrievePulsesCHIRPSCAN):
     """
     The Basic Reconstruction Algorithm. Inherits from ClassicAlgorithmsBASE and RetrievePulsesCHIRPSCAN.
-    As described in Miguel Miranda et al., J. Opt. Soc. Am. B 34, 190-197 (2017) 
+    
+    M. Miranda et al., J. Opt. Soc. Am. B 34, 190-197 (2017) 
 
     Attributes:
         None

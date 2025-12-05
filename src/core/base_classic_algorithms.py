@@ -130,6 +130,9 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
     """
     Implements the Generalized Projection Algorithm. Inherits from ClassicalAlgorithmsBASE.
 
+    K. W. DeLong et al., Opt. Lett. 19, 2152-2154 (1994) 
+
+    
     Attributes:
         no_steps_descent: int, the numer of descent steps per iteration
 
@@ -390,6 +393,9 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
     """
     Implements a version of the Ptychographic Iterative Engine (PIE). Inherits from ClassicalAlgorithmsBASE.
 
+    A. Maiden et al., Optica 4, 736-745 (2017) 
+    T. Schweizer, "Time-Domain Ptychography and its Applications in Ultrafast Science", PhD Thesis, Bern (2021)
+
     Attributes:
         alpha: float,
 
@@ -445,6 +451,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         get_descent_direction = Partial(self.calculate_PIE_descent_direction_m, population=population, pie_method=pie_method, 
                                         measurement_info=measurement_info, descent_info=descent_info, pulse_or_gate=pulse_or_gate)
 
+        # in some cases the signal_t contains a leaf with a mismatching shape the vmap call below
         leafs, treedef = jax.tree.flatten(signal_t)
         map_list = []
         for leaf in leafs:
@@ -798,6 +805,9 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
 class COPRABASE(ClassicAlgorithmsBASE):
     """
     Implements a version of the Common Pulse Retrieval Algorithm (COPRA). Inherits from ClassicAlgorithmsBASE.
+
+    N. C. Geib, Optica 6, 495-505 (2019) 
+    
 
     Attributes:
         No attributes beyond ClassicalAlgorithmsBASE.

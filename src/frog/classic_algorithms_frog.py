@@ -23,6 +23,11 @@ from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
     """
     The Vanilla-FROG Algorithm as described by R. Trebino. Inherits from ClassicAlgorithmsBASE and RetrievePulsesFROG.
+
+    R. Trebino, "Frequency-Resolved Optical Gating: The Measurement of Ultrashort Laser Pulses", 10.1007/978-1-4615-1181-6 (2000)
+
+
+
     """
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
@@ -131,8 +136,10 @@ class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 class LSGPA(Vanilla):
     # this could actually be a standalone classic algorithm. But its probably not worth it.
     """
-    The Least-Squares Generalized Projection Algorithm as described by J. Gagnon et al., Appl. Phys. B 92, 25-32 (2008). https://doi.org/10.1007/s00340-008-3063-x
-    Inherits from Vanilla.
+    The Least-Squares Generalized Projection Algorithm. Inherits from Vanilla.
+     
+    J. Gagnon et al., Appl. Phys. B 92, 25-32, 10.1007/s00340-008-3063-x (2008)
+    
     """
     def __init__(self, delay, frequency, measured_trace, nonlinear_method, cross_correlation=False, **kwargs):
         super().__init__(delay, frequency, measured_trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
@@ -196,7 +203,17 @@ class LSGPA(Vanilla):
 
 
 class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
+    """
+    The Constrained-PCGP-Algorithms. Inherits from ClassicAlgorithmsBASE and RetrievePulsesFROG.
 
+    D. J. Kane and A. B. Vakhtin, Prog. Quantum Electron. 81 (100364), 10.1016/j.pquantelec.2021.100364 (2022)
+
+    Attributes:
+        constraints: bool, if true the operator based constraints are used.
+        svd: bool, if true a full SVD is performed instead of a single iteration of the power method
+        antialias: bool, if true anti-aliasing is applied to the outer-product-matrix-form
+    
+    """
     def __init__(self, delay, frequency, trace, nonlinear_method, cross_correlation=False, **kwargs):
         super().__init__(delay, frequency, trace, nonlinear_method, cross_correlation=cross_correlation, **kwargs)
         assert self.ifrog==False, "PCGPA is not intended for interferometric measurements."
@@ -212,12 +229,14 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         self.antialias = False
 
 
-    def do_anti_alias(self,opf, half_N):
+    def do_anti_alias(self, opf, half_N):
+        """ Performs anti-aliasing to the opf by setting a lower and upper an triangle to zero. """
         opf = opf - jnp.tril(opf, -half_N) - jnp.triu(opf, half_N)
         return opf
 
     
     def calculate_opf(self, pulse_t, gate, pulse_t_prime, gate_prime, iteration, nonlinear_method, measurement_info):
+        """ Calculates the opf given a pulse and gate. """
         if nonlinear_method=="shg" or nonlinear_method=="thg":
             opf = jnp.outer(pulse_t, gate) + jnp.outer(pulse_t_prime, gate) + jnp.outer(pulse_t, gate_prime)
         elif nonlinear_method=="pg" or nonlinear_method=="sd":
@@ -238,12 +257,14 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         return jnp.roll(row, idx)
     
     def convert_opf_to_signal_t(self, opf, idx_arr):
-        temp = self.shift_rows(opf,-idx_arr)
+        """ Transforms opf to signal field, by shifting along the time axis. Switching and flipping the two halfs around. """
+        temp = self.shift_rows(opf, -idx_arr)
         signal_t = jnp.roll(jnp.fliplr(jnp.fft.fftshift(temp,axes=1)), 1, axis=1)
         return signal_t
     
 
     def calculate_signal_t_using_opf(self, individual, iteration, measurement_info, descent_info):
+        """ Calculates signal_t for and individual via the opf. """
         idx_arr = measurement_info.idx_arr
 
         pulse_t, pulse_t_prime = individual.pulse, individual.pulse_prime
@@ -273,7 +294,8 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
     def convert_signal_t_to_opf(self, signal_t, idx_arr):
-        signal_t = jnp.transpose(signal_t)
+        """ Converts a signal field into an opf by reversing the operations from  convert_opf_to_signal_t(). """
+        signal_t = jnp.transpose(signal_t) # is needed since calculate_signal_t_using_opf() applies a transpose.
         signal_t = jnp.roll(signal_t, -1, axis=1)
         temp = jnp.fft.fftshift(jnp.fliplr(signal_t), axes=1)
         opf = self.shift_rows(temp, idx_arr)
@@ -281,6 +303,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
     def decompose_opf(self, opf, pulse_t, gate, measurement_info, descent_info):
+        """ Decomposes the opf into its dominant components via an SVD or the Power-Method. """
         if descent_info.svd==True:
             U, S, Vh = jnp.linalg.svd(opf)
             pulse_t = U[:,0]
@@ -309,6 +332,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
     
 
     def impose_constraints(self, pulse_t, gate, opf, measurement_info):
+        """ Applies additional constraints according to the operator formalism of PCGP. """
         # these are the additional constraints in C-PCGPA
             # opf maps from gate to pulse_t_prime
             # opf^dagger maps from pulse_t to gate_prime
@@ -339,7 +363,8 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
 
-    def update_population(self, opf, individual, measurement_info, descent_info):
+    def update_individual(self, opf, individual, measurement_info, descent_info):
+        """ Updates and individual using an updated opf. """
         pulse_t, gate = individual.pulse, individual.gate
 
         if measurement_info.cross_correlation==True:
@@ -365,6 +390,18 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
     def step(self, descent_state, measurement_info, descent_info):
+        """ 
+        Performs one iteration of the C-PCGP Algorithm. 
+
+        Args:
+            descent_state: Pytree,
+            measurement_info: Pytree,
+            descent_info: Pytree,
+        
+        Returns:
+            tuple[Pytree, jnp.array], the updated descent state and the current errors
+
+        """
         sk, rn, idx_arr, measured_trace = measurement_info.sk, measurement_info.rn, measurement_info.idx_arr, measurement_info.measured_trace
         population, iteration = descent_state.population, descent_state.iteration
 
@@ -381,7 +418,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
             half_N = jnp.size(opf[0])//2
             opf = self.do_anti_alias(opf, half_N)
 
-        population = jax.vmap(self.update_population, in_axes=(0,0,None,None))(opf, population, measurement_info, descent_info)
+        population = jax.vmap(self.update_individual, in_axes=(0,0,None,None))(opf, population, measurement_info, descent_info)
 
         descent_state = tree_at(lambda x: x.population, descent_state, population)
         descent_state = tree_at(lambda x: x.iteration, descent_state, iteration+1)
@@ -391,6 +428,18 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
     def initialize_run(self, population):
+        """
+        Prepares all provided data and parameters for the reconstruction. 
+        Here the final shape/structure of descent_state, measurement_info and descent_info are determined. 
+
+        Args:
+            population: Pytree, the initial guess as created by self.create_initial_population()
+        
+        Returns:
+            tuple[Pytree, Callable], the initial descent state and the step-function of the algorithm.
+
+        """
+
         measurement_info = self.measurement_info
 
         s_prime_params = initialize_S_prime_params(self)
@@ -415,6 +464,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
     def post_process_create_trace(self, individual):
+        """ For PCGP the trace is constructed using the opf. """
         iteration = self.descent_state.iteration
         sk, rn = self.measurement_info.sk, self.measurement_info.rn
 

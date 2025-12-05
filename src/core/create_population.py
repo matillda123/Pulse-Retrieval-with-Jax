@@ -165,7 +165,7 @@ def bspline_guess_phase(key, population, shape, measurement_info):
     return key, population
     
 
-def discrete_guess_phase(key, population, shape, measurement_info):
+def continuous_discrete_guess_phase(key, population, shape, measurement_info):
     frequency = measurement_info.frequency
     key, subkey = jax.random.split(key, 2)
     keys = jax.random.split(subkey, shape[0])
@@ -190,7 +190,7 @@ def gaussian_or_lorentzian_guess(key, population, shape, measurement_info):
 
 
 
-def discrete_guess_amp(key, population, shape, measurement_info):
+def continuous_discrete_guess_amp(key, population, shape, measurement_info):
     key, subkey = jax.random.split(key, 2)
 
     amp = get_initial_amp(measurement_info)
@@ -236,7 +236,7 @@ def create_phase(key, phase_type, population, shape, measurement_info):
                                 "sinusoidal": sinusoidal_guess,
                                 "sigmoidal": sigmoidal_guess,
                                 "bsplines": bspline_guess_phase,
-                                "discrete": discrete_guess_phase,
+                                "continuous": continuous_discrete_guess_phase,
                                 "random": Partial(general_phase, phase_type="random"),
                                 "random_phase": Partial(general_phase, phase_type="random_phase"),
                                 "constant": Partial(general_phase, phase_type="constant"),
@@ -250,7 +250,7 @@ def create_amp(key, amp_type, population, shape, measurement_info):
     amp_guess_func_dict = {"gaussian": gaussian_or_lorentzian_guess,
                             "lorentzian": gaussian_or_lorentzian_guess,
                             "bsplines": bspline_guess_amp,
-                            "discrete": discrete_guess_amp,
+                            "continuous": continuous_discrete_guess_amp,
                             "random": Partial(general_amp, amp_type="random"),
                             "random_phase": Partial(general_amp, amp_type="random_phase"),
                             "constant": Partial(general_amp, amp_type="constant"),

@@ -258,7 +258,7 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
 def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, pulse_t_shifted_m, gate_shifted_m, deltaS_m, 
                                               frogmethod, cross_correlation, ifrog):
     
-    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    """ Sum over time axis via jax.lax.scan. """
     
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
@@ -310,7 +310,7 @@ def calc_Z_error_pseudo_hessian_one_m(dummy, exp_arr_m, pulse_t_shifted_m, gate_
 
 
 def calc_Z_error_pseudo_hessian_all_m(pulse_t, pulse_t_shifted, gate_shifted, deltaS, tau_arr, measurement_info, full_or_diagonal, pulse_or_gate, is_tdp):
-    """ jax.vmap over delays """
+    """ Loop over shifts to get hessian for each. Does not use jax.vmap because of memory limits. """
 
     time, omega = measurement_info.time, 2*jnp.pi*measurement_info.frequency
     cross_correlation, ifrog, frogmethod = measurement_info.cross_correlation, measurement_info.ifrog, measurement_info.nonlinear_method
@@ -369,7 +369,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, pulse_t_shifted, gate_s
     # vmap over population here -> only for small populations since memory will explode. 
     calc_hessian = Partial(calc_Z_error_pseudo_hessian_all_m, is_tdp=False)
     hessian_m=jax.vmap(calc_hessian, in_axes=(0,0,0,0,0,None,None,None))(pulse_t, pulse_t_shifted, gate_shifted, deltaS, 
-                                                                                                tau_arr, measurement_info, full_or_diagonal, pulse_or_gate)
+                                                                        tau_arr, measurement_info, full_or_diagonal, pulse_or_gate)
     
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)
 

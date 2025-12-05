@@ -12,7 +12,7 @@ from src.utilities import scan_helper, calculate_newton_direction
 
 
 def PIE_get_pseudo_hessian_element(probe_k, probe_j, time_k, time_j, omega, signal_f, measured_trace):
-    """ Sum over frequency axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    """ Sum over frequency axis via jax.lax.scan."""
 
     D_arr_kj=jnp.exp(1j*omega*(time_k-time_j))
 
@@ -41,7 +41,7 @@ def PIE_get_pseudo_hessian_one_m(dummy, probe, signal_f, measured_trace, measure
 
 
 def PIE_get_pseudo_hessian_all_m(probe_all_m, signal_f, measured_trace, measurement_info, use_hessian):
-    """ jax.vmap over delays/shifts """
+    """ Loop over delays/shifts to get hessian for each. Does not use jax.vmap because of memory limits. """
     get_hessian = Partial(PIE_get_pseudo_hessian_one_m, measurement_info=measurement_info, use_hessian=use_hessian)
     
     xs = (probe_all_m, signal_f, measured_trace)

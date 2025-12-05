@@ -253,6 +253,7 @@ class MakeTraceBASE:
         return time, frequency, self.trace, spectra
 
 
+
     def plot_trace(self, time, pulse_t, frequency, pulse_f, x_arr, frequency_trace, trace, spectra):
         
         fig=plt.figure(figsize=(18,8))

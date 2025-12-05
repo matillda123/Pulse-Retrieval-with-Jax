@@ -40,7 +40,7 @@ def calc_Z_error_pseudo_hessian_subelement_pg(pulse_t_dispersed, deltaS_m, D_arr
 
 
 def calc_Z_error_pseudo_hessian_element(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time, pulse_t_dispersed, deltaS_m, nonlinear_method):
-    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    """ Sum over time axis via jax.lax.scan. """
     
     D_arr_pn=jnp.exp(1j*time*(omega_p-omega_n))
 
@@ -76,7 +76,7 @@ def calc_Z_error_pseudo_hessian_one_m(dummy, exp_arr_m, pulse_t_dispersed, delta
 
 
 def calc_Z_error_pseudo_hessian_all_m(pulse_t_dispersed, deltaS, phase_matrix, measurement_info, full_or_diagonal):
-    """ jax.vmap over shifts """
+    """ Loop over shifts to get hessian for each. Does not use jax.vmap because of memory limits. """
     time, omega, nonlinear_method = measurement_info.time, 2*jnp.pi*measurement_info.frequency, measurement_info.nonlinear_method
 
     exp_arr = jnp.exp(-1j*phase_matrix)

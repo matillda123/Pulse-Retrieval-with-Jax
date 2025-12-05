@@ -231,8 +231,7 @@ class DifferentialEvolutionBASE(GeneralOptimizationBASE):
         Performs the evolutionary selection process for two populations. Currently selection_mechanism can be greedy or global.
 
         greedy: implements a pairwise comparison between individuals of the two population, where always the individual with the higher fitness is selected.
-        global: implements a comparison/ranking between all individuals of both populations. The next generation is selected via randomized sampling 
-                based on a Fermi-Distribution. A "temperature" allows tuning of this selection process. 
+        global: implements a comparison/ranking between all individuals of both populations. The next generation is selected via randomized sampling based on a Fermi-Distribution. A "temperature" allows tuning of this selection process. 
         
         """
 
@@ -360,6 +359,7 @@ class DifferentialEvolutionBASE(GeneralOptimizationBASE):
 class EvosaxBASE(GeneralOptimizationBASE):
     """
     Employs the evosax package to perform the optimization. Inherits from GeneralOptimizationBASE.
+    Robert Tjarko Lange, evosax: JAX-based Evolution Strategies, arXiv preprint arXiv:2212.04180 (2022)
 
     Attributes:
         solver: evosax-solver,
@@ -544,6 +544,9 @@ class LSFBASE(GeneralOptimizationBASE):
 
     The algorithm is not implemented for the optimization of parametrized populations. Instead a population is always evaluated on the time/frequency axis
     and thus optimized in its discretized form.
+
+
+    C. O. Krook and V. Pasiskevicius, Opt. Express 33, 33258-33269 (2025) 
 
     Attributes:
         number_of_bisection_iterations: int,
@@ -786,7 +789,7 @@ class LSFBASE(GeneralOptimizationBASE):
 
         """
 
-        if self.descent_info.amp_type!="discrete" or self.descent_info.phase_type!="discrete":
+        if self.descent_info.amp_type!="continuous" or self.descent_info.phase_type!="continuous":
             print("LSF is only implemented for amp_type=discrete, phase_type=discrete and converts the populations accordingly.")
 
         self.initialize_general_optimizer(population)
@@ -848,6 +851,9 @@ class AutoDiffBASE(GeneralOptimizationBASE):
     """
     Employs the optimistix package to perform the optimization via Automatic-Differentiation. Inherits from GeneralOptimizationBASE.
     Is not implemented to optimize over a population. Instead only one individual is optimized.
+
+    J. Rader, T. Lyons and P.Kidger, Optimistix: modular optimisation in JAX and Equinox, arXiv:2402.09983 (2024)
+    DeepMind et al., The DeepMind JAX Ecosystem, http://github.com/google-deepmind (2020)
 
     Attributes:
         solver: optimistix/optax-solver,

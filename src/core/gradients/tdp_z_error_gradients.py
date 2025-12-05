@@ -5,8 +5,8 @@ from .frog_z_error_gradients import calculate_Z_gradient as calculate_Z_gradient
 
 def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_shifted, tau_arr, measurement_info, pulse_or_gate, is_tdp=True):
     """
-    Calculates the Z-error gradient with respect to the pulse or the gate-pulse for a given FROG measurement. 
-    The gradient is calculated in the frequency domain.
+    Calculates the Z-error gradient with respect to the pulse or the gate-pulse for a given 
+    Time-Domain-Ptychography measurement. The gradient is calculated in the frequency domain.
 
     Args:
         signal_t: jnp.array, the current signal field

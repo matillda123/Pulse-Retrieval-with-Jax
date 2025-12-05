@@ -29,8 +29,8 @@ use_measured_spectrum = (False, True, True, False, False)
 fd_grad = (False, 0, 1, False, False)
 amplitude_or_intensity = ("intensity", "amplitude", 3, 0.25, 1.5)
 
-amp_type = ("gaussian", "lorentzian", "bsplines_5", "discrete", "gaussian")
-phase_type = ("polynomial", "sinusoidal", "sigmoidal", "bsplines_5", "discrete")
+amp_type = ("gaussian", "lorentzian", "bsplines_5", "continuous", "gaussian")
+phase_type = ("polynomial", "sinusoidal", "sigmoidal", "bsplines_5", "continuous")
 
 parameters_measurement = (delay, frequency, trace, spectra, gate)
 

@@ -457,27 +457,6 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class RetrievePulsesVAMPIREwithRealFields(RetrievePulsesVAMPIRE):
     """ 
     Inherits from RetrievePulses2DSI. Has the same purpose. It overwrites the generation of the 

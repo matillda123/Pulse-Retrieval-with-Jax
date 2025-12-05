@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.chirp_scan package &mdash; PulseRetrievalwithJAX 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PulseRetrievalwithJAX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">src.chirp_scan package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-src.chirp_scan.classic_algorithms_chirpscan">src.chirp_scan.classic_algorithms_chirpscan module</a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic"><code class="docutils literal notranslate"><span class="pre">Basic</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.None"><code class="docutils literal notranslate"><span class="pre">Basic.None</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.initialize_run"><code class="docutils literal notranslate"><span class="pre">Basic.initialize_run()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.step"><code class="docutils literal notranslate"><span class="pre">Basic.step()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.update_pulse"><code class="docutils literal notranslate"><span class="pre">Basic.update_pulse()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA"><code class="docutils literal notranslate"><span class="pre">COPRA</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA.get_Z_gradient_individual"><code class="docutils literal notranslate"><span class="pre">COPRA.get_Z_gradient_individual()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA.get_Z_newton_direction"><code class="docutils literal notranslate"><span class="pre">COPRA.get_Z_newton_direction()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA.update_individual"><code class="docutils literal notranslate"><span class="pre">COPRA.update_individual()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_gradient_individual"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.calculate_Z_gradient_individual()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_newton_direction"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.calculate_Z_newton_direction()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.update_individual"><code class="docutils literal notranslate"><span class="pre">GeneralizedProjection.update_individual()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS"><code class="docutils literal notranslate"><span class="pre">MIIPS</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.calc_approximate_phase_individual"><code class="docutils literal notranslate"><span class="pre">MIIPS.calc_approximate_phase_individual()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.initialize_run"><code class="docutils literal notranslate"><span class="pre">MIIPS.initialize_run()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.step"><code class="docutils literal notranslate"><span class="pre">MIIPS.step()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.update_individual"><code class="docutils literal notranslate"><span class="pre">MIIPS.update_individual()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.pie_method"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.pie_method</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.calculate_PIE_descent_direction_m"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.calculate_PIE_descent_direction_m()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.calculate_PIE_newton_direction"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.calculate_PIE_newton_direction()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.reverse_transform_grad"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.reverse_transform_grad()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.update_individual"><code class="docutils literal notranslate"><span class="pre">PtychographicIterativeEngine.update_individual()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-src.chirp_scan.general_algorithms_chirpscan">src.chirp_scan.general_algorithms_chirpscan module</a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.AutoDiff"><code class="docutils literal notranslate"><span class="pre">AutoDiff</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.AutoDiff.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">AutoDiff.get_pulses_from_population()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.AutoDiff.make_pulse_from_individual"><code class="docutils literal notranslate"><span class="pre">AutoDiff.make_pulse_from_individual()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.DifferentialEvolution"><code class="docutils literal notranslate"><span class="pre">DifferentialEvolution</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.DifferentialEvolution.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">DifferentialEvolution.get_pulses_from_population()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.Evosax"><code class="docutils literal notranslate"><span class="pre">Evosax</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.Evosax.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">Evosax.get_pulses_from_population()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.LSF"><code class="docutils literal notranslate"><span class="pre">LSF</span></code></a><ul>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.LSF.convert_population"><code class="docutils literal notranslate"><span class="pre">LSF.convert_population()</span></code></a></li>
+<li><a class="reference internal" href="#src.chirp_scan.general_algorithms_chirpscan.LSF.get_pulses_from_population"><code class="docutils literal notranslate"><span class="pre">LSF.get_pulses_from_population()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-src.chirp_scan">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PulseRetrievalwithJAX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">src.chirp_scan package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/src.chirp_scan.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="src-chirp-scan-package">
+<h1>src.chirp_scan package<a class="headerlink" href="#src-chirp-scan-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-src.chirp_scan.classic_algorithms_chirpscan">
+<span id="src-chirp-scan-classic-algorithms-chirpscan-module"></span><h2>src.chirp_scan.classic_algorithms_chirpscan module<a class="headerlink" href="#module-src.chirp_scan.classic_algorithms_chirpscan" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.Basic">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.classic_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">Basic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_classes_algorithms.ClassicAlgorithmsBASE" title="src.core.base_classes_algorithms.ClassicAlgorithmsBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicAlgorithmsBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Basic Reconstruction Algorithm. Inherits from ClassicAlgorithmsBASE and RetrievePulsesCHIRPSCAN.</p>
+<ol class="upperalpha simple" start="13">
+<li><p>Miranda et al., J. Opt. Soc. Am. B 34, 190-197 (2017)</p></li>
+</ol>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.Basic.None">
+<span class="sig-name descname"><span class="pre">None</span></span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.None" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.Basic.initialize_run">
+<span class="sig-name descname"><span class="pre">initialize_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.initialize_run" title="Link to this definition"></a></dt>
+<dd><p>Prepares all provided data and parameters for the reconstruction.
+Here the final shape/structure of descent_state, measurement_info and descent_info are determined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>population</strong> – Pytree, the initial guess as created by self.create_initial_population()</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[Pytree, Callable], the initial descent state and the step-function of the algorithm.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.Basic.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.step" title="Link to this definition"></a></dt>
+<dd><p>Performs one iteration of the Basic Algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descent_state</strong> – Pytree,</p></li>
+<li><p><strong>measurement_info</strong> – Pytree,</p></li>
+<li><p><strong>descent_info</strong> – Pytree,</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[Pytree, jnp.array], the updated descent state and the current errors</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.Basic.update_pulse">
+<span class="sig-name descname"><span class="pre">update_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.Basic.update_pulse" title="Link to this definition"></a></dt>
+<dd><p>Creates an updated guess for the pulse.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.COPRA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.classic_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">COPRA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_classic_algorithms.COPRABASE" title="src.core.base_classic_algorithms.COPRABASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">COPRABASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Common Pulse Retrieval Algorithm (COPRA) for Chirp-Scans. Inherits from COPRABASE and  RetrievePulsesCHIRPSCAN.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.COPRA.get_Z_gradient_individual">
+<span class="sig-name descname"><span class="pre">get_Z_gradient_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA.get_Z_gradient_individual" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error gradient for an individual.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.COPRA.get_Z_newton_direction">
+<span class="sig-name descname"><span class="pre">get_Z_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_or_global_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_or_diagonal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA.get_Z_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error newton direction for a population.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.COPRA.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.COPRA.update_individual" title="Link to this definition"></a></dt>
+<dd><p>Updates an individual based on a desent direction and a step size.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.classic_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">GeneralizedProjection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_classic_algorithms.GeneralizedProjectionBASE" title="src.core.base_classic_algorithms.GeneralizedProjectionBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralizedProjectionBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Generalized Projection Algorithm for Chirp-Scans. Inherits from GeneralizedProjectionBASE and RetrievePulsesCHIRPSCAN.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_gradient_individual">
+<span class="sig-name descname"><span class="pre">calculate_Z_gradient_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_gradient_individual" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error gradient for an individual.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_newton_direction">
+<span class="sig-name descname"><span class="pre">calculate_Z_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_or_diagonal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error newton direction for a population.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.update_individual" title="Link to this definition"></a></dt>
+<dd><p>Updates an individual based on a descent direction and a step size.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.MIIPS">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.classic_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">MIIPS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_classes_algorithms.ClassicAlgorithmsBASE" title="src.core.base_classes_algorithms.ClassicAlgorithmsBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicAlgorithmsBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The (improoved)-MIIPS Algorithm as described in A. Comin et al., Opt. Express 24, 2505-2512 (2016).
+Doesnt seem to work though.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.MIIPS.calc_approximate_phase_individual">
+<span class="sig-name descname"><span class="pre">calc_approximate_phase_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.calc_approximate_phase_individual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.MIIPS.initialize_run">
+<span class="sig-name descname"><span class="pre">initialize_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.initialize_run" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.MIIPS.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.step" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.MIIPS.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_prime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.MIIPS.update_individual" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.classic_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">PtychographicIterativeEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pie_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rPIE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_classic_algorithms.PtychographicIterativeEngineBASE" title="src.core.base_classic_algorithms.PtychographicIterativeEngineBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">PtychographicIterativeEngineBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Ptychographic Iterative Engine (PIE) for Chirp-Scans. Inherits from PtychographicIterativeEngineBASE and RetrievePulsesCHIRPSCAN.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.pie_method">
+<span class="sig-name descname"><span class="pre">pie_method</span></span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.pie_method" title="Link to this definition"></a></dt>
+<dd><p>None or str, specifies the PIE variant. Can be one of None, PIE, ePIE, rPIE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.calculate_PIE_descent_direction_m">
+<span class="sig-name descname"><span class="pre">calculate_PIE_descent_direction_m</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix_m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pie_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.calculate_PIE_descent_direction_m" title="Link to this definition"></a></dt>
+<dd><p>Calculates the PIE direction for a given shift.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.calculate_PIE_newton_direction">
+<span class="sig-name descname"><span class="pre">calculate_PIE_newton_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_or_global_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_or_global</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.calculate_PIE_newton_direction" title="Link to this definition"></a></dt>
+<dd><p>Calculates the PIE newton direction for a population.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.reverse_transform_grad">
+<span class="sig-name descname"><span class="pre">reverse_transform_grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.reverse_transform_grad" title="Link to this definition"></a></dt>
+<dd><p>For Chirp-Scan the effects of the phase matrix have to be undone to obtain the actual PIE-direction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.update_individual">
+<span class="sig-name descname"><span class="pre">update_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.classic_algorithms_chirpscan.PtychographicIterativeEngine.update_individual" title="Link to this definition"></a></dt>
+<dd><p>Updates an individual based on a descent direction and a step size.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-src.chirp_scan.general_algorithms_chirpscan">
+<span id="src-chirp-scan-general-algorithms-chirpscan-module"></span><h2>src.chirp_scan.general_algorithms_chirpscan module<a class="headerlink" href="#module-src.chirp_scan.general_algorithms_chirpscan" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.AutoDiff">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.general_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">AutoDiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.AutoDiff" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_general_optimization.AutoDiffBASE" title="src.core.base_general_optimization.AutoDiffBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoDiffBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Optimistix package utilized for pulse reconstruction from Chirp-Scans. Inherits from AutoDiffBASE and RetrievePulsesCHIRPSCAN.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.AutoDiff.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.AutoDiff.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.AutoDiff.make_pulse_from_individual">
+<span class="sig-name descname"><span class="pre">make_pulse_from_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.AutoDiff.make_pulse_from_individual" title="Link to this definition"></a></dt>
+<dd><p>Evaluates a pulse/gate for an individual.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.DifferentialEvolution">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.general_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">DifferentialEvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.DifferentialEvolution" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_general_optimization.DifferentialEvolutionBASE" title="src.core.base_general_optimization.DifferentialEvolutionBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">DifferentialEvolutionBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Differential Evolution Algorithm applied to Chirp-Scans. Inherits from DifferentialEvolutionBASE and RetrievePulsesCHIRPSCAN.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.DifferentialEvolution.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.DifferentialEvolution.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd><p>Calls get_pulses_f_from_population()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.Evosax">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.general_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">Evosax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.Evosax" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_general_optimization.EvosaxBASE" title="src.core.base_general_optimization.EvosaxBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">EvosaxBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The Evosax package utilized for pulse reconstruction from Chirp-Scans. Inherits from EvosaxBASE and RetrievePulsesCHIRPSCAN.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.Evosax.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.Evosax.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd><p>Calls get_pulses_f_from_population()</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.LSF">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.chirp_scan.general_algorithms_chirpscan.</span></span><span class="sig-name descname"><span class="pre">LSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chirp_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.LSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.core.html#src.core.base_general_optimization.LSFBASE" title="src.core.base_general_optimization.LSFBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">LSFBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<p>The LSF Algorithm applied to Chrip-Scans. Inherits from LSFBASE and RetrievePulsesCHIRPSCAN.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.LSF.convert_population">
+<span class="sig-name descname"><span class="pre">convert_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.LSF.convert_population" title="Link to this definition"></a></dt>
+<dd><p>Converts any population into a discretized one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.chirp_scan.general_algorithms_chirpscan.LSF.get_pulses_from_population">
+<span class="sig-name descname"><span class="pre">get_pulses_from_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.chirp_scan.general_algorithms_chirpscan.LSF.get_pulses_from_population" title="Link to this definition"></a></dt>
+<dd><p>Returns the pulse and gate population. Does not need to call get_pulses_f_from_population() since LSF works with discetized fields only.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-src.chirp_scan">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src.chirp_scan" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Till Stehling.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

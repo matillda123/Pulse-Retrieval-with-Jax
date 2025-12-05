@@ -1,0 +1,695 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.simulate_trace package &mdash; PulseRetrievalwithJAX 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PulseRetrievalwithJAX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">src.simulate_trace package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-src.simulate_trace.make_pulse">src.simulate_trace.make_pulse module</a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.CustomPulse"><code class="docutils literal notranslate"><span class="pre">CustomPulse</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.CustomPulse.amplitude"><code class="docutils literal notranslate"><span class="pre">CustomPulse.amplitude</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.CustomPulse.frequency"><code class="docutils literal notranslate"><span class="pre">CustomPulse.frequency</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.CustomPulse.phase"><code class="docutils literal notranslate"><span class="pre">CustomPulse.phase</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.GaussianAmplitude"><code class="docutils literal notranslate"><span class="pre">GaussianAmplitude</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.GaussianAmplitude.amplitude"><code class="docutils literal notranslate"><span class="pre">GaussianAmplitude.amplitude</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.GaussianAmplitude.central_frequency"><code class="docutils literal notranslate"><span class="pre">GaussianAmplitude.central_frequency</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.GaussianAmplitude.fwhm"><code class="docutils literal notranslate"><span class="pre">GaussianAmplitude.fwhm</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse"><code class="docutils literal notranslate"><span class="pre">MakePulse</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.N"><code class="docutils literal notranslate"><span class="pre">MakePulse.N</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.Delta_f"><code class="docutils literal notranslate"><span class="pre">MakePulse.Delta_f</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.gaussian"><code class="docutils literal notranslate"><span class="pre">MakePulse.gaussian()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.generate_gaussian_amplitude"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_gaussian_amplitude()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.generate_polynomial_phase"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_polynomial_phase()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.generate_pulse"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.generate_sinusoidal_phase"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_sinusoidal_phase()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.get_spectral_amplitude"><code class="docutils literal notranslate"><span class="pre">MakePulse.get_spectral_amplitude()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.get_spectral_phase"><code class="docutils literal notranslate"><span class="pre">MakePulse.get_spectral_phase()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse.init_generation"><code class="docutils literal notranslate"><span class="pre">MakePulse.init_generation()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MultiPulse"><code class="docutils literal notranslate"><span class="pre">MultiPulse</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MultiPulse.amplitude"><code class="docutils literal notranslate"><span class="pre">MultiPulse.amplitude</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MultiPulse.central_frequency"><code class="docutils literal notranslate"><span class="pre">MultiPulse.central_frequency</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MultiPulse.delay"><code class="docutils literal notranslate"><span class="pre">MultiPulse.delay</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MultiPulse.duration"><code class="docutils literal notranslate"><span class="pre">MultiPulse.duration</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.MultiPulse.phase"><code class="docutils literal notranslate"><span class="pre">MultiPulse.phase</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.PolynomialPhase"><code class="docutils literal notranslate"><span class="pre">PolynomialPhase</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.PolynomialPhase.central_frequency"><code class="docutils literal notranslate"><span class="pre">PolynomialPhase.central_frequency</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.PolynomialPhase.coefficients"><code class="docutils literal notranslate"><span class="pre">PolynomialPhase.coefficients</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.RandomPhase"><code class="docutils literal notranslate"><span class="pre">RandomPhase</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.RandomPhase.maxval_phase"><code class="docutils literal notranslate"><span class="pre">RandomPhase.maxval_phase</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.RandomPhase.minval_phase"><code class="docutils literal notranslate"><span class="pre">RandomPhase.minval_phase</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.RandomPhase.number_of_points"><code class="docutils literal notranslate"><span class="pre">RandomPhase.number_of_points</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.RandomPhase.sigma"><code class="docutils literal notranslate"><span class="pre">RandomPhase.sigma</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.SinusoidalPhase"><code class="docutils literal notranslate"><span class="pre">SinusoidalPhase</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.SinusoidalPhase.amplitude"><code class="docutils literal notranslate"><span class="pre">SinusoidalPhase.amplitude</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.SinusoidalPhase.periodicity"><code class="docutils literal notranslate"><span class="pre">SinusoidalPhase.periodicity</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_pulse.SinusoidalPhase.phase_shift"><code class="docutils literal notranslate"><span class="pre">SinusoidalPhase.phase_shift</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-src.simulate_trace.make_trace">src.simulate_trace.make_trace module</a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse"><code class="docutils literal notranslate"><span class="pre">MakePulse</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse.maketrace"><code class="docutils literal notranslate"><span class="pre">MakePulse.maketrace</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse.generate_2dsi"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_2dsi()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse.generate_chirpscan"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_chirpscan()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse.generate_frog"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_frog()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse.generate_tdp"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_tdp()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakePulse.generate_vampire"><code class="docutils literal notranslate"><span class="pre">MakePulse.generate_vampire()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSI"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSI</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSI.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSI.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSI.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSI.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSI.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSI.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSIReal"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSIReal</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSIReal.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSIReal.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSIReal.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTrace2DSIReal.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE"><code class="docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE.generate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceBASE.generate_trace()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE.plot_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceBASE.plot_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN"><code class="docutils literal notranslate"><span class="pre">MakeTraceCHIRPSCAN</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.get_dispersed_pulse_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceCHIRPSCAN.get_dispersed_pulse_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceCHIRPSCAN.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceCHIRPSCAN.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCANReal"><code class="docutils literal notranslate"><span class="pre">MakeTraceCHIRPSCANReal</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROG"><code class="docutils literal notranslate"><span class="pre">MakeTraceFROG</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROG.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTraceFROG.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROG.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceFROG.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROG.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceFROG.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROGReal"><code class="docutils literal notranslate"><span class="pre">MakeTraceFROGReal</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROGReal.calculate_shifted_signal"><code class="docutils literal notranslate"><span class="pre">MakeTraceFROGReal.calculate_shifted_signal()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDP"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDP</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDP.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDP.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDP.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDP.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDP.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDP.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDPReal"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDPReal</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDPReal.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDPReal.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDPReal.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDPReal.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceTDPReal.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceTDPReal.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIRE</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIRE.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIRE.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIRE.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIREReal</span></code></a><ul>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal.get_gate_pulse"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIREReal.get_gate_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal.get_parameters_to_make_signal_t"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIREReal.get_parameters_to_make_signal_t()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal.interpolate_trace"><code class="docutils literal notranslate"><span class="pre">MakeTraceVAMPIREReal.interpolate_trace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.apply_noise"><code class="docutils literal notranslate"><span class="pre">apply_noise()</span></code></a></li>
+<li><a class="reference internal" href="#src.simulate_trace.make_trace.interpolate_spectrum"><code class="docutils literal notranslate"><span class="pre">interpolate_spectrum()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-src.simulate_trace">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PulseRetrievalwithJAX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">src.simulate_trace package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/src.simulate_trace.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="src-simulate-trace-package">
+<h1>src.simulate_trace package<a class="headerlink" href="#src-simulate-trace-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-src.simulate_trace.make_pulse">
+<span id="src-simulate-trace-make-pulse-module"></span><h2>src.simulate_trace.make_pulse module<a class="headerlink" href="#module-src.simulate_trace.make_pulse" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.CustomPulse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">CustomPulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.CustomPulse" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.CustomPulse.amplitude">
+<span class="sig-name descname"><span class="pre">amplitude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.CustomPulse.amplitude" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.CustomPulse.frequency">
+<span class="sig-name descname"><span class="pre">frequency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.CustomPulse.frequency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.CustomPulse.phase">
+<span class="sig-name descname"><span class="pre">phase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.CustomPulse.phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.GaussianAmplitude">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">GaussianAmplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_frequency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.GaussianAmplitude" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.GaussianAmplitude.amplitude">
+<span class="sig-name descname"><span class="pre">amplitude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.GaussianAmplitude.amplitude" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.GaussianAmplitude.central_frequency">
+<span class="sig-name descname"><span class="pre">central_frequency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.GaussianAmplitude.central_frequency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.GaussianAmplitude.fwhm">
+<span class="sig-name descname"><span class="pre">fwhm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.GaussianAmplitude.fwhm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">MakePulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Delta_f</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Is supposed to generate pulses based on input parameters from GaussianAmplitude, PolynomialPhase, SinusoidalPhase, RandomPhase, CustomPulse or MultiPulse.
+Does not work with Jax.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.N">
+<span class="sig-name descname"><span class="pre">N</span></span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.N" title="Link to this definition"></a></dt>
+<dd><p>int,</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.Delta_f">
+<span class="sig-name descname"><span class="pre">Delta_f</span></span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.Delta_f" title="Link to this definition"></a></dt>
+<dd><p>float,</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.gaussian">
+<span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.gaussian" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.generate_gaussian_amplitude">
+<span class="sig-name descname"><span class="pre">generate_gaussian_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fwhm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.generate_gaussian_amplitude" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.generate_polynomial_phase">
+<span class="sig-name descname"><span class="pre">generate_polynomial_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.generate_polynomial_phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.generate_pulse">
+<span class="sig-name descname"><span class="pre">generate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.generate_pulse" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.generate_sinusoidal_phase">
+<span class="sig-name descname"><span class="pre">generate_sinusoidal_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.generate_sinusoidal_phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.get_spectral_amplitude">
+<span class="sig-name descname"><span class="pre">get_spectral_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amp_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.get_spectral_amplitude" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.get_spectral_phase">
+<span class="sig-name descname"><span class="pre">get_spectral_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phase_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_f</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.get_spectral_phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MakePulse.init_generation">
+<span class="sig-name descname"><span class="pre">init_generation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MakePulse.init_generation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MultiPulse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">MultiPulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_frequency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.MultiPulse" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MultiPulse.amplitude">
+<span class="sig-name descname"><span class="pre">amplitude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.MultiPulse.amplitude" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MultiPulse.central_frequency">
+<span class="sig-name descname"><span class="pre">central_frequency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.MultiPulse.central_frequency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MultiPulse.delay">
+<span class="sig-name descname"><span class="pre">delay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.MultiPulse.delay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MultiPulse.duration">
+<span class="sig-name descname"><span class="pre">duration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.MultiPulse.duration" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.MultiPulse.phase">
+<span class="sig-name descname"><span class="pre">phase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.MultiPulse.phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.PolynomialPhase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">PolynomialPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_frequency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficients</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.PolynomialPhase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.PolynomialPhase.central_frequency">
+<span class="sig-name descname"><span class="pre">central_frequency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.PolynomialPhase.central_frequency" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.PolynomialPhase.coefficients">
+<span class="sig-name descname"><span class="pre">coefficients</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.PolynomialPhase.coefficients" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.RandomPhase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">RandomPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minval_phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-12.566370614359172</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxval_phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">12.566370614359172</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.RandomPhase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.RandomPhase.maxval_phase">
+<span class="sig-name descname"><span class="pre">maxval_phase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12.566370614359172</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.RandomPhase.maxval_phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.RandomPhase.minval_phase">
+<span class="sig-name descname"><span class="pre">minval_phase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-12.566370614359172</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.RandomPhase.minval_phase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.RandomPhase.number_of_points">
+<span class="sig-name descname"><span class="pre">number_of_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.RandomPhase.number_of_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.RandomPhase.sigma">
+<span class="sig-name descname"><span class="pre">sigma</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10.0</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.RandomPhase.sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.SinusoidalPhase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_pulse.</span></span><span class="sig-name descname"><span class="pre">SinusoidalPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">periodicity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_shift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_pulse.SinusoidalPhase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.SinusoidalPhase.amplitude">
+<span class="sig-name descname"><span class="pre">amplitude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.SinusoidalPhase.amplitude" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.SinusoidalPhase.periodicity">
+<span class="sig-name descname"><span class="pre">periodicity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.SinusoidalPhase.periodicity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_pulse.SinusoidalPhase.phase_shift">
+<span class="sig-name descname"><span class="pre">phase_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#src.simulate_trace.make_pulse.SinusoidalPhase.phase_shift" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-src.simulate_trace.make_trace">
+<span id="src-simulate-trace-make-trace-module"></span><h2>src.simulate_trace.make_trace module<a class="headerlink" href="#module-src.simulate_trace.make_trace" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakePulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_pulse.MakePulse" title="src.simulate_trace.make_pulse.MakePulse"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakePulse</span></code></a></p>
+<p>Simulates measurement traces based in input pulses.
+Inherits from make_pulse.MakePulse.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse.maketrace">
+<span class="sig-name descname"><span class="pre">maketrace</span></span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse.maketrace" title="Link to this definition"></a></dt>
+<dd><p>None, MakeTraceFROG, MakeTraceCHIRPSCAN or MakeTrace2DSI,</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse.generate_2dsi">
+<span class="sig-name descname"><span class="pre">generate_2dsi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_stuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_pulse_anc1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse.generate_2dsi" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse.generate_chirpscan">
+<span class="sig-name descname"><span class="pre">generate_chirpscan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_stuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse.generate_chirpscan" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse.generate_frog">
+<span class="sig-name descname"><span class="pre">generate_frog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_stuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ifrog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse.generate_frog" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse.generate_tdp">
+<span class="sig-name descname"><span class="pre">generate_tdp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_stuff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ifrog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse.generate_tdp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakePulse.generate_vampire">
+<span class="sig-name descname"><span class="pre">generate_vampire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate=(None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N=256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_stuff=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val=0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_fields=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_interferometer=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_thickness=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refractive_index=&lt;refractiveindex.refractiveindex.RefractiveIndexMaterial</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakePulse.generate_vampire" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTrace2DSI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_pulse_anc1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_thickness=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refractive_index=&lt;refractiveindex.refractiveindex.RefractiveIndexMaterial</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="src.simulate_trace.make_trace.MakeTraceBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulses2DSI" title="src.core.base_classes_methods.RetrievePulses2DSI"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSI</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSI.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSI.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSI.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSI.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSI.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSI.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSIReal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTrace2DSIReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSIReal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.real_fields.html#src.real_fields.base_classes_methods.RetrievePulses2DSIwithRealFields" title="src.real_fields.base_classes_methods.RetrievePulses2DSIwithRealFields"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulses2DSIwithRealFields</span></code></a>, <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTrace2DSI" title="src.simulate_trace.make_trace.MakeTrace2DSI"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTrace2DSI</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSIReal.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSIReal.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTrace2DSIReal.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTrace2DSIReal.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceBASE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceBASE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceBASE.generate_trace">
+<span class="sig-name descname"><span class="pre">generate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceBASE.generate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceBASE.plot_trace">
+<span class="sig-name descname"><span class="pre">plot_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectra</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceBASE.plot_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceCHIRPSCAN">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceCHIRPSCAN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="src.simulate_trace.make_trace.MakeTraceBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesCHIRPSCAN" title="src.core.base_classes_methods.RetrievePulsesCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCAN</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.get_dispersed_pulse_t">
+<span class="sig-name descname"><span class="pre">get_dispersed_pulse_t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.get_dispersed_pulse_t" title="Link to this definition"></a></dt>
+<dd><p>Applies phase-matrix to a signal.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceCHIRPSCANReal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceCHIRPSCANReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCANReal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.real_fields.html#src.real_fields.base_classes_methods.RetrievePulsesCHIRPSCANwithRealFields" title="src.real_fields.base_classes_methods.RetrievePulsesCHIRPSCANwithRealFields"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesCHIRPSCANwithRealFields</span></code></a>, <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceCHIRPSCAN" title="src.simulate_trace.make_trace.MakeTraceCHIRPSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceCHIRPSCAN</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceFROG">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceFROG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ifrog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceFROG" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="src.simulate_trace.make_trace.MakeTraceBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesFROG" title="src.core.base_classes_methods.RetrievePulsesFROG"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesFROG</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceFROG.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceFROG.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceFROG.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceFROG.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceFROG.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceFROG.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceFROGReal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceFROGReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceFROGReal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.real_fields.html#src.real_fields.base_classes_methods.RetrievePulsesFROGwithRealFields" title="src.real_fields.base_classes_methods.RetrievePulsesFROGwithRealFields"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesFROGwithRealFields</span></code></a>, <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceFROG" title="src.simulate_trace.make_trace.MakeTraceFROG"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceFROG</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceFROGReal.calculate_shifted_signal">
+<span class="sig-name descname"><span class="pre">calculate_shifted_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">0,</span> <span class="pre">None,</span> <span class="pre">None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceFROGReal.calculate_shifted_signal" title="Link to this definition"></a></dt>
+<dd><p>The Fourier-Shift theorem applied to a list of signals.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceTDP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ifrog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDP" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="src.simulate_trace.make_trace.MakeTraceBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesTDP" title="src.core.base_classes_methods.RetrievePulsesTDP"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesTDP</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDP.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDP.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDP.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDP.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDP.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDP.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDPReal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceTDPReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ifrog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_filter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDPReal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="src.simulate_trace.make_trace.MakeTraceBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a>, <a class="reference internal" href="src.real_fields.html#src.real_fields.base_classes_methods.RetrievePulsesTDPwithRealFields" title="src.real_fields.base_classes_methods.RetrievePulsesTDPwithRealFields"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesTDPwithRealFields</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDPReal.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDPReal.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDPReal.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDPReal.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceTDPReal.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceTDPReal.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIRE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceVAMPIRE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonlinear_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_time_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_correlation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate_fft_conform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_off_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_interferometer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_thickness=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refractive_index=&lt;refractiveindex.refractiveindex.RefractiveIndexMaterial</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceBASE" title="src.simulate_trace.make_trace.MakeTraceBASE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceBASE</span></code></a>, <a class="reference internal" href="src.core.html#src.core.base_classes_methods.RetrievePulsesVAMPIRE" title="src.core.base_classes_methods.RetrievePulsesVAMPIRE"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesVAMPIRE</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIRE.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIRE.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIRE.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIREReal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">MakeTraceVAMPIREReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="src.real_fields.html#src.real_fields.base_classes_methods.RetrievePulsesVAMPIREwithRealFields" title="src.real_fields.base_classes_methods.RetrievePulsesVAMPIREwithRealFields"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrievePulsesVAMPIREwithRealFields</span></code></a>, <a class="reference internal" href="#src.simulate_trace.make_trace.MakeTraceVAMPIRE" title="src.simulate_trace.make_trace.MakeTraceVAMPIRE"><code class="xref py py-class docutils literal notranslate"><span class="pre">MakeTraceVAMPIRE</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIREReal.get_gate_pulse">
+<span class="sig-name descname"><span class="pre">get_gate_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate_f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal.get_gate_pulse" title="Link to this definition"></a></dt>
+<dd><p>For crosscorrelation=True the actual gate pulse has to be provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIREReal.get_parameters_to_make_signal_t">
+<span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.MakeTraceVAMPIREReal.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.MakeTraceVAMPIREReal.interpolate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.apply_noise">
+<span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">apply_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additive_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicative_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.apply_noise" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.simulate_trace.make_trace.interpolate_spectrum">
+<span class="sig-prename descclassname"><span class="pre">src.simulate_trace.make_trace.</span></span><span class="sig-name descname"><span class="pre">interpolate_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.simulate_trace.make_trace.interpolate_spectrum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-src.simulate_trace">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src.simulate_trace" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Till Stehling.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

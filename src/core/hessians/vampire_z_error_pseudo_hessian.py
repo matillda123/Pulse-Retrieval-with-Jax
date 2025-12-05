@@ -11,7 +11,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, gate_pulses, gate, sign
                                         newton_state, newton_info, full_or_diagonal, pulse_or_gate):
     
     """
-    Calculates the pseudo-newton direction for the Z-error of a 2DSI measurement.
+    Calculates the pseudo-newton direction for the Z-error of a VAMPIRE measurement.
     The direction is calculated in the frequency domain.
 
     Args:
@@ -22,6 +22,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, gate_pulses, gate, sign
         signal_t: jnp.array, the current signal field
         signal_t_new: jnp.array, the current signal field projected onto the measured intensity
         tau_arr: jnp.array, the applied delays
+        gd_correction: jnp.array, group delay correction for a material dispersion
         measurement_info: Pytree, contains measurement data and parameters
         newton_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
         newton_info: Pytree, contains parameters for the pseudo-newton direction calculation
@@ -42,7 +43,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, gate_pulses, gate, sign
     # vmap over population here -> only for small populations since memory will explode. 
     calc_hessian = Partial(calc_Z_error_pseudo_hessian_all_m, is_vampire=True)
     hessian_m=jax.vmap(calc_hessian, in_axes=(0,0,0,0,0,0,None,None,None))(pulse_t, gate_pulses, gate, deltaS, 
-                                                                                                tau_arr, gd_correction, measurement_info, full_or_diagonal, pulse_or_gate)
+                                                                            tau_arr, gd_correction, measurement_info, full_or_diagonal, pulse_or_gate)
 
     return calculate_newton_direction(grad_m, hessian_m, lambda_lm, newton_direction_prev, solver, full_or_diagonal)
         

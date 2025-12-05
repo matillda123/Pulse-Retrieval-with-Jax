@@ -139,7 +139,7 @@ class RetrievePulses:
             self.key, subkey = jax.random.split(self.key, 2)
             gate_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
         else:
-            gate_f_arr=None
+            gate_f_arr = None
 
         self.descent_info = self.descent_info.expand(population_size=population_size)
         return pulse_f_arr, gate_f_arr
@@ -365,6 +365,8 @@ class RetrievePulses:
 class RetrievePulsesFROG(RetrievePulses):
     """
     The reconstruction class for FROG. Inherits from RetrievePulses.
+
+    R. Trebino, "Frequency-Resolved Optical Gating: The Measurement of Ultrashort Laser Pulses", 10.1007/978-1-4615-1181-6 (2000)
 
     Attributes:
         tau_arr: jnp.array, the delays
@@ -605,12 +607,106 @@ class RetrievePulsesFROG(RetrievePulses):
 
 
 
+class RetrievePulsesTDP(RetrievePulsesFROG):
+    """
+    The reconstruction class for Time-Domain-Ptychography. Inherits from RetrievePulsesFROG.
+
+    D. Spangenberg et al., Phys. Rev. A 91, 021803(R), 10.1103/PhysRevA.91.021803 (2015)
+
+    Attributes:
+        spectral_filter: jnp.array,
+
+    """
+
+    def __init__(self, delay, frequency, measured_trace, nonlinear_method, spectral_filter=None, **kwargs):
+        super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
+
+        if spectral_filter==None:
+            self.spectral_filter = jnp.ones(jnp.size(self.frequency))
+            print("If spectral_filter=None, then TDP is the same as FROG.")
+        else:
+            self.spectral_filter = spectral_filter
+
+        self.measurement_info = self.measurement_info.expand(spectral_filter=self.spectral_filter)
+        
+
+
+    def apply_spectral_filter(self, signal, spectral_filter, sk, rn):
+        """ Apply a spectral filter to a signal. """
+        signal_f = self.fft(signal, sk, rn)
+        signal_f = signal_f*spectral_filter
+        signal = self.ifft(signal_f, sk, rn)
+        return signal
+    
+
+    def calculate_signal_t(self, individual, tau_arr, measurement_info):
+        """
+        Calculates the signal field of TDP in the time domain. 
+
+        Args:
+            individual: Pytree, a population containing only one member. (jax.vmap over whole population)
+            tau_arr: jnp.array, the delays
+            measurement_info: Pytree, contains the measurement parameters (e.g. nonlinear method, interferometric, ... )
+
+        Returns:
+            Pytree, contains the signal field in the time domain as well as the fields used to calculate it.
+        """
+
+        time, frequency = measurement_info.time, measurement_info.frequency
+        cross_correlation, doubleblind, ifrog = measurement_info.cross_correlation, measurement_info.doubleblind, measurement_info.ifrog
+        frogmethod = measurement_info.nonlinear_method
+
+        spectral_filter, sk, rn = measurement_info.spectral_filter, measurement_info.sk, measurement_info.rn
+
+        pulse, gate = individual.pulse, individual.gate
+        pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
+
+        if cross_correlation==True:
+            gate_pulse = measurement_info.gate
+            gate_pulse = self.apply_spectral_filter(gate_pulse, spectral_filter, sk, rn)
+            gate_pulse_shifted = self.calculate_shifted_signal(gate_pulse, frequency, tau_arr, time)
+            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
+
+        elif doubleblind==True:
+            gate = self.apply_spectral_filter(gate, spectral_filter, sk, rn)
+            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency, tau_arr, time)
+            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
+
+        else:
+            pulse_t_shifted = self.apply_spectral_filter(pulse_t_shifted, spectral_filter, sk, rn)
+            gate_pulse_shifted = None
+            gate_shifted = calculate_gate(pulse_t_shifted, frogmethod)
+
+
+        if ifrog==True and cross_correlation==False and doubleblind==False:
+            signal_t = (pulse + pulse_t_shifted)*calculate_gate(pulse + pulse_t_shifted, frogmethod)
+        elif ifrog==True:
+            signal_t = (pulse + gate_pulse_shifted)*calculate_gate(pulse + gate_pulse_shifted, frogmethod)
+        else:
+            signal_t = pulse*gate_shifted
+            
+
+        signal_t = MyNamespace(signal_t=signal_t, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
+        return signal_t
+
+
+
+
+
+
+
+
+
+
 
 
 
 class RetrievePulsesCHIRPSCAN(RetrievePulses):
     """
     The reconstruction class for Chirp-Scan methods. Inherits from RetrievePulses.
+
+    V. V. Lozovoy et al., Optics Letters 29, 775-777 (2004)
+    M. Miranda et al., Opt. Express 20, 18732-18743 (2012) 
 
     Attributes:
         z_arr: jnp.array, the shifts
@@ -796,9 +892,14 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
     """
     The reconstruction class for 2DSI. Inherits from RetrievePulsesFROG.
 
+    J. R. Birge et al., Opt. Lett. 31, 2063-2065 (2006) 
+
     Attributes:
-        anc1_frequency: float, the first ancillary frequency
-        anc2_frequency: float, the second ancillary frequency
+        spectral_filter1: jnp.array, 1st filter in interferometer 
+        spectral_filter2: jnp.array, 2nd filter in interferometer
+        tau_pulse_anc1: float, delay between 1st interferometer arm and exterior pulse
+        anc_frequency1: float, central frequency of pulse in 1st arm (calculated from max of spectral_filter1)
+        anc_frequency2: float, central frequency of pulse in 2nd arm (calculated from max of spectral_filter2)
         c0: float, the speed of light
         refractive_index: refractiveindex.RefractiveIndexMaterial, returns the refractive index for a material given a wavelength in um
         phase_matrix: jnp.array, a 2D-array with phase values that could potentially have been applied to a pulse
@@ -851,8 +952,9 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
     def apply_phase(self, pulse_t, measurement_info, sk, rn):
         """
-        For an auto-correlation 2DSI reconstruction one may need to consider effects of a beam splitter in the interferometer.
-        This applies a dispersion based on phase_matrix in order to achieve this.
+        For a 2DSI reconstruction one may need to consider effects of material dispersion in the interferometer.
+        This applies a dispersion based on phase_matrix in order to achieve this. 
+        In addition the dispersion may contain a group delay. This delay is estimated, corrected and returned as well.
         """
         idx0 = jnp.argmax(jnp.abs(pulse_t))
         
@@ -869,6 +971,7 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
     
 
     def apply_spectral_filter(self, signal, spectral_filter, sk, rn):
+        """ Apply a spectral filter to a signal. """
         signal_f = self.fft(signal, sk, rn)
         signal_f = signal_f*spectral_filter
         signal = self.ifft(signal_f, sk, rn)
@@ -924,125 +1027,14 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
 
 
-
-
-
-
-class RetrievePulsesTDP(RetrievePulsesFROG):
-    """
-    The reconstruction class for Time-Domain-Ptychography. Inherits from RetrievePulsesFROG.
-
-    Attributes:
-
-    """
-
-    def __init__(self, delay, frequency, measured_trace, nonlinear_method, spectral_filter=None, **kwargs):
-        super().__init__(delay, frequency, measured_trace, nonlinear_method, **kwargs)
-
-        if spectral_filter==None:
-            self.spectral_filter = jnp.ones(jnp.size(self.frequency))
-            print("If spectral_filter=None, then TDP is the same as FROG.")
-        else:
-            self.spectral_filter = spectral_filter
-
-        self.measurement_info = self.measurement_info.expand(spectral_filter=self.spectral_filter)
-        
-
-
-    def apply_spectral_filter(self, signal, spectral_filter, sk, rn):
-        signal_f = self.fft(signal, sk, rn)
-        signal_f = signal_f*spectral_filter
-        signal = self.ifft(signal_f, sk, rn)
-        return signal
-    
-
-    
-
-    def calculate_signal_t(self, individual, tau_arr, measurement_info):
-        """
-        Calculates the signal field of TDP in the time domain. 
-
-        Args:
-            individual: Pytree, a population containing only one member. (jax.vmap over whole population)
-            tau_arr: jnp.array, the delays
-            measurement_info: Pytree, contains the measurement parameters (e.g. nonlinear method, interferometric, ... )
-
-        Returns:
-            Pytree, contains the signal field in the time domain as well as the fields used to calculate it.
-        """
-
-        time, frequency = measurement_info.time, measurement_info.frequency
-        cross_correlation, doubleblind, ifrog = measurement_info.cross_correlation, measurement_info.doubleblind, measurement_info.ifrog
-        frogmethod = measurement_info.nonlinear_method
-
-        spectral_filter, sk, rn = measurement_info.spectral_filter, measurement_info.sk, measurement_info.rn
-
-
-        pulse, gate = individual.pulse, individual.gate
-        pulse_t_shifted = self.calculate_shifted_signal(pulse, frequency, tau_arr, time)
-
-        if cross_correlation==True:
-            gate_pulse = measurement_info.gate
-            gate_pulse = self.apply_spectral_filter(gate_pulse, spectral_filter, sk, rn)
-            gate_pulse_shifted = self.calculate_shifted_signal(gate_pulse, frequency, tau_arr, time)
-            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
-
-        elif doubleblind==True:
-            gate = self.apply_spectral_filter(gate, spectral_filter, sk, rn)
-            gate_pulse_shifted = self.calculate_shifted_signal(gate, frequency, tau_arr, time)
-            gate_shifted = calculate_gate(gate_pulse_shifted, frogmethod)
-
-        else:
-            pulse_t_shifted = self.apply_spectral_filter(pulse_t_shifted, spectral_filter, sk, rn)
-            gate_pulse_shifted = None
-            gate_shifted = calculate_gate(pulse_t_shifted, frogmethod)
-
-
-        if ifrog==True and cross_correlation==False and doubleblind==False:
-            signal_t = (pulse + pulse_t_shifted)*calculate_gate(pulse + pulse_t_shifted, frogmethod)
-        elif ifrog==True:
-            signal_t = (pulse + gate_pulse_shifted)*calculate_gate(pulse + gate_pulse_shifted, frogmethod)
-        else:
-            signal_t = pulse*gate_shifted
-            
-
-        signal_t = MyNamespace(signal_t=signal_t, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
-        return signal_t
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class RetrievePulsesVAMPIRE(RetrievePulsesFROG):
     """
     The reconstruction class for VAMPIRE. Inherits from RetrievePulsesFROG.
 
+    B. Seifert and H. Stolz, Meas. Sci. Technol. 20 (2009) 015303 (7pp), 10.1088/0957-0233/20/1/015303 (2008)
+
     Attributes:
+        tau_interferometer: float, delay of the interferometer arms
         c0: float, the speed of light
         refractive_index: refractiveindex.RefractiveIndexMaterial, returns the refractive index for a material given a wavelength in um
         phase_matrix: jnp.array, a 2D-array with phase values that could potentially have been applied to a pulse
@@ -1081,8 +1073,9 @@ class RetrievePulsesVAMPIRE(RetrievePulsesFROG):
 
     def apply_phase(self, pulse_t, measurement_info, sk, rn):
         """
-        For an auto-correlation 2DSI reconstruction one may need to consider effects of a beam splitter in the interferometer.
-        This applies a dispersion based on phase_matrix in order to achieve this.
+        For an VAMPIRE reconstruction one may need to consider effects of material dispersion in the interferometer.
+        This applies a dispersion based on phase_matrix in order to achieve this. 
+        In addition the dispersion may contain a group delay. This delay is estimated, corrected and returned as well.
         """
 
         idx0 = jnp.argmax(jnp.abs(pulse_t))

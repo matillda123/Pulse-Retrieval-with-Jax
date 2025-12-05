@@ -17,9 +17,9 @@ from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
     """ 
-    Reconstructs a 2DSI trace non-iteratively by extracting the relative phase of the fringes for each frequency.
-    As described in Jonathan R. Birge, Richard Ell, and Franz X. Kärtner, Opt. Lett. 31, 2063-2065 (2006)
-    Inherits from AlgorithmsBASE and RetrievePulses2DSI.
+    Reconstructs a 2DSI trace non-iteratively by extracting the relative phase of the fringes for each frequency. Inherits from AlgorithmsBASE and RetrievePulses2DSI.
+
+    J. R. Birge et al., Opt. Lett. 31, 2063-2065, 10.1364/OL.31.002063 (2006)
 
     Attributes:
         integration_method: str, the integration method for the group delay. Has to be one of cumsum or euler_maclaurin_n

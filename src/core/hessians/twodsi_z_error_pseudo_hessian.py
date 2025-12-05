@@ -108,7 +108,7 @@ def calc_Z_error_pseudo_hessian_subelement_sd_cross_correlation_gate(pulse_t, ga
 
 def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, gate_pulses_m, gate_m, deltaS_m, 
                                               nonlinear_method, cross_correlation):
-    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    """ Sum over time axis via jax.vmap. """
     
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
@@ -137,7 +137,7 @@ def calc_Z_error_pseudo_hessian_element_pulse(exp_arr_mp, exp_arr_mn, omega_p, o
 def calc_Z_error_pseudo_hessian_element_gate(exp_arr_mp, exp_arr_mn, omega_p, omega_n, time_k, pulse_t, gate_pulses_m, gate_m, deltaS_m, 
                                               nonlinear_method, cross_correlation):
     
-    """ Sum over time axis via jax.lax.scan. Does not use jax.vmap because of memory limits. """
+    """ Sum over time axis via jax.vmap """
     
     D_arr_pn=jnp.exp(1j*time_k*(omega_p-omega_n))
 
@@ -181,7 +181,7 @@ def calc_Z_error_pseudo_hessian_one_m(dummy, exp_arr_m, gate_pulses_m, gate_m, d
 
 
 def calc_Z_error_pseudo_hessian_all_m(pulse_t, gate_pulses, gate, deltaS, tau_arr, gd_correction, measurement_info, full_or_diagonal, pulse_or_gate, is_vampire):
-    """ jax.vmap along the delays """
+    """ Loop over shifts to get hessian for each. Does not use jax.vmap because of memory limits. """
     time, omega = measurement_info.time, 2*jnp.pi*measurement_info.frequency
     nonlinear_method = measurement_info.nonlinear_method
 
@@ -228,6 +228,7 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, gate_pulses, gate, sign
         signal_t: jnp.array, the current signal field
         signal_t_new: jnp.array, the current signal field projected onto the measured intensity
         tau_arr: jnp.array, the applied delays
+        gd_correction: jnp.array, group delay correction for material dispersion
         measurement_info: Pytree, contains measurement data and parameters
         newton_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
         newton_info: Pytree, contains parameters for the pseudo-newton direction calculation
