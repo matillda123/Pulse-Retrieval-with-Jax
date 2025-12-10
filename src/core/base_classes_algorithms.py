@@ -235,7 +235,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
         descent_state.key, subkey=jax.random.split(descent_state.key, 2)
         keys = jax.random.split(subkey, descent_info.population_size)
 
-        idx_arr=jax.vmap(jax.random.permutation, in_axes=(0,None))(keys, descent_info.idx_arr)
+        idx_arr = jnp.arange(jnp.shape(measurement_info.transform_arr)[0])   
+        idx_arr=jax.vmap(jax.random.permutation, in_axes=(0,None))(keys, idx_arr)
 
         transform_arr, measured_trace = measurement_info.transform_arr, measurement_info.measured_trace
         

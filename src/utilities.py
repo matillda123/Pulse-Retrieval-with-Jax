@@ -335,11 +335,11 @@ def get_sk_rn(time, frequency):
 
 
 
-def do_interpolation_1d(x_new, x, y, method="cubic"):
+def do_interpolation_1d(x_new, x, y, method="cubic", extrap=1e-12):
     """
     Wraps around interpax.interp1d
     """
-    y_new = interp1d(x_new, x, y, method=method, extrap=1e-12)
+    y_new = interp1d(x_new, x, y, method=method, extrap=extrap)
     return y_new
 
 
@@ -491,7 +491,7 @@ def calculate_Z_error(signal_t, signal_t_new):
 
 
 
-def generate_random_continuous_function(key, no_points, x, minval, maxval, distribution):
+def generate_random_continuous_function(key, no_points, x, minval, maxval, distribution, forced_vals=False, **kwargs):
     """
     Generates a 1D-array with random but continuous values. Uses on cubic inter/extrapolation of random values.
 
@@ -512,9 +512,13 @@ def generate_random_continuous_function(key, no_points, x, minval, maxval, distr
 
     p_arr = distribution/jnp.sum(distribution)
     x_rand = jnp.sort(jax.random.choice(key1, x, (no_points, ), replace=False, p=p_arr))
-    y_rand = jax.random.uniform(key2, (no_points, ), minval=minval, maxval=maxval)
 
-    y = do_interpolation_1d(x, x_rand, y_rand)
+    if forced_vals!=False:
+        xf = jnp.asarray(forced_vals) + jnp.mean(jnp.diff(x))*1e-2
+        x_rand = jnp.sort(jnp.concatenate((x_rand, xf)))
+        
+    y_rand = jax.random.uniform(key2, (jnp.size(x_rand), ), minval=minval, maxval=maxval)
+    y = do_interpolation_1d(x, x_rand, y_rand, **kwargs)
     return y
 
 

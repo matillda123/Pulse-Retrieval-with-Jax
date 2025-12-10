@@ -389,7 +389,7 @@ class RetrievePulsesFROG(RetrievePulses):
         self.gate = jnp.zeros(jnp.size(self.time))
 
         self.transform_arr = self.tau_arr
-        self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
+        #self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
         
 
         self.dt = jnp.mean(jnp.diff(self.time))
@@ -759,7 +759,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
 
 
         self.transform_arr = self.phase_matrix
-        self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
+        #self.idx_arr = jnp.arange(jnp.shape(self.transform_arr)[0])   
 
         self.measurement_info = self.measurement_info.expand(phase_matrix = self.phase_matrix,
                                                              transform_arr = self.transform_arr)

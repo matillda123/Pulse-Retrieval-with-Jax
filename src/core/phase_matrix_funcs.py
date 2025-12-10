@@ -5,8 +5,10 @@ import refractiveindex
 from scipy.constants import c as c0
 
 
+def get_parameters_material_scan(shelf="main", book="SiO2", page="Malitson"):
+    return refractiveindex.RefractiveIndexMaterial(shelf=shelf, book=book, page=page)
 
-parameters_material_scan = (refractiveindex.RefractiveIndexMaterial(shelf="main", book="SiO2", page="Malitson"), c0)
+
 def calculate_phase_matrix_material(measurement_info, parameters):
     """ 
     Calculates a phase matrix via material dispersion. Not differentiable due to usage of refractiveindex.
@@ -19,7 +21,7 @@ def calculate_phase_matrix_material(measurement_info, parameters):
         jnp.array, the calculated phase matrix
     """
     # z_arr needs to be in mm, is material thickness not translation
-    refractive_index, c0 = parameters
+    refractive_index = parameters
     z_arr, frequency = measurement_info.z_arr, measurement_info.frequency
 
     wavelength = c0/frequency*1e-6 # wavelength in nm
@@ -65,29 +67,11 @@ def calc_G_MIIPS_phase(omega, phase_shift, parameters):
 
 
 
-# def calc_taylor_phase(omega, phase_amp, parameters):
-#     n, central_frequency = parameters
-#     assert n>=2, "the phase should not include a linear component"
-#     return phase_amp*(omega-2*jnp.pi*central_frequency)**n
-
-
-
-def calc_taylor_phase(omega, phase_shift, parameters):
-    a, n, central_frequency = parameters
-    assert n>=2, "the phase should not include a linear component"
-    omega = omega-2*jnp.pi*central_frequency
-    return a*(omega+phase_shift)**n
-
-
-
-
-
 phase_func_dict = {"sine": calc_sine_phase,
                      "tanh": calc_tanh_phase,
                      "gaussian": calc_gaussian_phase,
                      "MIIPS": calc_MIIPS_phase,
-                     "GMIIPS": calc_G_MIIPS_phase,
-                     "taylor": calc_taylor_phase}
+                     "GMIIPS": calc_G_MIIPS_phase}
 
 
 

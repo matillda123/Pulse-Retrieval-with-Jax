@@ -731,9 +731,8 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
                                                      s_prime_params = s_prime_params,
 
                                                      xi = self.xi,
-                                                     adaptive_scaling = MyNamespace(_local=self.local_adaptive_scaling, _global=self.global_adaptive_scaling),
-                                                     
-                                                     idx_arr = self.idx_arr)
+                                                     adaptive_scaling = MyNamespace(_local=self.local_adaptive_scaling, _global=self.global_adaptive_scaling))
+                                                     #idx_arr = self.idx_arr)
         
         descent_info = self.descent_info
 
@@ -1080,7 +1079,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
                                                      newton = newton,
                                                      s_prime_params = s_prime_params,
                                                      adaptive_scaling = MyNamespace(_local=self.local_adaptive_scaling, _global=self.global_adaptive_scaling),
-                                                     idx_arr = self.idx_arr,
+                                                     #idx_arr = self.idx_arr,
                                                      conjugate_gradients = self.conjugate_gradients)
         descent_info = self.descent_info
 
