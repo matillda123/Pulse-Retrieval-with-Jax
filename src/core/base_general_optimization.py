@@ -44,7 +44,7 @@ class DifferentialEvolutionBASE(GeneralOptimizationBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "DifferentialEvolution"
+        self._name = "DifferentialEvolution"
 
         self.strategy = "best1_bin"
         self.mutation_rate = 0.5
@@ -369,7 +369,7 @@ class EvosaxBASE(GeneralOptimizationBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.name = "Evosax"
+        self._name = "Evosax"
         self.solver = None
         
 
@@ -558,7 +558,7 @@ class LSFBASE(GeneralOptimizationBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "LSF"
+        self._name = "LSF"
 
         self.number_of_bisection_iterations = 12
 
@@ -863,7 +863,7 @@ class AutoDiffBASE(GeneralOptimizationBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "AutoDiff"
+        self._name = "AutoDiff"
 
         self.solver = optimistix.BFGS
         self.alternating_optimization = False

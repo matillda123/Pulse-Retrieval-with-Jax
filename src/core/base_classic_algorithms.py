@@ -140,7 +140,7 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "GeneralizedProjection"
+        self._name = "GeneralizedProjection"
 
         self.local_gamma = None
         self.global_gamma = 1
@@ -241,8 +241,13 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
                                                                              Partial(self.calc_Z_error_for_linesearch, pulse_or_gate=pulse_or_gate),
                                                                              Partial(self.calc_Z_grad_for_linesearch, pulse_or_gate=pulse_or_gate), "_global")
         else:
-            gamma = jnp.broadcast_to(descent_info.gamma._global, (descent_info.population_size, ))
-
+            gamma = descent_info.gamma._global
+            if jnp.size(gamma)==1:
+                gamma = jnp.broadcast_to(gamma, (descent_info.population_size, ))
+            elif jnp.size(gamma)==descent_info.population_size:
+                pass
+            else:
+                raise ValueError(f"Size of gamma has to be 1 or the population size. Not {jnp.size(gamma)}")
 
         if newton_info=="lbfgs":
             lbfgs_state = update_lbfgs_state(lbfgs_state, gamma, grad_sum, descent_direction)
@@ -404,7 +409,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "PtychographicIterativeEngine"
+        self._name = "PtychographicIterativeEngine"
         self.alpha = 1.0
 
 
@@ -572,6 +577,12 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
             
         else:
             gamma = jnp.broadcast_to(getattr(descent_info.gamma, local_or_global), (descent_info.population_size, ))
+            if jnp.size(gamma)==1:
+                gamma = jnp.broadcast_to(gamma, (descent_info.population_size, ))
+            elif jnp.size(gamma)==descent_info.population_size:
+                pass
+            else:
+                raise ValueError(f"Size of {local_or_global} gamma has to be 1 or the population size. Not {jnp.size(gamma)}")
 
 
         if newton_info=="lbfgs":
@@ -812,7 +823,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.name = "COPRA"
+        self._name = "COPRA"
 
         self.global_gamma = 0.25
         self.r_global_method = "iteration"
@@ -921,7 +932,13 @@ class COPRABASE(ClassicAlgorithmsBASE):
                                                                             Partial(self.calc_Z_grad_for_linesearch, descent_info=descent_info, 
                                                                                     pulse_or_gate=pulse_or_gate), local_or_global)
         else:
-            gamma = jnp.broadcast_to(gamma, (descent_info.population_size, ))
+            if jnp.size(gamma)==1:
+                gamma = jnp.broadcast_to(gamma, (descent_info.population_size, ))
+            elif jnp.size(gamma)==descent_info.population_size:
+                pass
+            else:
+                raise ValueError(f"Size of {local_or_global} gamma has to be 1 or the population size. Not {jnp.size(gamma)}")
+            
 
         if newton_info=="lbfgs":
             lbfgs_state = update_lbfgs_state(lbfgs_state, gamma, grad_sum, descent_direction)

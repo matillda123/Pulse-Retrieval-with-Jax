@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 from jax.tree_util import Partial
 from equinox import tree_at
@@ -31,6 +32,7 @@ class AlgorithmsBASE:
 
         self.fft = do_fft
         self.ifft = do_ifft
+        self._name = "AlgorithmsBASE"
 
 
 
@@ -98,13 +100,13 @@ class AlgorithmsBASE:
         else:
             names_list = ["DifferentialEvolution", "Evosax", "AutoDiff", "DirectReconstruction"]
 
-            if self.name=="COPRA" or self.name=="PtychographicIterativeEngine":
+            if self._name=="COPRA" or self._name=="PtychographicIterativeEngine":
                 self._local_step = self.local_step
                 self._global_step = self.global_step
                 self.local_step = Partial(self.do_step_and_apply_spectrum, do_step=self._local_step)
                 self.global_step = Partial(self.do_step_and_apply_spectrum, do_step=self._global_step)
 
-            elif any([self.name==name for name in names_list])==True:
+            elif any([self._name==name for name in names_list])==True:
                 # in these classes the spectrum is applied directly
                 pass
             else:
@@ -137,6 +139,34 @@ class AlgorithmsBASE:
     def apply_spectrum_frequency_domain(self, pulse, spectrum, sk, rn):
         pulse = project_onto_amplitude(pulse, spectrum)
         return pulse
+    
+
+
+
+
+
+    def __repr__(self):
+        mydict = self.__dict__
+        keys = mydict.keys()
+
+        myoutput = {}
+        for key in keys:
+            value = mydict[key]
+
+            if isinstance(value, MyNamespace):
+                myoutput[key] = value.__repr__()
+            else:
+                if isinstance(value, (jax.Array,tuple,list,np.ndarray)):
+                    #myoutput.append([key, jnp.shape(jnp.asarray(value)), value.dtype])
+                    myoutput[key] = ["shape=", jnp.shape(jnp.asarray(value)), value.dtype]
+                else:
+                    #myoutput.append([key, value, value.dtype])
+                    try:
+                        myoutput[key] = [value, value.dtype]
+                    except:
+                        myoutput[key] = [value, type(value).__name__]
+                    
+        return f"{self._name}(" + f"{myoutput}".replace("\'","").replace("\"", "").replace("shape=, ","shape=")[1:-1] + ")"
 
 
 
@@ -193,6 +223,8 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._name = "ClassicAlgorithmsBASE"
+
         self.local_gamma = 1
         self.global_gamma = 1
 
@@ -296,13 +328,13 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
                                                                                   gate = MyNamespace(update_for_velocity_map=init_arr, velocity_map=init_arr)))
             
             #names_list = ["DifferentialEvolution", "Evosax", "LSF", "AutoDiff"]
-            if self.name=="COPRA" or self.name=="PtychographicIterativeEngine":
+            if self._name=="COPRA" or self._name=="PtychographicIterativeEngine":
                 self._local_step = self.local_step
                 self._global_step = self.global_step
                 self.local_step = Partial(self.do_step_and_apply_momentum, do_step = self._local_step)
                 self.global_step = Partial(self.do_step_and_apply_momentum, do_step = self._global_step)
                 
-            # elif any([self.name==name for name in names_list])==True:
+            # elif any([self._name==name for name in names_list])==True:
             #     pass
 
             else:
@@ -360,6 +392,7 @@ class GeneralOptimizationBASE(AlgorithmsBASE):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._name = "GeneralOptimizationBASE"
 
         self.fd_grad = False
         self.amplitude_or_intensity = "intensity"

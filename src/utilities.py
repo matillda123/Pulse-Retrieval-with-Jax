@@ -2,6 +2,8 @@ import jax.numpy as jnp
 import jax
 from jax.tree_util import Partial
 
+import numpy as np
+
 import lineax as lx
 import equinox
 
@@ -26,8 +28,8 @@ def unflatten_MyNamespace(aux_data, leaves):
 
 class MyNamespace:
     """
-    The central Pytree. Supports basic arithmetic if shapes and structure are consistent.
-    Does not have a fixed shape/structure at initialization.
+    The central Pytree. Supports basic arithmetic if shapes/structures are consistent.
+    Does not have a fixed structure at initialization.
     """
 
     def __init__(self, **kwargs):
@@ -47,21 +49,24 @@ class MyNamespace:
         mydict = self.__dict__
         keys = mydict.keys()
 
-        myoutput=[]
+        myoutput = {}
         for key in keys:
             value = mydict[key]
 
-            if type(value)==MyNamespace:
-                myoutput.append([key, value.__repr__()])
+            if isinstance(value, MyNamespace):
+                myoutput[key] = value.__repr__()
             else:
-                try:
-                    myoutput.append([key, jnp.shape(value), value.dtype])
-                except Exception:
-                    myoutput.append([key, jnp.shape(value), type(value).__name__])
-                except Exception:
-                    myoutput.append([key, value, type(value).__name__])
+                if isinstance(value, (jax.Array,tuple,list,np.ndarray)):
+                    #myoutput.append([key, jnp.shape(jnp.asarray(value)), value.dtype])
+                    myoutput[key] = ["shape=", jnp.shape(jnp.asarray(value)), value.dtype]
+                else:
+                    #myoutput.append([key, value, value.dtype])
+                    try:
+                        myoutput[key] = [value, value.dtype]
+                    except:
+                        myoutput[key] = [value, type(value).__name__]
                     
-        return f"{myoutput}".replace("\'","").replace("\"", "")
+        return "MyNamespace(" + f"{myoutput}".replace("\'","").replace("\"", "").replace("shape=, ","shape=")[1:-1] + ")"
     
         
 

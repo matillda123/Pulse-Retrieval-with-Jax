@@ -9,7 +9,7 @@ from src.core.base_classes_algorithms import ClassicAlgorithmsBASE
 from src.core.base_classic_algorithms import GeneralizedProjectionBASE, PtychographicIterativeEngineBASE, COPRABASE, initialize_S_prime_params
 
 from src.utilities import MyNamespace, scan_helper, get_com, get_sk_rn, calculate_gate, calculate_trace, calculate_mu, calculate_trace_error, do_interpolation_1d
-from src.core.construct_s_prime import calculate_S_prime_projection, calculate_S_prime
+from src.core.construct_s_prime import calculate_S_prime
 
 from src.core.gradients.frog_z_error_gradients import calculate_Z_gradient
 from src.core.hessians.frog_z_error_pseudo_hessian import get_pseudo_newton_direction_Z_error
@@ -87,8 +87,8 @@ class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
 
         mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
-        signal_t_new = jax.vmap(calculate_S_prime_projection, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
-
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None,None,None))(signal_t.signal_t, measured_trace, mu, measurement_info, descent_info, "_global")
+        
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measured_trace)
         population_pulse = self.update_pulse(population.pulse, signal_t_new, signal_t.gate_shifted, measurement_info, descent_info)
         population_pulse = population_pulse/jnp.linalg.norm(population_pulse,axis=-1)[:,jnp.newaxis]
@@ -99,8 +99,8 @@ class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
             signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
             trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
 
-            mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
-            signal_t_new = jax.vmap(calculate_S_prime_projection, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
+            #mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
+            #signal_t_new = jax.vmap(calculate_S_prime_projection, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
             population_gate = self.update_gate(population.gate, signal_t_new, signal_t.pulse_t_shifted, measurement_info, descent_info)
             population_gate = population_gate/jnp.linalg.norm(population_gate,axis=-1)[:,jnp.newaxis]
             descent_state = tree_at(lambda x: x.population.gate, descent_state, population_gate)
@@ -122,6 +122,9 @@ class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
         """
         measurement_info = self.measurement_info
+
+        s_prime_params = initialize_S_prime_params(self)
+        self.descent_info = self.descent_info.expand(s_prime_params=s_prime_params)
         descent_info = self.descent_info
 
         self.descent_state = self.descent_state.expand(population=population)

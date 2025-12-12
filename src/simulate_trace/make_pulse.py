@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Union
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
@@ -30,14 +30,7 @@ class GaussianAmplitude(SpectralAmplitude): # can be used for single or multiple
     amplitude: Union[np.ndarray,tuple,float,int]
     central_frequency: Union[np.ndarray,tuple,float,int]
     fwhm: Union[np.ndarray,tuple,float,int]
-
-
-@dataclass
-class SuperGaussianAmplitude(SpectralAmplitude): # can be used for single or multiple gaussians
-    amplitude: Union[np.ndarray,tuple,float,int]
-    central_frequency: Union[np.ndarray,tuple,float,int]
-    fwhm: Union[np.ndarray,tuple,float,int]
-    p: Union[np.ndarray,tuple,float,int]
+    p: Union[np.ndarray,tuple,float,int,None] = None
 
 
 @dataclass
@@ -45,14 +38,8 @@ class LorentzianAmplitude(SpectralAmplitude): # can be used for single or multip
     amplitude: Union[np.ndarray,tuple,float,int]
     central_frequency: Union[np.ndarray,tuple,float,int]
     fwhm: Union[np.ndarray,tuple,float,int]
+    p: Union[np.ndarray,tuple,float,int,None] = None
 
-
-@dataclass
-class SuperLorentzianAmplitude(SpectralAmplitude): # can be used for single or multiple lorentzians
-    amplitude: Union[np.ndarray,tuple,float,int]
-    central_frequency: Union[np.ndarray,tuple,float,int]
-    fwhm: Union[np.ndarray,tuple,float,int]
-    p: Union[np.ndarray,tuple,int]
 
 
 @dataclass
@@ -77,34 +64,79 @@ class RandomPhase(SpectralPhase):
     sigma: Union[float,int] = 10
 
 
-
-
 @dataclass
 class CustomPulse:
     frequency: np.ndarray
     amplitude: Union[np.ndarray,SpectralAmplitude,list]
     phase: Union[np.ndarray,SpectralPhase]
 
+    def __post_init__(self):
+        check_dataclass_types(self)
 
+
+
+
+class TemporalAmplitude:
+    gaussian_or_lorentzian: str
+    amplitude: Union[float, int]
+    duration: Union[float, int]
+    central_frequency: Union[float, int]
+    p: Union[float, int, None] = None
+
+    def __post_init__(self):
+        check_dataclass_types(self)
+        
 
 @dataclass
 class MultiPulse:
-   """ Constructs/Defines a pulse sequence in the time domain. I should do this in the frequency domain. Is much cleaner. """
-   
-   delay: Union[np.ndarray,tuple,float,int]
-   duration: Union[np.ndarray,tuple,float,int]
-   central_frequency: Union[np.ndarray,tuple,float,int]
-   amplitude: Union[np.ndarray,tuple,float,int]
-   phase: Union[list,tuple]
+    """ Constructs/Defines a pulse sequence in the time domain. """
+
+    gaussian_or_lorentzian: Union[list,tuple,np.ndarray,str]
+    amplitude: Union[list,tuple,np.ndarray,float,int]
+    delay: Union[list,np.ndarray,tuple,float,int]
+    duration: Union[list,tuple,np.ndarray,float, int]
+    central_frequency: Union[list,tuple,np.ndarray,float,int]
+    p: Union[list,tuple,np.ndarray,float,int,None]
+    phase: Union[list[SpectralPhase],tuple[SpectralPhase], SpectralPhase]
+    envelope: Union[list[TemporalAmplitude],tuple[TemporalAmplitude], TemporalAmplitude] = field(compare=False)
+
+    def __post_init__(self):
+        g_or_l = np.squeeze(np.asarray([self.gaussian_or_lorentzian]))
+        amp = self.amplitude
+        dt = self.duration
+        cf = self.central_frequency
+        p = self.p
+
+        if p==None:
+            p=np.broadcast_to(1,np.shape(np.asarray([amp])))
+        check_and_correct_if_scalar((amp,dt,cf,p))
+        assert np.size(amp)==np.size(dt)==np.size(cf)==np.size(p)==np.size(g_or_l)
+
+        env_list = []
+        n = len(amp)
+        for i in range(n):
+            env_list.append(TemporalAmplitude(g_or_l[i],amp[i],dt[i],cf[i],p[i]))
+
+        self.envelope = env_list
+
+        check_dataclass_types(self)
 
 
 
 
+
+def check_and_correct_if_scalar(parameters):
+    if all([type(j)!=i for i in (int,float) for j in parameters]):
+        temp = parameters
+    else:
+        temp = []
+        for param in parameters:
+            temp.append(np.squeeze(np.asarray([param])))
+    return temp
 
 class MakePulse:
     """ 
     Is supposed to generate pulses based on input parameters from GaussianAmplitude, PolynomialPhase, SinusoidalPhase, RandomPhase, CustomPulse or MultiPulse.
-    Does not work with Jax.
 
     Attributes:
         N (int): the number of points on the time/frequency-grid
@@ -116,44 +148,25 @@ class MakePulse:
         self.Delta_f = Delta_f
 
 
-    def check_and_correct_if_scalar(self, parameters):
-        if all([type(j)!=i for i in (int,float) for j in parameters]):
-            temp = parameters
-        else:
-            temp = []
-            for param in parameters:
-                temp.append(np.squeeze(np.asarray([param])))
-        return temp
-
-
-    def gaussian(self, x, amp, fwhm, shift, p=1):
-        #idx = np.argmin(np.abs(x-shift))
-        #shift = x[idx] # makes sure that shift lies on top of grid point, prevents issues when fwhm is to small
+    def gaussian(self, x, amp, fwhm, shift, p):
         return amp*np.exp(-np.log(2)*(4*(x-shift)**2/fwhm**2)**p)
     
-    def lorentzian(self, x, amp, fwhm, shift, p=1):
-        assert type(p)==int, "things get problematic when the power isnt an integer."
-        return amp/(1+(2*(x-shift)/fwhm)**(2*p))
-    
+    def lorentzian(self, x, amp, fwhm, shift, p):
+        return amp/(1+np.abs(2*(x-shift)/fwhm)**(2*p))
 
+    
     def generate_gaussian_lorentzian_amplitude(self, x, parameters, amp_func):
-        amp, fwhm, shift = parameters.amplitude, parameters.fwhm, parameters.central_frequency
-        amp, fwhm, shift = self.check_and_correct_if_scalar((amp, fwhm, shift))
-        assert len(amp)==len(fwhm)==len(shift)
-
-        a = 0
-        for i in range(len(amp)):
-            a = a + amp_func(x, amp[i], fwhm[i], shift[i])
-        return a
-    
-    def generate_super_gaussian_lorentzian_amplitude(self, x, parameters, amp_func):
         amp, fwhm, shift, p = parameters.amplitude, parameters.fwhm, parameters.central_frequency, parameters.p
-        amp, fwhm, shift, p = self.check_and_correct_if_scalar((amp, fwhm, shift, p))
+
+        if p==None:
+           p = np.broadcast_to(1, np.shape(amp))
+
+        amp, fwhm, shift, p = check_and_correct_if_scalar((amp, fwhm, shift, p))
         assert len(amp)==len(fwhm)==len(shift)==len(p)
 
         a = 0
         for i in range(len(amp)):
-            a = a + amp_func(x, amp[i], fwhm[i], shift[i], p=p[i])
+            a = a + amp_func(x, amp[i], fwhm[i], shift[i], p[i])
         return a
     
 
@@ -172,7 +185,7 @@ class MakePulse:
     
     def generate_sinusoidal_phase(self, frequency, phase_parameters):
         a,b,c = phase_parameters.amplitude, phase_parameters.periodicity, phase_parameters.phase_shift
-        a,b,c = self.check_and_correct_if_scalar((a,b,c))
+        a,b,c = check_and_correct_if_scalar((a,b,c))
         assert len(a)==len(b)==len(c)
 
         phase = 0
@@ -214,23 +227,11 @@ class MakePulse:
         if isinstance(amp_parameters, GaussianAmplitude):
             amp_f = self.generate_gaussian_lorentzian_amplitude(self.frequency, amp_parameters, self.gaussian)
         
-        elif isinstance(amp_parameters, SuperGaussianAmplitude):
-            amp_f = self.generate_gaussian_lorentzian_amplitude(self.frequency, amp_parameters, self.gaussian)
-
         elif isinstance(amp_parameters, LorentzianAmplitude):
             amp_f = self.generate_gaussian_lorentzian_amplitude(self.frequency, amp_parameters, self.lorentzian)
         
-        elif isinstance(amp_parameters, SuperLorentzianAmplitude):
-            amp_f = self.generate_gaussian_lorentzian_amplitude(self.frequency, amp_parameters, self.lorentzian)
-
         elif isinstance(amp_parameters, MultiPulse):
-            print("is broken")
-            amp, fwhm, shift = amp_parameters.amplitude, amp_parameters.duration, amp_parameters.delay
-            shift = np.concatenate((np.zeros(1), shift))
-            shift = shift - np.mean(shift)
-            amp_t = self.generate_gaussian_lorentzian_amplitude(self.time, amp, fwhm, shift)
-            amp_f = do_fft(amp_t, self.sk, self.rn)
-            amp_f = np.abs(amp_f)
+            raise ValueError("This logic path shouldnt be reachable.")
 
         elif isinstance(amp_parameters, CustomPulse):
             if isinstance(amp_parameters.amplitude, SpectralAmplitude):
@@ -241,11 +242,31 @@ class MakePulse:
                     amp_f = amp_f + self.get_spectral_amplitude(params)
             else:
                 amp_f = do_interpolation_1d(self.frequency, amp_parameters.frequency, amp_parameters.amplitude)
-            
         else:
             raise NotImplementedError(f"Amplitude type {amp_parameters} is not implemented.")
 
         return amp_f
+    
+
+    def get_multi_pulse(self, parameters, shift):
+        pulse_t_total = 0
+
+        n = len(shift)
+        for i in range(n):
+            env_t = parameters.envelope[i]
+            phase_f = parameters.phase[i]
+            deltat = shift[i]
+
+            assert env_t.gaussian_or_lorentzian=="gaussian" or env_t.gaussian_or_lorentzian=="lorentzian"
+            amp_t = getattr(self, env_t.gaussian_or_lorentzian)(self.time, env_t.amplitude, env_t.duration, deltat, env_t.p)
+            pulse_t = amp_t*np.exp(1j*2*np.pi*env_t.central_frequency)
+            pulse_f = do_fft(pulse_t, self.sk, self.rn)
+
+            phase_f = self.get_spectral_phase(phase_f, np.abs(pulse_f))
+            pulse_f = pulse_f*np.exp(1j*phase_f)
+            pulse_t = do_ifft(pulse_f, self.sk, self.rn)
+            pulse_t_total = pulse_t_total + pulse_t
+        return pulse_t_total
     
         
         
@@ -261,56 +282,56 @@ class MakePulse:
             else:
                 fmin, fmax = -1*self.Delta_f, self.Delta_f
 
-        else:
-            assert self.Delta_f != None, "For CustomPulse or MultiPulse you should predefine a good Delta_f."
+        elif isinstance(parameters, CustomPulse):
+            assert self.Delta_f != None, "Please predefine a suitable Delta_f for CustomPulse."
+            fmin, fmax = -1*self.Delta_f, self.Delta_f
+            parameters = parameters, parameters
+
+        elif isinstance(parameters, MultiPulse):
+            if self.Delta_f == None:
+                Delta_t = 2*(np.max(parameters.delay) - np.min(parameters.delay))
+                df = 1/Delta_t
+                self.Delta_f = self.N*df
+            else:
+                pass
+            
             fmin, fmax = -1*self.Delta_f, self.Delta_f
 
-            amplitude = parameters
-            if isinstance(parameters, MultiPulse):
-                phase = parameters.phase # this could be a list of phase_classes
-            else:
-                phase = parameters
+        else:
+            raise TypeError(f"The input {parameters} has to be a tuple[SpectralAmplitude, SpectralPhase], CustomPulse or MultiPulse. Not {type(parameters)}.")
 
-
+        assert type(fmax)==int or type(fmax)==float, "There is a type issue with Delta_f."
         self.frequency = np.linspace(fmin, fmax, self.N)
         self.df = np.mean(np.diff(self.frequency))
         self.time = np.fft.fftshift(np.fft.fftfreq(self.N, self.df))
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
 
-        return amplitude, phase
+        return parameters
 
 
 
     def generate_pulse(self, parameters):
-        amplitude, phase = self.init_generation(parameters)
-
-        amp_f = self.get_spectral_amplitude(amplitude)
+        parameters = self.init_generation(parameters)
 
         if isinstance(parameters, MultiPulse): 
             shift = np.concatenate((np.zeros(1), parameters.delay))
             shift = shift - np.mean(shift)
-        
-            temp = 0
-            for i in range(len(shift)):
-                amp_t = self.gaussian(self.time, parameters.amplitude[i], parameters.duration[i], shift[i])
-                pulse_t = amp_t * np.exp(1j*2*np.pi*parameters.central_frequency[i]*self.time)
-                pulse_f = do_fft(pulse_t, self.sk, self.rn)
-
-                phase = self.get_spectral_phase(parameters.phase[i], np.abs(pulse_f))
-                pulse_f = pulse_f*np.exp(1j*phase)
-
-                temp = temp + pulse_f
-            pulse_f = temp
-
+            assert len(parameters.envelope)==len(parameters.phase)==len(shift)
+            pulse_t = self.get_multi_pulse(parameters, shift)
+            pulse_f = do_fft(pulse_t, self.sk, self.rn)
+            
         else:
+            amplitude, phase = parameters
+            amp_f = self.get_spectral_amplitude(amplitude)
             phase = self.get_spectral_phase(phase, amp_f)
             pulse_f = amp_f*np.exp(1j*phase)
-
-        pulse_t = do_ifft(pulse_f, self.sk, self.rn)
+            pulse_t = do_ifft(pulse_f, self.sk, self.rn)
 
         self.pulses = MyNamespace(time=self.time, frequency=self.frequency, pulse_t=pulse_t, pulse_f=pulse_f)
         return self.time, pulse_t, self.frequency, pulse_f
     
+
+
 
 
     def plot_pulses(self):
