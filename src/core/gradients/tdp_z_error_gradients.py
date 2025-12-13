@@ -9,14 +9,14 @@ def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, pulse_t_shifted, gate_
     Time-Domain-Ptychography measurement. The gradient is calculated in the frequency domain.
 
     Args:
-        signal_t: jnp.array, the current signal field
-        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
-        pulse_t: jnp.array, the current guess
-        pulse_t_shifted: jnp.array, the current guess translated on the time axis
-        gate_shifted: jnp.array, the current gate translated on the time axis
-        tau_arr: jnp.array, the delays
-        measurement_info: Pytree, contains measurement data and parameters
-        pulse_or_gate: str, whether the gradient is calculated with respect to the pulse or the gate-pulse
+        signal_t (jnp.array): the current signal field
+        signal_t_new (jnp.array): the current signal field projected onto the measured intensity
+        pulse_t (jnp.array): the current guess
+        pulse_t_shifted (jnp.array): the current guess translated on the time axis
+        gate_shifted (jnp.array): the current gate translated on the time axis
+        tau_arr (jnp.array): the delays
+        measurement_info (Pytree): contains measurement data and parameters
+        pulse_or_gate (str): whether the gradient is calculated with respect to the pulse or the gate-pulse
 
     Returns:
         jnp.array, the Z-error gradient

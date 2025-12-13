@@ -8,9 +8,9 @@ def get_nonlinear_CG_direction(descent_direction, cg, beta_parameter_version):
     Calculates the descent direction using Nonlinear Conjugate Gradients. 
 
     Args:
-        descent_direction: jnp.array, the descent direction from a descent solver
-        cg: Pytree, the current conjugate gradient state, holds the previous descent direction etc.
-        beta_parameter_version: str, the concrete NCG method to use
+        descent_direction (jnp.array): the descent direction from a descent solver
+        cg (Pytree): the current conjugate gradient state, holds the previous descent direction etc.
+        beta_parameter_version (str): the concrete NCG method to use
     
     Returns:
         tuple[jnp.array, Pytree], the descent direction based on NCG, the updated NCG state

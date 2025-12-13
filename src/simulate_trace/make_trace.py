@@ -45,7 +45,7 @@ def apply_noise(trace, scale_val=0.01, additive_noise=False, multiplicative_nois
 
 
 
-class MakePulse(MakePulseBase):
+class MakeTrace(MakePulseBase):
     """ 
     Simulates measurement traces based in input pulses.
     Inherits from make_pulse.MakePulse.
@@ -217,25 +217,25 @@ class MakePulse(MakePulseBase):
         Generates a 2DSI trace using the provide pulse/gate. 
 
         Args:
-            time,
-            frequency,
-            pulse_t
-            pulse_f
-            nonlinear_method,
-            spectral_filter1,
-            spectral_filter2,
-            tau_pulse_anc1,
-            material_thickness,
-            refractive_index,
-            cross_correlation,
-            gate,
-            real_fields,
-            frequency_range,
-            N,
-            cut_off_val,
-            interpolate_fft_conform,
-            scale_time_range,
-            plot_stuff, 
+            time:
+            frequency:
+            pulse_t:
+            pulse_f:
+            nonlinear_method:
+            spectral_filter1:
+            spectral_filter2:
+            tau_pulse_anc1:
+            material_thickness:
+            refractive_index:
+            cross_correlation:
+            gate:
+            real_fields:
+            frequency_range:
+            N:
+            cut_off_val:
+            interpolate_fft_conform:
+            scale_time_range:
+            plot_stuff:
 
         Returns:
             tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra

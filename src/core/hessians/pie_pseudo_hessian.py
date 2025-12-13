@@ -63,17 +63,17 @@ def PIE_get_pseudo_newton_direction(grad, probe, signal_f, transform_arr, measur
     The direction is calculated in the time domain.
 
     Args:
-        grad: jnp.array, the current (weighted) gradient
-        probe: jnp.array, the PIE probe
-        signal_f: jnp.array, the signal field in the frequency domain
-        transform_arr: jnp.array, the delays or phase matrix, unused
-        measured_trace: jnp.array, the measured intensity
+        grad (jnp.array): the current (weighted) gradient
+        probe (jnp.array): the PIE probe
+        signal_f (jnp.array): the signal field in the frequency domain
+        transform_arr (jnp.array): the delays or phase matrix, unused
+        measured_trace (jnp.array): the measured intensity
         reverse_transform: Callable, unused
-        newton_direction_prev: jnp.array, the previous pseudo-newton direction
-        measurement_info: Pytree, holds measurement data and parameters
-        descent_info: Pytree, holds algorithm parameters
-        pulse_or_gate: str, pulse or gate, unused
-        local_or_global: str, local or global iteration?
+        newton_direction_prev (jnp.array): the previous pseudo-newton direction
+        measurement_info (Pytree): holds measurement data and parameters
+        descent_info (Pytree): holds algorithm parameters
+        pulse_or_gate (str): pulse or gate, unused
+        local_or_global (str): local or global iteration?
 
     Returns:
         tuple[jnp.array, Pytree]

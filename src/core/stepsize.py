@@ -12,12 +12,12 @@ def backtracking_linesearch(linesearch_state, error_func, grad_func, linesearch_
     Perform one iteration of an Armijo-style linesearch.
 
     Args:
-        linesearch_state: Pytree, contains the armijo condition, gamma and iteration
-        error_func: Callable, calculates the error to be optimized, expects gamma, linesearch_info and measurement_info
-        grad_func: Callable, unused
-        linesearch_params: Pytree, contains parameters for the linesearch iteration
-        linesearch_info: Pytree, contains variables related to the initial state of the linesearch
-        measurement_info: Pytree, contains measurement data and parameters
+        linesearch_state (Pytree): contains the armijo condition, gamma and iteration
+        error_func (Callable): calculates the error to be optimized, expects gamma, linesearch_info and measurement_info
+        grad_func (Callable): unused
+        linesearch_params (Pytree): contains parameters for the linesearch iteration
+        linesearch_info (Pytree): contains variables related to the initial state of the linesearch
+        measurement_info (Pytree): contains measurement data and parameters
 
     Returns:
         MyNamespace, the updated linesearch_state
@@ -101,12 +101,12 @@ def zoom_linesearch(linesearch_state, error_func, grad_func, linesearch_params, 
     The search terminates if the Armijo- and Wolfe conditions are met.
 
     Args:
-        linesearch_state: Pytree, contains information on the current state of the linesearch
-        error_func: Callable, calculates the error to be optimized, expects gamma, linesearch_info and measurement_info
-        grad_func: Callable, calculates the error-gradient to be optimized, expects gamma, linesearch_info and measurement_info
-        linesearch_params: Pytree, contains parameters for the linesearch iteration
-        linesearch_info: Pytree, contains variables related to the initial state of the linesearch
-        measurement_info: Pytree, contains measurement data and parameters
+        linesearch_state (Pytree): contains information on the current state of the linesearch
+        error_func (Callable): calculates the error to be optimized, expects gamma, linesearch_info and measurement_info
+        grad_func (Callable): calculates the error-gradient to be optimized, expects gamma, linesearch_info and measurement_info
+        linesearch_params (Pytree): contains parameters for the linesearch iteration
+        linesearch_info (Pytree): contains variables related to the initial state of the linesearch
+        measurement_info (Pytree): contains measurement data and parameters
 
     Returns:
         MyNamespace, the updated linesearch_state
@@ -177,12 +177,12 @@ def do_linesearch(linesearch_info, measurement_info, descent_info, error_func, g
     Perform a linesearch to obtain an improved step size in a descent based optimization.
 
     Args:
-        linesearch_info: Pytree, holds information on the initial state at gamma=0
-        measurement_info: Pytree, holds measurement data and parameters
-        descent_info: Pytree, holds parameters of the descent algorithm
-        error_func: Callable, calculates the error to be optimized, expects gamma, linesearch_info, measurement_info
-        grad_func: Callable, calculates the gradient of error_func, expects gamma, linesearch_info, measurement_info
-        local_or_global: str, whether this is used in a local or global iteration
+        linesearch_info (Pytree): holds information on the initial state at gamma=0
+        measurement_info (Pytree): holds measurement data and parameters
+        descent_info (Pytree): holds parameters of the descent algorithm
+        error_func (Callable): calculates the error to be optimized, expects gamma, linesearch_info, measurement_info
+        grad_func (Callable): calculates the gradient of error_func, expects gamma, linesearch_info, measurement_info
+        local_or_global (str): whether this is used in a local or global iteration
 
     Returns:
         float, the approximated optimal step size
@@ -303,14 +303,14 @@ def adaptive_step_size(error, gradient, descent_direction, local_or_global_state
     Calculate an improved step size based through a pade approximation of the error function at the current position.
 
     Args:
-        error: float, the current error
-        gradient: jnp.array, the current gradient
-        descent_direction: jnp.array, the current descent direction
-        local_or_global_state: Pytree, holds information of the current descent_state
-        xi: float, a damping factor to avoid division by zero
-        order: str, the pade-approximation to be used, can be one of pade_10 (linear), pade_20 (nonlinear), pade_01, pade_11 or pade_02
-        pulse_or_gate: str, whether this is applied to pulse or gate
-        local_or_global: str, whether this happens inside a local or global iteration
+        error (float): the current error
+        gradient (jnp.array): the current gradient
+        descent_direction (jnp.array): the current descent direction
+        local_or_global_state (Pytree): holds information of the current descent_state
+        xi (float): a damping factor to avoid division by zero
+        order (str): the pade-approximation to be used, can be one of pade_10 (linear), pade_20 (nonlinear), pade_01, pade_11 or pade_02
+        pulse_or_gate (str): whether this is applied to pulse or gate
+        local_or_global (str): whether this happens inside a local or global iteration
 
     Returns:
         tuple[jnp.array, Pytree], the scaled descent direction and the local_or_global_state

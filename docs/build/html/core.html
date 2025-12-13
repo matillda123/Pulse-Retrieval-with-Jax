@@ -319,6 +319,21 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum">
+<span class="sig-name descname"><span class="pre">apply_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum_time_domain">
+<span class="sig-name descname"><span class="pre">apply_spectrum_time_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum_time_domain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum_frequency_domain">
+<span class="sig-name descname"><span class="pre">apply_spectrum_frequency_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum_frequency_domain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1305,12 +1320,6 @@ The guess is in the time domain. Assumes an autocorrelation FROG.</p>
 <dd><p>FROG specific post processing to get the final pulse/gate</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="core.base_classes_methods.RetrievePulsesFROG.apply_spectrum">
-<span class="sig-name descname"><span class="pre">apply_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.base_classes_methods.RetrievePulsesFROG.apply_spectrum" title="Link to this definition"></a></dt>
-<dd><p>FROG specific method to project the pulse guess onto a measured spectrum.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1512,12 +1521,6 @@ The guess is in the time domain. Assumes an autocorrelation FROG.</p>
 <dt class="sig sig-object py" id="core.base_classes_methods.RetrievePulsesCHIRPSCAN.post_process_get_pulse_and_gate">
 <span class="sig-name descname"><span class="pre">post_process_get_pulse_and_gate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descent_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descent_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.base_classes_methods.RetrievePulsesCHIRPSCAN.post_process_get_pulse_and_gate" title="Link to this definition"></a></dt>
 <dd><p>Chirp-Scan specific post processing to get the final pulse/gate</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="core.base_classes_methods.RetrievePulsesCHIRPSCAN.apply_spectrum">
-<span class="sig-name descname"><span class="pre">apply_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.base_classes_methods.RetrievePulsesCHIRPSCAN.apply_spectrum" title="Link to this definition"></a></dt>
-<dd><p>Chirp-Scan specific method to project the pulse guess onto a measured spectrum.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2719,10 +2722,10 @@ Here the final shape/structure of descent_state, measurement_info and descent_in
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the complex signal field in the time domain of the current guess</p></li>
-<li><p><strong>measured_trace</strong> – jnp.array, the measured intensity</p></li>
-<li><p><strong>mu</strong> – float, the scaling factor between the measured intensity and the intensity of the current guess</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and information</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the complex signal field in the time domain of the current guess</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured intensity</p></li>
+<li><p><strong>mu</strong> (<em>float</em>) – the scaling factor between the measured intensity and the intensity of the current guess</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and information</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2797,12 +2800,12 @@ The error-functions can be based on intensity or amplitude based residuals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the complex signal field in the time domain of the current guess</p></li>
-<li><p><strong>measured_trace</strong> – jnp.array, the measured intensity</p></li>
-<li><p><strong>mu</strong> – float, the scaling factor between the measured intensity and the intensity of the current guess</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and information</p></li>
-<li><p><strong>descent_info</strong> – Pytree, contains information on the behaviour of the solver</p></li>
-<li><p><strong>local_or_global</strong> – str, whether this is used in a local or global iteration</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the complex signal field in the time domain of the current guess</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured intensity</p></li>
+<li><p><strong>mu</strong> (<em>float</em>) – the scaling factor between the measured intensity and the intensity of the current guess</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and information</p></li>
+<li><p><strong>descent_info</strong> (<em>Pytree</em>) – contains information on the behaviour of the solver</p></li>
+<li><p><strong>local_or_global</strong> (<em>str</em>) – whether this is used in a local or global iteration</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2818,12 +2821,12 @@ The error-functions can be based on intensity or amplitude based residuals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the complex signal field in the time domain of the current guess</p></li>
-<li><p><strong>measured_trace</strong> – jnp.array, the measured intensity</p></li>
-<li><p><strong>mu</strong> – float, the scaling factor between the measured intensity and the intensity of the current guess</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and information</p></li>
-<li><p><strong>descent_info</strong> – Pytree, contains information on the behaviour of the solver</p></li>
-<li><p><strong>local_or_global</strong> – str, whether this is used in a local or global iteration</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the complex signal field in the time domain of the current guess</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured intensity</p></li>
+<li><p><strong>mu</strong> (<em>float</em>) – the scaling factor between the measured intensity and the intensity of the current guess</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and information</p></li>
+<li><p><strong>descent_info</strong> (<em>Pytree</em>) – contains information on the behaviour of the solver</p></li>
+<li><p><strong>local_or_global</strong> (<em>str</em>) – whether this is used in a local or global iteration</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2870,10 +2873,10 @@ The created populations can be optimized by both general and classical solvers.<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> – jnp.array, jax.random.PRNGKey</p></li>
-<li><p><strong>population_size</strong> – int, the number of guesses to be optimized</p></li>
-<li><p><strong>guess_type</strong> – str, the guess mode. Has to be one of random, random_phase, constant or constant_phase. doublepulse is moved to initial_guess_doublepulse.py</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, holds the measurement information, is filled during initialization of each solver</p></li>
+<li><p><strong>key</strong> (<em>jnp.array</em>) – jax.random.PRNGKey</p></li>
+<li><p><strong>population_size</strong> (<em>int</em>) – the number of guesses to be optimized</p></li>
+<li><p><strong>guess_type</strong> (<em>str</em>) – the guess mode. Has to be one of random, random_phase, constant or constant_phase. doublepulse is moved to initial_guess_doublepulse.py</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – holds the measurement information, is filled during initialization of each solver</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2950,15 +2953,15 @@ representations for amplitude and phase can be used. The population is represent
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> – jnp.array, jax.random.PRNGKey</p></li>
-<li><p><strong>amp_type</strong> – str, representation of the amplitude</p></li>
-<li><p><strong>phase_type</strong> – str, representation of the phase</p></li>
-<li><p><strong>population</strong> – Pytree, a MyNamespace object containing amp and phase</p></li>
-<li><p><strong>population_size</strong> – int, the number of individuals to optimize</p></li>
-<li><p><strong>no_funcs_amp</strong> – int, some representations can consist of multiple basis functions</p></li>
-<li><p><strong>no_funcs_phase</strong> – int, some representations can consist of multiple basis functions</p></li>
-<li><p><strong>spectrum_provided</strong> – bool, if a spectrum is provided then the guessed population will not include an amplitude</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, holds the measurement information, is filled during initialization of each solver</p></li>
+<li><p><strong>key</strong> (<em>jnp.array</em>) – jax.random.PRNGKey</p></li>
+<li><p><strong>amp_type</strong> (<em>str</em>) – representation of the amplitude</p></li>
+<li><p><strong>phase_type</strong> (<em>str</em>) – representation of the phase</p></li>
+<li><p><strong>population</strong> (<em>Pytree</em>) – a MyNamespace object containing amp and phase</p></li>
+<li><p><strong>population_size</strong> (<em>int</em>) – the number of individuals to optimize</p></li>
+<li><p><strong>no_funcs_amp</strong> (<em>int</em>) – some representations can consist of multiple basis functions</p></li>
+<li><p><strong>no_funcs_phase</strong> (<em>int</em>) – some representations can consist of multiple basis functions</p></li>
+<li><p><strong>spectrum_provided</strong> (<em>bool</em>) – if a spectrum is provided then the guessed population will not include an amplitude</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – holds the measurement information, is filled during initialization of each solver</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2997,14 +3000,14 @@ Does use or work with jax.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tau_arr</strong> – jnp.array, the delay axis 1D-array</p></li>
-<li><p><strong>frequency</strong> – jnp.array, the frequency axis 1D-array</p></li>
-<li><p><strong>measured_trace</strong> – jnp.array, the measured trace 2D-array</p></li>
-<li><p><strong>nonlinear_method</strong> – str, the nonlinear method</p></li>
-<li><p><strong>monochromatic_double_pulse</strong> – bool, whether the doublepulses had different central frequencies</p></li>
-<li><p><strong>sigma</strong> – float, a smoothing parameter</p></li>
-<li><p><strong>init_std</strong> – float, initial value for width of gaussian fits</p></li>
-<li><p><strong>i_want_control</strong> – bool, this method does not really work and is disabled for SHG/THG, can be overwritten by this</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the delay axis 1D-array</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis 1D-array</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured trace 2D-array</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>monochromatic_double_pulse</strong> (<em>bool</em>) – whether the doublepulses had different central frequencies</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – a smoothing parameter</p></li>
+<li><p><strong>init_std</strong> (<em>float</em>) – initial value for width of gaussian fits</p></li>
+<li><p><strong>i_want_control</strong> (<em>bool</em>) – this method does not really work and is disabled for SHG/THG, can be overwritten by this</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3021,16 +3024,16 @@ The population is constructed from a deterministic doublepulse guess by adding n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> – jnp.array, a jax.random.PRNGKey</p></li>
-<li><p><strong>population_size</strong> – int, the number of initial guesses</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the delay axis 1D-array</p></li>
-<li><p><strong>frequency</strong> – jnp.array, the frequency axis 1D-array</p></li>
-<li><p><strong>measured_trace</strong> – jnp.array, the measured trace 2D-array</p></li>
-<li><p><strong>nonlinear_method</strong> – str, the nonlinear method</p></li>
-<li><p><strong>monochromatic_double_pulse</strong> – bool, whether the doublepulses had different central frequencies</p></li>
-<li><p><strong>sigma</strong> – float, a smoothing parameter</p></li>
-<li><p><strong>init_std</strong> – float, initial value for width of gaussian fits</p></li>
-<li><p><strong>i_want_control</strong> – bool, this method does not really work and is disabled for SHG/THG, can be overwritten by this</p></li>
+<li><p><strong>key</strong> (<em>jnp.array</em>) – a jax.random.PRNGKey</p></li>
+<li><p><strong>population_size</strong> (<em>int</em>) – the number of initial guesses</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the delay axis 1D-array</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis 1D-array</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured trace 2D-array</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>monochromatic_double_pulse</strong> (<em>bool</em>) – whether the doublepulses had different central frequencies</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – a smoothing parameter</p></li>
+<li><p><strong>init_std</strong> (<em>float</em>) – initial value for width of gaussian fits</p></li>
+<li><p><strong>i_want_control</strong> (<em>bool</em>) – this method does not really work and is disabled for SHG/THG, can be overwritten by this</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3073,9 +3076,9 @@ The population is constructed from a deterministic doublepulse guess by adding n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad</strong> – jnp.array, the current gradient</p></li>
-<li><p><strong>lbfgs_stat</strong> – Pytree, the current lbfgs state</p></li>
-<li><p><strong>descent_info</strong> – Pytree, holds information on the solver (e.g. memory size for LBFGS)</p></li>
+<li><p><strong>grad</strong> (<em>jnp.array</em>) – the current gradient</p></li>
+<li><p><strong>lbfgs_stat</strong> (<em>Pytree</em>) – the current lbfgs state</p></li>
+<li><p><strong>descent_info</strong> (<em>Pytree</em>) – holds information on the solver (e.g. memory size for LBFGS)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3094,9 +3097,9 @@ The population is constructed from a deterministic doublepulse guess by adding n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>descent_direction</strong> – jnp.array, the descent direction from a descent solver</p></li>
-<li><p><strong>cg</strong> – Pytree, the current conjugate gradient state, holds the previous descent direction etc.</p></li>
-<li><p><strong>beta_parameter_version</strong> – str, the concrete NCG method to use</p></li>
+<li><p><strong>descent_direction</strong> (<em>jnp.array</em>) – the descent direction from a descent solver</p></li>
+<li><p><strong>cg</strong> (<em>Pytree</em>) – the current conjugate gradient state, holds the previous descent direction etc.</p></li>
+<li><p><strong>beta_parameter_version</strong> (<em>str</em>) – the concrete NCG method to use</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3145,14 +3148,19 @@ The population is constructed from a deterministic doublepulse guess by adding n
 <section id="module-core.phase_matrix_funcs">
 <span id="core-phase-matrix-funcs-module"></span><h2>core.phase_matrix_funcs module<a class="headerlink" href="#module-core.phase_matrix_funcs" title="Link to this heading"></a></h2>
 <dl class="py function">
+<dt class="sig sig-object py" id="core.phase_matrix_funcs.get_parameters_material_scan">
+<span class="sig-prename descclassname"><span class="pre">core.phase_matrix_funcs.</span></span><span class="sig-name descname"><span class="pre">get_parameters_material_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shelf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'main'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">book</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SiO2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Malitson'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.phase_matrix_funcs.get_parameters_material_scan" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="core.phase_matrix_funcs.calculate_phase_matrix_material">
 <span class="sig-prename descclassname"><span class="pre">core.phase_matrix_funcs.</span></span><span class="sig-name descname"><span class="pre">calculate_phase_matrix_material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.phase_matrix_funcs.calculate_phase_matrix_material" title="Link to this definition"></a></dt>
 <dd><p>Calculates a phase matrix via material dispersion. Not differentiable due to usage of refractiveindex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>measurement_info</strong> – Pytree, holds measurement data and parameters, needs to contain the material thickness z_arr in mm.</p></li>
-<li><p><strong>parameters</strong> – tuple[refractiveindex.RefractiveIndexMaterial, float], an object providing the refractive index, the speed of light in m/s</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – holds measurement data and parameters, needs to contain the material thickness z_arr in mm.</p></li>
+<li><p><strong>parameters</strong> (<em>refractiveindex.RefractiveIndexMaterial</em>) – an object providing the refractive index, the speed of light in m/s</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3193,9 +3201,9 @@ The population is constructed from a deterministic doublepulse guess by adding n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>measurement_info</strong> – Pytree, holds measurement data and parameters, needs to contain the shift-values in appropriate units</p></li>
-<li><p><strong>parameters</strong> – tuple, the parameters which are expected by phase_func</p></li>
-<li><p><strong>phase_func</strong> – Callable, defines how the phase is calculated</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – holds measurement data and parameters, needs to contain the shift-values in appropriate units</p></li>
+<li><p><strong>parameters</strong> (<em>tuple</em>) – the parameters which are expected by phase_func</p></li>
+<li><p><strong>phase_func</strong> (<em>Callable</em>) – defines how the phase is calculated</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3248,12 +3256,12 @@ The population is constructed from a deterministic doublepulse guess by adding n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>linesearch_state</strong> – Pytree, contains the armijo condition, gamma and iteration</p></li>
-<li><p><strong>error_func</strong> – Callable, calculates the error to be optimized, expects gamma, linesearch_info and measurement_info</p></li>
-<li><p><strong>grad_func</strong> – Callable, unused</p></li>
-<li><p><strong>linesearch_params</strong> – Pytree, contains parameters for the linesearch iteration</p></li>
-<li><p><strong>linesearch_info</strong> – Pytree, contains variables related to the initial state of the linesearch</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
+<li><p><strong>linesearch_state</strong> (<em>Pytree</em>) – contains the armijo condition, gamma and iteration</p></li>
+<li><p><strong>error_func</strong> (<em>Callable</em>) – calculates the error to be optimized, expects gamma, linesearch_info and measurement_info</p></li>
+<li><p><strong>grad_func</strong> (<em>Callable</em>) – unused</p></li>
+<li><p><strong>linesearch_params</strong> (<em>Pytree</em>) – contains parameters for the linesearch iteration</p></li>
+<li><p><strong>linesearch_info</strong> (<em>Pytree</em>) – contains variables related to the initial state of the linesearch</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3287,12 +3295,12 @@ The search terminates if the Armijo- and Wolfe conditions are met.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>linesearch_state</strong> – Pytree, contains information on the current state of the linesearch</p></li>
-<li><p><strong>error_func</strong> – Callable, calculates the error to be optimized, expects gamma, linesearch_info and measurement_info</p></li>
-<li><p><strong>grad_func</strong> – Callable, calculates the error-gradient to be optimized, expects gamma, linesearch_info and measurement_info</p></li>
-<li><p><strong>linesearch_params</strong> – Pytree, contains parameters for the linesearch iteration</p></li>
-<li><p><strong>linesearch_info</strong> – Pytree, contains variables related to the initial state of the linesearch</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
+<li><p><strong>linesearch_state</strong> (<em>Pytree</em>) – contains information on the current state of the linesearch</p></li>
+<li><p><strong>error_func</strong> (<em>Callable</em>) – calculates the error to be optimized, expects gamma, linesearch_info and measurement_info</p></li>
+<li><p><strong>grad_func</strong> (<em>Callable</em>) – calculates the error-gradient to be optimized, expects gamma, linesearch_info and measurement_info</p></li>
+<li><p><strong>linesearch_params</strong> (<em>Pytree</em>) – contains parameters for the linesearch iteration</p></li>
+<li><p><strong>linesearch_info</strong> (<em>Pytree</em>) – contains variables related to the initial state of the linesearch</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3318,12 +3326,12 @@ The search terminates if the Armijo- and Wolfe conditions are met.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>linesearch_info</strong> – Pytree, holds information on the initial state at gamma=0</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, holds measurement data and parameters</p></li>
-<li><p><strong>descent_info</strong> – Pytree, holds parameters of the descent algorithm</p></li>
-<li><p><strong>error_func</strong> – Callable, calculates the error to be optimized, expects gamma, linesearch_info, measurement_info</p></li>
-<li><p><strong>grad_func</strong> – Callable, calculates the gradient of error_func, expects gamma, linesearch_info, measurement_info</p></li>
-<li><p><strong>local_or_global</strong> – str, whether this is used in a local or global iteration</p></li>
+<li><p><strong>linesearch_info</strong> (<em>Pytree</em>) – holds information on the initial state at gamma=0</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – holds measurement data and parameters</p></li>
+<li><p><strong>descent_info</strong> (<em>Pytree</em>) – holds parameters of the descent algorithm</p></li>
+<li><p><strong>error_func</strong> (<em>Callable</em>) – calculates the error to be optimized, expects gamma, linesearch_info, measurement_info</p></li>
+<li><p><strong>grad_func</strong> (<em>Callable</em>) – calculates the gradient of error_func, expects gamma, linesearch_info, measurement_info</p></li>
+<li><p><strong>local_or_global</strong> (<em>str</em>) – whether this is used in a local or global iteration</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3349,14 +3357,14 @@ The search terminates if the Armijo- and Wolfe conditions are met.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>error</strong> – float, the current error</p></li>
-<li><p><strong>gradient</strong> – jnp.array, the current gradient</p></li>
-<li><p><strong>descent_direction</strong> – jnp.array, the current descent direction</p></li>
-<li><p><strong>local_or_global_state</strong> – Pytree, holds information of the current descent_state</p></li>
-<li><p><strong>xi</strong> – float, a damping factor to avoid division by zero</p></li>
-<li><p><strong>order</strong> – str, the pade-approximation to be used, can be one of pade_10 (linear), pade_20 (nonlinear), pade_01, pade_11 or pade_02</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether this is applied to pulse or gate</p></li>
-<li><p><strong>local_or_global</strong> – str, whether this happens inside a local or global iteration</p></li>
+<li><p><strong>error</strong> (<em>float</em>) – the current error</p></li>
+<li><p><strong>gradient</strong> (<em>jnp.array</em>) – the current gradient</p></li>
+<li><p><strong>descent_direction</strong> (<em>jnp.array</em>) – the current descent direction</p></li>
+<li><p><strong>local_or_global_state</strong> (<em>Pytree</em>) – holds information of the current descent_state</p></li>
+<li><p><strong>xi</strong> (<em>float</em>) – a damping factor to avoid division by zero</p></li>
+<li><p><strong>order</strong> (<em>str</em>) – the pade-approximation to be used, can be one of pade_10 (linear), pade_20 (nonlinear), pade_01, pade_11 or pade_02</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether this is applied to pulse or gate</p></li>
+<li><p><strong>local_or_global</strong> (<em>str</em>) – whether this happens inside a local or global iteration</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

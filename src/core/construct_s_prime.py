@@ -17,10 +17,10 @@ def calculate_S_prime_projection(signal_t, measured_trace, mu, measurement_info)
     Calculates signal_t_new/S_prime via a projection onto the measured intensity.
 
     Args:
-        signal_t: jnp.array, the complex signal field in the time domain of the current guess
-        measured_trace: jnp.array, the measured intensity
-        mu: float, the scaling factor between the measured intensity and the intensity of the current guess
-        measurement_info: Pytree, contains measurement data and information
+        signal_t (jnp.array): the complex signal field in the time domain of the current guess
+        measured_trace (jnp.array): the measured intensity
+        mu (float): the scaling factor between the measured intensity and the intensity of the current guess
+        measurement_info (Pytree): contains measurement data and information
     
     Returns:
         jnp.array, the complex signal field in the time domain projected onto the measured intensity
@@ -187,12 +187,12 @@ def calculate_S_prime_iterative(signal_t, measured_trace, mu, measurement_info, 
     Calculates signal_t_new/S_prime via an iterative optimization of the least-squares error.
 
     Args:
-        signal_t: jnp.array, the complex signal field in the time domain of the current guess
-        measured_trace: jnp.array, the measured intensity
-        mu: float, the scaling factor between the measured intensity and the intensity of the current guess
-        measurement_info: Pytree, contains measurement data and information
-        descent_info: Pytree, contains information on the behaviour of the solver
-        local_or_global: str, whether this is used in a local or global iteration
+        signal_t (jnp.array): the complex signal field in the time domain of the current guess
+        measured_trace (jnp.array): the measured intensity
+        mu (float): the scaling factor between the measured intensity and the intensity of the current guess
+        measurement_info (Pytree): contains measurement data and information
+        descent_info (Pytree): contains information on the behaviour of the solver
+        local_or_global (str): whether this is used in a local or global iteration
     
     Returns:
         jnp.array, the complex signal field in the time domain projected onto the measured intensity
@@ -219,12 +219,12 @@ def calculate_S_prime(signal_t, measured_trace, mu, measurement_info, descent_in
     Calculates signal_t_new/S_prime via projection or iterative optimization
 
     Args:
-        signal_t: jnp.array, the complex signal field in the time domain of the current guess
-        measured_trace: jnp.array, the measured intensity
-        mu: float, the scaling factor between the measured intensity and the intensity of the current guess
-        measurement_info: Pytree, contains measurement data and information
-        descent_info: Pytree, contains information on the behaviour of the solver
-        local_or_global: str, whether this is used in a local or global iteration
+        signal_t (jnp.array): the complex signal field in the time domain of the current guess
+        measured_trace (jnp.array): the measured intensity
+        mu (float): the scaling factor between the measured intensity and the intensity of the current guess
+        measurement_info (Pytree): contains measurement data and information
+        descent_info (Pytree): contains information on the behaviour of the solver
+        local_or_global (str): whether this is used in a local or global iteration
     
     Returns:
         jnp.array, the complex signal field in the time domain projected onto the measured intensity

@@ -143,15 +143,15 @@ The direction is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad_m</strong> – jnp.array, the current Z-error gradient</p></li>
-<li><p><strong>pulse_t_dispersed</strong> – jnp.array, the current guess after phase_matrix was applied</p></li>
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>phase_matrix</strong> – jnp.array, the applied phases</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>newton_state</strong> – Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
-<li><p><strong>newton_info</strong> – Pytree, contains parameters for the pseudo-newton direction calculation</p></li>
-<li><p><strong>full_or_diagonal</strong> – str, calculate using the full or diagonal pseudo hessian?</p></li>
+<li><p><strong>grad_m</strong> (<em>jnp.array</em>) – the current Z-error gradient</p></li>
+<li><p><strong>pulse_t_dispersed</strong> (<em>jnp.array</em>) – the current guess after phase_matrix was applied</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>phase_matrix</strong> (<em>jnp.array</em>) – the applied phases</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>newton_state</strong> (<em>Pytree</em>) – contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
+<li><p><strong>newton_info</strong> (<em>Pytree</em>) – contains parameters for the pseudo-newton direction calculation</p></li>
+<li><p><strong>full_or_diagonal</strong> (<em>str</em>) – calculate using the full or diagonal pseudo hessian?</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -285,18 +285,18 @@ The direction is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad_m</strong> – jnp.array, the current Z-error gradient</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>pulse_t_shifted</strong> – jnp.array, the current guess shifted along the time axis</p></li>
-<li><p><strong>gate_shifted</strong> – jnp.array, the current gate guess shifted along the time axis</p></li>
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the time delays</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>newton_state</strong> – Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
-<li><p><strong>newton_info</strong> – Pytree, contains parameters for the pseudo-newton direction calculation</p></li>
-<li><p><strong>full_or_diagonal</strong> – str, calculate using the full or diagonal pseudo hessian?</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the direction is calculated for the pulse or the gate-pulse</p></li>
+<li><p><strong>grad_m</strong> (<em>jnp.array</em>) – the current Z-error gradient</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>pulse_t_shifted</strong> (<em>jnp.array</em>) – the current guess shifted along the time axis</p></li>
+<li><p><strong>gate_shifted</strong> (<em>jnp.array</em>) – the current gate guess shifted along the time axis</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the time delays</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>newton_state</strong> (<em>Pytree</em>) – contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
+<li><p><strong>newton_info</strong> (<em>Pytree</em>) – contains parameters for the pseudo-newton direction calculation</p></li>
+<li><p><strong>full_or_diagonal</strong> (<em>str</em>) – calculate using the full or diagonal pseudo hessian?</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the direction is calculated for the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -334,17 +334,17 @@ The direction is calculated in the time domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad</strong> – jnp.array, the current (weighted) gradient</p></li>
-<li><p><strong>probe</strong> – jnp.array, the PIE probe</p></li>
-<li><p><strong>signal_f</strong> – jnp.array, the signal field in the frequency domain</p></li>
-<li><p><strong>transform_arr</strong> – jnp.array, the delays or phase matrix, unused</p></li>
-<li><p><strong>measured_trace</strong> – jnp.array, the measured intensity</p></li>
+<li><p><strong>grad</strong> (<em>jnp.array</em>) – the current (weighted) gradient</p></li>
+<li><p><strong>probe</strong> (<em>jnp.array</em>) – the PIE probe</p></li>
+<li><p><strong>signal_f</strong> (<em>jnp.array</em>) – the signal field in the frequency domain</p></li>
+<li><p><strong>transform_arr</strong> (<em>jnp.array</em>) – the delays or phase matrix, unused</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured intensity</p></li>
 <li><p><strong>reverse_transform</strong> – Callable, unused</p></li>
-<li><p><strong>newton_direction_prev</strong> – jnp.array, the previous pseudo-newton direction</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, holds measurement data and parameters</p></li>
-<li><p><strong>descent_info</strong> – Pytree, holds algorithm parameters</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, pulse or gate, unused</p></li>
-<li><p><strong>local_or_global</strong> – str, local or global iteration?</p></li>
+<li><p><strong>newton_direction_prev</strong> (<em>jnp.array</em>) – the previous pseudo-newton direction</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – holds measurement data and parameters</p></li>
+<li><p><strong>descent_info</strong> (<em>Pytree</em>) – holds algorithm parameters</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – pulse or gate, unused</p></li>
+<li><p><strong>local_or_global</strong> (<em>str</em>) – local or global iteration?</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -364,18 +364,18 @@ The direction is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad_m</strong> – jnp.array, the current Z-error gradient</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>pulse_t_shifted</strong> – jnp.array, the current guess shifted along the time axis</p></li>
-<li><p><strong>gate_shifted</strong> – jnp.array, the current gate guess shifted along the time axis</p></li>
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the time delays</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>newton_state</strong> – Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
-<li><p><strong>newton_info</strong> – Pytree, contains parameters for the pseudo-newton direction calculation</p></li>
-<li><p><strong>full_or_diagonal</strong> – str, calculate using the full or diagonal pseudo hessian?</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the direction is calculated for the pulse or the gate-pulse</p></li>
+<li><p><strong>grad_m</strong> (<em>jnp.array</em>) – the current Z-error gradient</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>pulse_t_shifted</strong> (<em>jnp.array</em>) – the current guess shifted along the time axis</p></li>
+<li><p><strong>gate_shifted</strong> (<em>jnp.array</em>) – the current gate guess shifted along the time axis</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the time delays</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>newton_state</strong> (<em>Pytree</em>) – contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
+<li><p><strong>newton_info</strong> (<em>Pytree</em>) – contains parameters for the pseudo-newton direction calculation</p></li>
+<li><p><strong>full_or_diagonal</strong> (<em>str</em>) – calculate using the full or diagonal pseudo hessian?</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the direction is calculated for the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -464,19 +464,19 @@ The direction is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad_m</strong> – jnp.array, the current Z-error gradient</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>gate_pulses</strong> – jnp.array, the currently guessed gate-pulses</p></li>
-<li><p><strong>gate</strong> – jnp.array, the current gate</p></li>
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the applied delays</p></li>
-<li><p><strong>gd_correction</strong> – jnp.array, group delay correction for material dispersion</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>newton_state</strong> – Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
-<li><p><strong>newton_info</strong> – Pytree, contains parameters for the pseudo-newton direction calculation</p></li>
-<li><p><strong>full_or_diagonal</strong> – str, calculate using the full or diagonal pseudo hessian?</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the direction is calculated for the pulse or the gate-pulse</p></li>
+<li><p><strong>grad_m</strong> (<em>jnp.array</em>) – the current Z-error gradient</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>gate_pulses</strong> (<em>jnp.array</em>) – the currently guessed gate-pulses</p></li>
+<li><p><strong>gate</strong> (<em>jnp.array</em>) – the current gate</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the applied delays</p></li>
+<li><p><strong>gd_correction</strong> (<em>jnp.array</em>) – group delay correction for material dispersion</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>newton_state</strong> (<em>Pytree</em>) – contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
+<li><p><strong>newton_info</strong> (<em>Pytree</em>) – contains parameters for the pseudo-newton direction calculation</p></li>
+<li><p><strong>full_or_diagonal</strong> (<em>str</em>) – calculate using the full or diagonal pseudo hessian?</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the direction is calculated for the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -496,19 +496,19 @@ The direction is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grad_m</strong> – jnp.array, the current Z-error gradient</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>gate_pulses</strong> – jnp.array, the currently guessed gate-pulses</p></li>
-<li><p><strong>gate</strong> – jnp.array, the current gate</p></li>
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the applied delays</p></li>
-<li><p><strong>gd_correction</strong> – jnp.array, group delay correction for a material dispersion</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>newton_state</strong> – Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
-<li><p><strong>newton_info</strong> – Pytree, contains parameters for the pseudo-newton direction calculation</p></li>
-<li><p><strong>full_or_diagonal</strong> – str, calculate using the full or diagonal pseudo hessian?</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the direction is calculated for the pulse or the gate-pulse</p></li>
+<li><p><strong>grad_m</strong> (<em>jnp.array</em>) – the current Z-error gradient</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>gate_pulses</strong> (<em>jnp.array</em>) – the currently guessed gate-pulses</p></li>
+<li><p><strong>gate</strong> (<em>jnp.array</em>) – the current gate</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the applied delays</p></li>
+<li><p><strong>gd_correction</strong> (<em>jnp.array</em>) – group delay correction for a material dispersion</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>newton_state</strong> (<em>Pytree</em>) – contains the current state of the hessian calculation, e.g. the previous newton direction</p></li>
+<li><p><strong>newton_info</strong> (<em>Pytree</em>) – contains parameters for the pseudo-newton direction calculation</p></li>
+<li><p><strong>full_or_diagonal</strong> (<em>str</em>) – calculate using the full or diagonal pseudo hessian?</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the direction is calculated for the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

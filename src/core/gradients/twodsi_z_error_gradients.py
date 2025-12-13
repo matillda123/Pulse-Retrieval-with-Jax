@@ -144,15 +144,15 @@ def calculate_Z_gradient(signal_t, signal_t_new, pulse_t, gate_pulses, gate, tau
     The gradient is calculated in the frequency domain.
 
     Args:
-        signal_t: jnp.array, the current signal field
-        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
-        pulse_t: jnp.array, the current guess
-        gate_pulses: jnp.array, the current gate-pulse guess
-        gate: jnp.array, the current gate
-        tau_arr: jnp.array, the delays
-        gd_correction: jnp.array, corrects for the group-delay from material dispersion
-        measurement_info: Pytree, contains measurement data and parameters
-        pulse_or_gate: str, whether the gradient is calculated with respect to the pulse or the gate-pulse
+        signal_t (jnp.array): the current signal field
+        signal_t_new (jnp.array): the current signal field projected onto the measured intensity
+        pulse_t (jnp.array): the current guess
+        gate_pulses (jnp.array): the current gate-pulse guess
+        gate (jnp.array): the current gate
+        tau_arr (jnp.array): the delays
+        gd_correction (jnp.array): corrects for the group-delay from material dispersion
+        measurement_info (Pytree): contains measurement data and parameters
+        pulse_or_gate (str): whether the gradient is calculated with respect to the pulse or the gate-pulse
 
     Returns:
         jnp.array, the Z-error gradient

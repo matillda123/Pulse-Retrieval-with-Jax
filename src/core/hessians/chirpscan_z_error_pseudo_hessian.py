@@ -100,15 +100,15 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t_dispersed, signal_t, sig
     The direction is calculated in the frequency domain.
 
     Args:
-        grad_m: jnp.array, the current Z-error gradient
-        pulse_t_dispersed: jnp.array, the current guess after phase_matrix was applied
-        signal_t: jnp.array, the current signal field
-        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
-        phase_matrix: jnp.array, the applied phases
-        measurement_info: Pytree, contains measurement data and parameters
-        newton_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
-        newton_info: Pytree, contains parameters for the pseudo-newton direction calculation
-        full_or_diagonal: str, calculate using the full or diagonal pseudo hessian?
+        grad_m (jnp.array): the current Z-error gradient
+        pulse_t_dispersed (jnp.array): the current guess after phase_matrix was applied
+        signal_t (jnp.array): the current signal field
+        signal_t_new (jnp.array): the current signal field projected onto the measured intensity
+        phase_matrix (jnp.array): the applied phases
+        measurement_info (Pytree): contains measurement data and parameters
+        newton_state (Pytree): contains the current state of the hessian calculation, e.g. the previous newton direction
+        newton_info (Pytree): contains parameters for the pseudo-newton direction calculation
+        full_or_diagonal (str): calculate using the full or diagonal pseudo hessian?
 
     Returns:
         tuple[jnp.array, Pytree], the pseudo-newton direction and the updated newton_state

@@ -135,9 +135,13 @@
       <ul>
         <li><a href="simulate_trace.html#simulate_trace.make_pulse.GaussianAmplitude.amplitude">(simulate_trace.make_pulse.GaussianAmplitude attribute)</a>
 </li>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.LorentzianAmplitude.amplitude">(simulate_trace.make_pulse.LorentzianAmplitude attribute)</a>
+</li>
         <li><a href="simulate_trace.html#simulate_trace.make_pulse.MultiPulse.amplitude">(simulate_trace.make_pulse.MultiPulse attribute)</a>
 </li>
         <li><a href="simulate_trace.html#simulate_trace.make_pulse.SinusoidalPhase.amplitude">(simulate_trace.make_pulse.SinusoidalPhase attribute)</a>
+</li>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.TemporalAmplitude.amplitude">(simulate_trace.make_pulse.TemporalAmplitude attribute)</a>
 </li>
       </ul></li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.amplitude_or_intensity">amplitude_or_intensity (core.base_classes_algorithms.GeneralOptimizationBASE attribute)</a>
@@ -166,12 +170,12 @@
         <li><a href="core.html#core.base_classes_methods.RetrievePulsesTDP.apply_spectral_filter">(core.base_classes_methods.RetrievePulsesTDP method)</a>
 </li>
       </ul></li>
-      <li><a href="core.html#core.base_classes_methods.RetrievePulsesCHIRPSCAN.apply_spectrum">apply_spectrum() (core.base_classes_methods.RetrievePulsesCHIRPSCAN method)</a>
-
-      <ul>
-        <li><a href="core.html#core.base_classes_methods.RetrievePulsesFROG.apply_spectrum">(core.base_classes_methods.RetrievePulsesFROG method)</a>
+      <li><a href="core.html#core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum">apply_spectrum() (core.base_classes_algorithms.AlgorithmsBASE method)</a>
 </li>
-      </ul></li>
+      <li><a href="core.html#core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum_frequency_domain">apply_spectrum_frequency_domain() (core.base_classes_algorithms.AlgorithmsBASE method)</a>
+</li>
+      <li><a href="core.html#core.base_classes_algorithms.AlgorithmsBASE.apply_spectrum_time_domain">apply_spectrum_time_domain() (core.base_classes_algorithms.AlgorithmsBASE method)</a>
+</li>
       <li><a href="twodsi.html#twodsi.classic_algorithms_2dsi.DirectReconstruction.apply_windowing">apply_windowing() (twodsi.classic_algorithms_2dsi.DirectReconstruction method)</a>
 </li>
       <li><a href="chirp_scan.html#chirp_scan.general_algorithms_chirpscan.AutoDiff">AutoDiff (class in chirp_scan.general_algorithms_chirpscan)</a>
@@ -534,14 +538,14 @@
         <li><a href="vampire.html#vampire.classic_algorithms_vampire.GeneralizedProjection.calculate_Z_gradient_individual">(vampire.classic_algorithms_vampire.GeneralizedProjection method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.gradients.html#core.gradients.frog_z_error_gradients.calculate_Z_gradient_pulse">calculate_Z_gradient_pulse() (in module core.gradients.frog_z_error_gradients)</a>
 
       <ul>
         <li><a href="core.gradients.html#core.gradients.twodsi_z_error_gradients.calculate_Z_gradient_pulse">(in module core.gradients.twodsi_z_error_gradients)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chirp_scan.html#chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_newton_direction">calculate_Z_newton_direction() (chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection method)</a>
 
       <ul>
@@ -561,11 +565,19 @@
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.GaussianAmplitude.central_frequency">central_frequency (simulate_trace.make_pulse.GaussianAmplitude attribute)</a>
 
       <ul>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.LorentzianAmplitude.central_frequency">(simulate_trace.make_pulse.LorentzianAmplitude attribute)</a>
+</li>
         <li><a href="simulate_trace.html#simulate_trace.make_pulse.MultiPulse.central_frequency">(simulate_trace.make_pulse.MultiPulse attribute)</a>
 </li>
         <li><a href="simulate_trace.html#simulate_trace.make_pulse.PolynomialPhase.central_frequency">(simulate_trace.make_pulse.PolynomialPhase attribute)</a>
 </li>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.TemporalAmplitude.central_frequency">(simulate_trace.make_pulse.TemporalAmplitude attribute)</a>
+</li>
       </ul></li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.check_and_correct_if_scalar">check_and_correct_if_scalar() (in module simulate_trace.make_pulse)</a>
+</li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.check_dataclass_types">check_dataclass_types() (in module simulate_trace.make_pulse)</a>
+</li>
       <li>
     chirp_scan
 
@@ -932,10 +944,10 @@
 </li>
       <li><a href="twodsi.html#twodsi.classic_algorithms_2dsi.DirectReconstruction">DirectReconstruction (class in twodsi.classic_algorithms_2dsi)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.discrete_amplitude">discrete_amplitude() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.discrete_phase">discrete_phase() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
       <li><a href="frog.html#frog.classic_algorithms_frog.CPCGPA.do_anti_alias">do_anti_alias() (frog.classic_algorithms_frog.CPCGPA method)</a>
@@ -981,7 +993,11 @@
 </li>
       </ul></li>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.MultiPulse.duration">duration (simulate_trace.make_pulse.MultiPulse attribute)</a>
+
+      <ul>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.TemporalAmplitude.duration">(simulate_trace.make_pulse.TemporalAmplitude attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -989,6 +1005,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.stepsize.end_linesearch">end_linesearch() (in module core.stepsize)</a>
+</li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MultiPulse.envelope">envelope (simulate_trace.make_pulse.MultiPulse attribute)</a>
 </li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.error_metric">error_metric (core.base_classes_algorithms.GeneralOptimizationBASE attribute)</a>
 </li>
@@ -1082,7 +1100,11 @@
 </li>
       </ul></li>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.GaussianAmplitude.fwhm">fwhm (simulate_trace.make_pulse.GaussianAmplitude attribute)</a>
+
+      <ul>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.LorentzianAmplitude.fwhm">(simulate_trace.make_pulse.LorentzianAmplitude attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1101,6 +1123,12 @@
 </li>
       <li><a href="core.html#core.spectral_filter_funcs.gaussian_filter">gaussian_filter() (in module core.spectral_filter_funcs)</a>
 </li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MultiPulse.gaussian_or_lorentzian">gaussian_or_lorentzian (simulate_trace.make_pulse.MultiPulse attribute)</a>
+
+      <ul>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.TemporalAmplitude.gaussian_or_lorentzian">(simulate_trace.make_pulse.TemporalAmplitude attribute)</a>
+</li>
+      </ul></li>
       <li><a href="core.html#core.create_population.gaussian_or_lorentzian_guess">gaussian_or_lorentzian_guess() (in module core.create_population)</a>
 </li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.gaussian_term">gaussian_term() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
@@ -1133,7 +1161,7 @@
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_trace.MakePulse.generate_frog">generate_frog() (simulate_trace.make_trace.MakePulse method)</a>
 </li>
-      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.generate_gaussian_amplitude">generate_gaussian_amplitude() (simulate_trace.make_pulse.MakePulse method)</a>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.generate_gaussian_lorentzian_amplitude">generate_gaussian_lorentzian_amplitude() (simulate_trace.make_pulse.MakePulse method)</a>
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.generate_polynomial_phase">generate_polynomial_phase() (simulate_trace.make_pulse.MakePulse method)</a>
 </li>
@@ -1231,7 +1259,11 @@
 </li>
       <li><a href="core.html#core.bsplines_1d.get_m_ij">get_m_ij() (in module core.bsplines_1d)</a>
 </li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.get_multi_pulse">get_multi_pulse() (simulate_trace.make_pulse.MakePulse method)</a>
+</li>
       <li><a href="core.html#core.nonlinear_cg.get_nonlinear_CG_direction">get_nonlinear_CG_direction() (in module core.nonlinear_cg)</a>
+</li>
+      <li><a href="core.html#core.phase_matrix_funcs.get_parameters_material_scan">get_parameters_material_scan() (in module core.phase_matrix_funcs)</a>
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTrace2DSI.get_parameters_to_make_signal_t">get_parameters_to_make_signal_t() (simulate_trace.make_trace.MakeTrace2DSI method)</a>
 
@@ -1352,6 +1384,8 @@
       <li><a href="core.html#core.base_classes_methods.RetrievePulses.get_spectral_amplitude">get_spectral_amplitude() (core.base_classes_methods.RetrievePulses method)</a>
 
       <ul>
+        <li><a href="frog.html#frog.classic_algorithms_frog.CPCGPA.get_spectral_amplitude">(frog.classic_algorithms_frog.CPCGPA method)</a>
+</li>
         <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.get_spectral_amplitude">(simulate_trace.make_pulse.MakePulse method)</a>
 </li>
       </ul></li>
@@ -1551,16 +1585,20 @@
         <li><a href="core.html#core.base_classic_algorithms.PtychographicIterativeEngineBASE.local_step">(core.base_classic_algorithms.PtychographicIterativeEngineBASE method)</a>
 </li>
       </ul></li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.lorentzian">lorentzian() (simulate_trace.make_pulse.MakePulse method)</a>
+</li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.lorentzian_amplitude">lorentzian_amplitude() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
       <li><a href="core.html#core.spectral_filter_funcs.lorentzian_filter">lorentzian_filter() (in module core.spectral_filter_funcs)</a>
 </li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.lorentzian_term">lorentzian_term() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
-      <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.loss_function">loss_function() (core.base_general_optimization.AutoDiffBASE method)</a>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.LorentzianAmplitude">LorentzianAmplitude (class in simulate_trace.make_pulse)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.loss_function">loss_function() (core.base_general_optimization.AutoDiffBASE method)</a>
+</li>
       <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.loss_function_amp">loss_function_amp() (core.base_general_optimization.AutoDiffBASE method)</a>
 </li>
       <li><a href="utilities.html#utilities.loss_function_modifications">loss_function_modifications() (in module utilities)</a>
@@ -1856,6 +1894,16 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.GaussianAmplitude.p">p (simulate_trace.make_pulse.GaussianAmplitude attribute)</a>
+
+      <ul>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.LorentzianAmplitude.p">(simulate_trace.make_pulse.LorentzianAmplitude attribute)</a>
+</li>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.MultiPulse.p">(simulate_trace.make_pulse.MultiPulse attribute)</a>
+</li>
+        <li><a href="simulate_trace.html#simulate_trace.make_pulse.TemporalAmplitude.p">(simulate_trace.make_pulse.TemporalAmplitude attribute)</a>
+</li>
+      </ul></li>
       <li><a href="core.html#core.base_classes_methods.RetrievePulsesCHIRPSCAN.parameters">parameters (core.base_classes_methods.RetrievePulsesCHIRPSCAN attribute)</a>
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.SinusoidalPhase.periodicity">periodicity (simulate_trace.make_pulse.SinusoidalPhase attribute)</a>
@@ -1896,6 +1944,8 @@
         <li><a href="vampire.html#vampire.classic_algorithms_vampire.PtychographicIterativeEngine.pie_method">(vampire.classic_algorithms_vampire.PtychographicIterativeEngine attribute)</a>
 </li>
       </ul></li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.MakePulse.plot_pulses">plot_pulses() (simulate_trace.make_pulse.MakePulse method)</a>
+</li>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses.plot_results">plot_results() (core.base_classes_methods.RetrievePulses method)</a>
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTraceBASE.plot_trace">plot_trace() (simulate_trace.make_trace.MakeTraceBASE method)</a>
@@ -1904,6 +1954,8 @@
 </li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.polynomial_phase">polynomial_phase() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.polynomial_term">polynomial_term() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.PolynomialPhase">PolynomialPhase (class in simulate_trace.make_pulse)</a>
@@ -1914,8 +1966,6 @@
         <li><a href="real_fields.html#real_fields.base_classes_methods.RetrievePulsesRealFields.post_process">(real_fields.base_classes_methods.RetrievePulsesRealFields method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses.post_process_center_pulse_and_gate">post_process_center_pulse_and_gate() (core.base_classes_methods.RetrievePulses method)</a>
 
       <ul>
@@ -2180,10 +2230,10 @@
         <li><a href="core.html#core.base_classes_methods.RetrievePulsesFROG.sk">(core.base_classes_methods.RetrievePulsesFROG attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="real_fields.html#real_fields.base_classes_methods.RetrievePulsesRealFields.sk_big">sk_big (real_fields.base_classes_methods.RetrievePulsesRealFields attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_general_optimization.DifferentialEvolutionBASE.smooth_crossover">smooth_crossover() (core.base_general_optimization.DifferentialEvolutionBASE method)</a>
 </li>
       <li><a href="utilities.html#utilities.solve_linear_system">solve_linear_system() (in module utilities)</a>
@@ -2199,6 +2249,10 @@
       <li><a href="core.html#core.base_classes_methods.RetrievePulses2DSI.spectral_filter1">spectral_filter1 (core.base_classes_methods.RetrievePulses2DSI attribute)</a>
 </li>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses2DSI.spectral_filter2">spectral_filter2 (core.base_classes_methods.RetrievePulses2DSI attribute)</a>
+</li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.SpectralAmplitude">SpectralAmplitude (class in simulate_trace.make_pulse)</a>
+</li>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.SpectralPhase">SpectralPhase (class in simulate_trace.make_pulse)</a>
 </li>
       <li><a href="core.html#core.base_classes_algorithms.AlgorithmsBASE.spectrum_is_being_used">spectrum_is_being_used (core.base_classes_algorithms.AlgorithmsBASE attribute)</a>
 
@@ -2273,9 +2327,11 @@
         <li><a href="tdp.html#module-tdp.general_algorithms_tdp">module</a>
 </li>
       </ul></li>
+      <li><a href="core.html#core.base_general_optimization.DifferentialEvolutionBASE.temperature">temperature (core.base_general_optimization.DifferentialEvolutionBASE attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="core.html#core.base_general_optimization.DifferentialEvolutionBASE.temperature">temperature (core.base_general_optimization.DifferentialEvolutionBASE attribute)</a>
+      <li><a href="simulate_trace.html#simulate_trace.make_pulse.TemporalAmplitude">TemporalAmplitude (class in simulate_trace.make_pulse)</a>
 </li>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses.time">time (core.base_classes_methods.RetrievePulses attribute)</a>
 </li>

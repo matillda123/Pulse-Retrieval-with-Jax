@@ -78,10 +78,10 @@ def create_population_classic(key, population_size, guess_type, measurement_info
     The created populations can be optimized by both general and classical solvers.
 
     Args:
-        key: jnp.array, jax.random.PRNGKey
-        population_size: int, the number of guesses to be optimized
-        guess_type: str, the guess mode. Has to be one of random, random_phase, constant or constant_phase. doublepulse is moved to initial_guess_doublepulse.py
-        measurement_info: Pytree, holds the measurement information, is filled during initialization of each solver
+        key (jnp.array): jax.random.PRNGKey
+        population_size (int): the number of guesses to be optimized
+        guess_type (str): the guess mode. Has to be one of random, random_phase, constant or constant_phase. doublepulse is moved to initial_guess_doublepulse.py
+        measurement_info (Pytree): holds the measurement information, is filled during initialization of each solver
 
     Returns:
         jnp.array, stack of 1D-arrays
@@ -267,15 +267,15 @@ def create_population_general(key, amp_type, phase_type, population, population_
     representations for amplitude and phase can be used. The population is represented in the freqeuncy domain.
 
     Args:
-        key: jnp.array, jax.random.PRNGKey
-        amp_type: str, representation of the amplitude
-        phase_type: str, representation of the phase
-        population: Pytree, a MyNamespace object containing amp and phase
-        population_size: int, the number of individuals to optimize
-        no_funcs_amp: int, some representations can consist of multiple basis functions
-        no_funcs_phase: int, some representations can consist of multiple basis functions
-        spectrum_provided: bool, if a spectrum is provided then the guessed population will not include an amplitude
-        measurement_info: Pytree, holds the measurement information, is filled during initialization of each solver
+        key (jnp.array): jax.random.PRNGKey
+        amp_type (str): representation of the amplitude
+        phase_type (str): representation of the phase
+        population (Pytree): a MyNamespace object containing amp and phase
+        population_size (int): the number of individuals to optimize
+        no_funcs_amp (int): some representations can consist of multiple basis functions
+        no_funcs_phase (int): some representations can consist of multiple basis functions
+        spectrum_provided (bool): if a spectrum is provided then the guessed population will not include an amplitude
+        measurement_info (Pytree): holds the measurement information, is filled during initialization of each solver
        
     Returns:
         tuple[jnp.array, Pytree]

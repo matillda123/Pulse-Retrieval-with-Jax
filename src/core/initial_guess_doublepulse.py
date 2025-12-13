@@ -101,14 +101,14 @@ def get_double_pulse_initial_guess(tau_arr, frequency, measured_trace, nonlinear
     Does use or work with jax.
 
     Args:
-        tau_arr: jnp.array, the delay axis 1D-array
-        frequency: jnp.array, the frequency axis 1D-array
-        measured_trace: jnp.array, the measured trace 2D-array
-        nonlinear_method: str, the nonlinear method
-        monochromatic_double_pulse: bool, whether the doublepulses had different central frequencies
-        sigma: float, a smoothing parameter
-        init_std: float, initial value for width of gaussian fits
-        i_want_control: bool, this method does not really work and is disabled for SHG/THG, can be overwritten by this
+        tau_arr (jnp.array): the delay axis 1D-array
+        frequency (jnp.array): the frequency axis 1D-array
+        measured_trace (jnp.array): the measured trace 2D-array
+        nonlinear_method (str): the nonlinear method
+        monochromatic_double_pulse (bool): whether the doublepulses had different central frequencies
+        sigma (float): a smoothing parameter
+        init_std (float): initial value for width of gaussian fits
+        i_want_control (bool): this method does not really work and is disabled for SHG/THG, can be overwritten by this
 
     Returns:
         tuple[jnp.array, jnp.array], guess in time and frequency domain
@@ -155,16 +155,16 @@ def make_population_doublepulse(key, population_size, tau_arr, frequency, measur
     The population is constructed from a deterministic doublepulse guess by adding noise. 
 
     Args:
-        key: jnp.array, a jax.random.PRNGKey
-        population_size: int, the number of initial guesses
-        tau_arr: jnp.array, the delay axis 1D-array
-        frequency: jnp.array, the frequency axis 1D-array
-        measured_trace: jnp.array, the measured trace 2D-array
-        nonlinear_method: str, the nonlinear method
-        monochromatic_double_pulse: bool, whether the doublepulses had different central frequencies
-        sigma: float, a smoothing parameter
-        init_std: float, initial value for width of gaussian fits
-        i_want_control: bool, this method does not really work and is disabled for SHG/THG, can be overwritten by this
+        key (jnp.array): a jax.random.PRNGKey
+        population_size (int): the number of initial guesses
+        tau_arr (jnp.array): the delay axis 1D-array
+        frequency (jnp.array): the frequency axis 1D-array
+        measured_trace (jnp.array): the measured trace 2D-array
+        nonlinear_method (str): the nonlinear method
+        monochromatic_double_pulse (bool): whether the doublepulses had different central frequencies
+        sigma (float): a smoothing parameter
+        init_std (float): initial value for width of gaussian fits
+        i_want_control (bool): this method does not really work and is disabled for SHG/THG, can be overwritten by this
 
     Returns:
         jnp.array

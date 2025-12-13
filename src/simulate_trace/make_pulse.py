@@ -9,6 +9,7 @@ from src.utilities import get_sk_rn, do_fft, do_ifft, MyNamespace, do_interpolat
 
 
 def check_dataclass_types(self):
+    """ Makes sure the correct types are used in the dataclasses. """
     for (name, field) in self.__dataclass_fields__.items():
         field_type = field.type
         if not isinstance(self.__dict__[name], field_type):
@@ -16,17 +17,28 @@ def check_dataclass_types(self):
             raise TypeError(f"The field `{name}` was assigned by `{current_type}` instead of `{field_type}`")
 
 class SpectralAmplitude:
+    """ A base for all spectral amplitudes. """
     def __post_init__(self):
         check_dataclass_types(self)
         
 
 class SpectralPhase:
+    """ A base for all spectral phases"""
     def __post_init__(self):
         check_dataclass_types(self)
 
 
 @dataclass
 class GaussianAmplitude(SpectralAmplitude): # can be used for single or multiple gaussians
+    """ 
+    Defines a Gaussian envelope. Multiple parameters can be provided per attribute. Final gaussians will be added up.
+
+    Attributes:
+        amplitude: scales the gaussian by a factor
+        central_frequency: the position of the maximum on the frequency axis
+        fwhm: the Full-Width-Half-Maximum of the gaussian
+        p: defines a super-gaussian (needs to be bigger or equal to one), if None a normal gaussian is assumed.
+    """
     amplitude: Union[np.ndarray,tuple,float,int]
     central_frequency: Union[np.ndarray,tuple,float,int]
     fwhm: Union[np.ndarray,tuple,float,int]
@@ -35,6 +47,15 @@ class GaussianAmplitude(SpectralAmplitude): # can be used for single or multiple
 
 @dataclass
 class LorentzianAmplitude(SpectralAmplitude): # can be used for single or multiple lorentzians
+    """ 
+    Defines a Lorentzian envelope. Multiple parameters can be provided per attribute. Final lorentzians will be added up.
+
+    Attributes:
+        amplitude: scales the lorentzian by a factor
+        central_frequency: the position of the maximum on the frequency axis
+        fwhm: the Full-Width-Half-Maximum of the lorentzian
+        p: defines a super-lorentzian (needs to be bigger or equal to one), if None a normal lorentzian is assumed.
+    """
     amplitude: Union[np.ndarray,tuple,float,int]
     central_frequency: Union[np.ndarray,tuple,float,int]
     fwhm: Union[np.ndarray,tuple,float,int]
@@ -44,20 +65,42 @@ class LorentzianAmplitude(SpectralAmplitude): # can be used for single or multip
 
 @dataclass
 class PolynomialPhase(SpectralPhase):
-    """ Coefficients are for all taylor-orders -> for a third order pulse, zeros have to be present for the other orders."""
+    """ 
+    Defines a polynomial phase in the frequency domain.
+
+    Attributes:
+        central_frequency: the central frequency, if None it will be calculated from the spectral amplitude.
+        coefficients: the taylor coefficients in fs, need to include all orders. (e.g. for a TOD pulse the input needs to be (0,0,0,TOD))
+    
+    """
     central_frequency: Union[float,int,None]
     coefficients: Union[np.ndarray,tuple,float,int]
 
 
 @dataclass
 class SinusoidalPhase(SpectralPhase):
+    """
+    Defines a sinusoidal phase in the frequency domain. Multiple parameters can be provided per attribute. Will cause addition of sinusoids.
+
+    Attributes:
+        amplitude: the amplitude of the sinusoid (in units of 2*pi)
+        central_frequency: the base-shift of the sinusoid (in PHz)
+        peridoicity: the periodicity of the sinusoid (in fs)
+        phase_shift: the phase of the sinusoid
+    
+    """
     amplitude: Union[np.ndarray,tuple,float,int]
+    central_frequency: Union[np.ndarray,tuple,float,int]
     periodicity: Union[np.ndarray,tuple,float,int]
     phase_shift: Union[np.ndarray,tuple,float,int]
 
 
 @dataclass
 class RandomPhase(SpectralPhase):
+    """
+    Generates a random continuous phase in the frequency domain. 
+
+    """
     number_of_points: int = 10
     minval_phase: Union[float,int] = -0.5*np.pi
     maxval_phase: Union[float,int] = 0.5*np.pi
@@ -66,8 +109,16 @@ class RandomPhase(SpectralPhase):
 
 @dataclass
 class CustomPulse:
+    """
+    Defines an arbitrary pulse via arrays. Or a mixture of a discretized and parametrized amplitude or phase.
+
+    Attributes:
+        frequency: the frequency axis
+        amplitude: the spectral amplitude, can be an array or a SpectralAmplitude
+        phase: the spectral phase, can be an array or a SpectralPhase
+    """
     frequency: np.ndarray
-    amplitude: Union[np.ndarray,SpectralAmplitude,list]
+    amplitude: Union[np.ndarray,SpectralAmplitude]
     phase: Union[np.ndarray,SpectralPhase]
 
     def __post_init__(self):
@@ -77,6 +128,17 @@ class CustomPulse:
 
 
 class TemporalAmplitude:
+    """ 
+    Defines a pulse envelope in the time domain. Is only used/accepted by MultiPulse.
+
+    Attributes:
+        gaussian_or_lorentzian: defines the envelope shape, needs to be gaussian or lorentzian.
+        ampitude: the amplitude 
+        duration: the duration
+        central_frequency: the central_frequency
+        p: the super-gaussian/lorentzian exponent
+    
+    """
     gaussian_or_lorentzian: str
     amplitude: Union[float, int]
     duration: Union[float, int]
@@ -89,7 +151,19 @@ class TemporalAmplitude:
 
 @dataclass
 class MultiPulse:
-    """ Constructs/Defines a pulse sequence in the time domain. """
+    """ 
+    Constructs/Defines a pulse sequence in the time domain. 
+
+    Attributes:
+        gaussian_or_lorentzian: only "gaussian" or "lorentzian" are accepted
+        amplitude: the relative scale of the envelopes
+        delay: the relative delay (not position) of each pulse, has to be one less than the total number of pulses
+        duration: the FWHM of each envelope in the time domain
+        central_frequency: the central frequency of each pulse
+        p: the super-gaussian/lorentzian of each pulse in the time domain
+        phase: the spectral phase of each pulse
+        envelope: is constructed from the given attributes
+    """
 
     gaussian_or_lorentzian: Union[list,tuple,np.ndarray,str]
     amplitude: Union[list,tuple,np.ndarray,float,int]
@@ -184,13 +258,13 @@ class MakePulse:
     
     
     def generate_sinusoidal_phase(self, frequency, phase_parameters):
-        a,b,c = phase_parameters.amplitude, phase_parameters.periodicity, phase_parameters.phase_shift
-        a,b,c = check_and_correct_if_scalar((a,b,c))
-        assert len(a)==len(b)==len(c)
+        a, f0, b,c = phase_parameters.amplitude, phase_parameters.central_frequency, phase_parameters.periodicity, phase_parameters.phase_shift
+        a, f0, b,c = check_and_correct_if_scalar((a,f0,b,c))
+        assert len(a)==len(f0)==len(b)==len(c)
 
         phase = 0
         for i in range(len(a)):
-            phase = phase + a[i]*np.sin(2*np.pi*b[i]*frequency-c[i])
+            phase = phase + a[i]*np.sin(2*np.pi*b[i]*(frequency-f0[i])-c[i])
         return 2*np.pi*phase
     
 
@@ -236,10 +310,6 @@ class MakePulse:
         elif isinstance(amp_parameters, CustomPulse):
             if isinstance(amp_parameters.amplitude, SpectralAmplitude):
                 amp_f = self.get_spectral_amplitude(amp_parameters.amplitude)
-            elif isinstance(amp_parameters.amplitude, list):
-                amp_f = 0
-                for params in amp_parameters.amplitude:
-                    amp_f = amp_f + self.get_spectral_amplitude(params)
             else:
                 amp_f = do_interpolation_1d(self.frequency, amp_parameters.frequency, amp_parameters.amplitude)
         else:

@@ -73,9 +73,9 @@ def get_quasi_newton_direction(grad, lbfgs_state, descent_info):
     Calculate the quasi-newton direciton using LBFGS.
 
     Args:
-        grad: jnp.array, the current gradient
-        lbfgs_stat: Pytree, the current lbfgs state
-        descent_info: Pytree, holds information on the solver (e.g. memory size for LBFGS)
+        grad (jnp.array): the current gradient
+        lbfgs_stat (Pytree): the current lbfgs state
+        descent_info (Pytree): holds information on the solver (e.g. memory size for LBFGS)
 
     Returns:
         tuple[jnp.array, Pytree], the quasi-newton direction and the unchanged lbfgs_state 

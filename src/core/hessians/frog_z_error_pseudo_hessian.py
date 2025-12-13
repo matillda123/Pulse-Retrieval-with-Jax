@@ -342,18 +342,18 @@ def get_pseudo_newton_direction_Z_error(grad_m, pulse_t, pulse_t_shifted, gate_s
     The direction is calculated in the frequency domain.
 
     Args:
-        grad_m: jnp.array, the current Z-error gradient
-        pulse_t: jnp.array, the current guess
-        pulse_t_shifted: jnp.array, the current guess shifted along the time axis
-        gate_shifted: jnp.array, the current gate guess shifted along the time axis
-        signal_t: jnp.array, the current signal field
-        signal_t_new: jnp.array, the current signal field projected onto the measured intensity
-        tau_arr: jnp.array, the time delays
-        measurement_info: Pytree, contains measurement data and parameters
-        newton_state: Pytree, contains the current state of the hessian calculation, e.g. the previous newton direction
-        newton_info: Pytree, contains parameters for the pseudo-newton direction calculation
-        full_or_diagonal: str, calculate using the full or diagonal pseudo hessian?
-        pulse_or_gate: str, whether the direction is calculated for the pulse or the gate-pulse
+        grad_m (jnp.array): the current Z-error gradient
+        pulse_t (jnp.array): the current guess
+        pulse_t_shifted (jnp.array): the current guess shifted along the time axis
+        gate_shifted (jnp.array): the current gate guess shifted along the time axis
+        signal_t (jnp.array): the current signal field
+        signal_t_new (jnp.array): the current signal field projected onto the measured intensity
+        tau_arr (jnp.array): the time delays
+        measurement_info (Pytree): contains measurement data and parameters
+        newton_state (Pytree): contains the current state of the hessian calculation, e.g. the previous newton direction
+        newton_info (Pytree): contains parameters for the pseudo-newton direction calculation
+        full_or_diagonal (str): calculate using the full or diagonal pseudo hessian?
+        pulse_or_gate (str): whether the direction is calculated for the pulse or the gate-pulse
 
     Returns:
         tuple[jnp.array, Pytree], the pseudo-newton direction and the updated newton_state

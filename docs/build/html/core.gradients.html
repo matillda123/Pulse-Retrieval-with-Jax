@@ -125,11 +125,11 @@ The gradient is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pulse_t_dispersed</strong> – jnp.array, the current guess after phase_matrix was applied</p></li>
-<li><p><strong>signal_t</strong> – jnp.array, the signal field of the current guess</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the signal field after projection onto the measured intensity</p></li>
-<li><p><strong>phase_matrix</strong> – jnp.array, the phase matrix which was applied</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
+<li><p><strong>pulse_t_dispersed</strong> (<em>jnp.array</em>) – the current guess after phase_matrix was applied</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the signal field of the current guess</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the signal field after projection onto the measured intensity</p></li>
+<li><p><strong>phase_matrix</strong> (<em>jnp.array</em>) – the phase matrix which was applied</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -249,14 +249,14 @@ The gradient is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>pulse_t_shifted</strong> – jnp.array, the current guess translated on the time axis</p></li>
-<li><p><strong>gate_shifted</strong> – jnp.array, the current gate translated on the time axis</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the delays</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>pulse_t_shifted</strong> (<em>jnp.array</em>) – the current guess translated on the time axis</p></li>
+<li><p><strong>gate_shifted</strong> (<em>jnp.array</em>) – the current gate translated on the time axis</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the delays</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -276,14 +276,14 @@ Time-Domain-Ptychography measurement. The gradient is calculated in the frequenc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>pulse_t_shifted</strong> – jnp.array, the current guess translated on the time axis</p></li>
-<li><p><strong>gate_shifted</strong> – jnp.array, the current gate translated on the time axis</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the delays</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>pulse_t_shifted</strong> (<em>jnp.array</em>) – the current guess translated on the time axis</p></li>
+<li><p><strong>gate_shifted</strong> (<em>jnp.array</em>) – the current gate translated on the time axis</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the delays</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -358,15 +358,15 @@ The gradient is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>gate_pulses</strong> – jnp.array, the current gate-pulse guess</p></li>
-<li><p><strong>gate</strong> – jnp.array, the current gate</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the delays</p></li>
-<li><p><strong>gd_correction</strong> – jnp.array, corrects for the group-delay from material dispersion</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>gate_pulses</strong> (<em>jnp.array</em>) – the current gate-pulse guess</p></li>
+<li><p><strong>gate</strong> (<em>jnp.array</em>) – the current gate</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the delays</p></li>
+<li><p><strong>gd_correction</strong> (<em>jnp.array</em>) – corrects for the group-delay from material dispersion</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -386,15 +386,15 @@ The gradient is calculated in the frequency domain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal_t</strong> – jnp.array, the current signal field</p></li>
-<li><p><strong>signal_t_new</strong> – jnp.array, the current signal field projected onto the measured intensity</p></li>
-<li><p><strong>pulse_t</strong> – jnp.array, the current guess</p></li>
-<li><p><strong>gate_pulses</strong> – jnp.array, the current gate-pulse guess</p></li>
-<li><p><strong>gate</strong> – jnp.array, the current gate</p></li>
-<li><p><strong>tau_arr</strong> – jnp.array, the delays</p></li>
-<li><p><strong>gd_correction</strong> – jnp.array, corrects for the group-delay from material dispersion</p></li>
-<li><p><strong>measurement_info</strong> – Pytree, contains measurement data and parameters</p></li>
-<li><p><strong>pulse_or_gate</strong> – str, whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
+<li><p><strong>signal_t</strong> (<em>jnp.array</em>) – the current signal field</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the current guess</p></li>
+<li><p><strong>gate_pulses</strong> (<em>jnp.array</em>) – the current gate-pulse guess</p></li>
+<li><p><strong>gate</strong> (<em>jnp.array</em>) – the current gate</p></li>
+<li><p><strong>tau_arr</strong> (<em>jnp.array</em>) – the delays</p></li>
+<li><p><strong>gd_correction</strong> (<em>jnp.array</em>) – corrects for the group-delay from material dispersion</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – whether the gradient is calculated with respect to the pulse or the gate-pulse</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

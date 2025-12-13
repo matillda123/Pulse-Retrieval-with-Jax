@@ -14,8 +14,8 @@ def calculate_phase_matrix_material(measurement_info, parameters):
     Calculates a phase matrix via material dispersion. Not differentiable due to usage of refractiveindex.
 
     Args:
-        measurement_info: Pytree, holds measurement data and parameters, needs to contain the material thickness z_arr in mm.
-        parameters: tuple[refractiveindex.RefractiveIndexMaterial, float], an object providing the refractive index, the speed of light in m/s
+        measurement_info (Pytree): holds measurement data and parameters, needs to contain the material thickness z_arr in mm.
+        parameters (refractiveindex.RefractiveIndexMaterial): an object providing the refractive index, the speed of light in m/s
 
     Returns:
         jnp.array, the calculated phase matrix
@@ -85,9 +85,9 @@ def calculate_phase_matrix(measurement_info, parameters, phase_func=calc_MIIPS_p
     Calculates a phase matrix using a specified phase function.
 
     Args:
-        measurement_info: Pytree, holds measurement data and parameters, needs to contain the shift-values in appropriate units
-        parameters: tuple, the parameters which are expected by phase_func
-        phase_func: Callable, defines how the phase is calculated
+        measurement_info (Pytree): holds measurement data and parameters, needs to contain the shift-values in appropriate units
+        parameters (tuple): the parameters which are expected by phase_func
+        phase_func (Callable): defines how the phase is calculated
 
     Returns:
         jnp.array, the calculated phase matrix

@@ -269,6 +269,8 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         population_pulse = descent_state.population.pulse/jnp.linalg.norm(descent_state.population.pulse,axis=-1)[:,jnp.newaxis]
         descent_state = tree_at(lambda x: x.population.pulse, descent_state, population_pulse)
 
+        # updating descent_state before makeing gate step may be probelmatic
+
         if measurement_info.doubleblind==True:
             descent_state=self.descent_Z_error_step(signal_t, signal_t_new, Z_error, descent_state, measurement_info, descent_info, "gate")
 

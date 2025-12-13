@@ -26,11 +26,11 @@ def calculate_Z_gradient(pulse_t_dispersed, signal_t, signal_t_new, phase_matrix
     The gradient is calculated in the frequency domain.
     
     Args:
-        pulse_t_dispersed: jnp.array, the current guess after phase_matrix was applied
-        signal_t: jnp.array, the signal field of the current guess
-        signal_t_new: jnp.array, the signal field after projection onto the measured intensity
-        phase_matrix: jnp.array, the phase matrix which was applied
-        measurement_info: Pytree, contains measurement data and parameters
+        pulse_t_dispersed (jnp.array): the current guess after phase_matrix was applied
+        signal_t (jnp.array): the signal field of the current guess
+        signal_t_new (jnp.array): the signal field after projection onto the measured intensity
+        phase_matrix (jnp.array): the phase matrix which was applied
+        measurement_info (Pytree): contains measurement data and parameters
 
     Returns:
         jnp.array, the Z-error gradient
