@@ -315,17 +315,15 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         sk, rn = measurement_info.sk, measurement_info.rn
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = self.fft(signal_t.signal_t, sk, rn)
-        trace = calculate_trace(signal_f)
+        trace = calculate_trace(signal_t.signal_f)
 
         mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None,None,None))(signal_t.signal_t, measured_trace, mu, measurement_info, descent_info, "_global")
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,0,None,None,None))(signal_t.signal_t, signal_t.signal_f, measured_trace, mu, measurement_info, descent_info, "_global")
 
         descent_state = self.do_descent_Z_error(descent_state, signal_t_new, measurement_info, descent_info)
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = self.fft(signal_t.signal_t, sk, rn)
-        trace = calculate_trace(signal_f)
+        trace = calculate_trace(signal_t.signal_f)
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measured_trace)
 
         return descent_state, trace_error.reshape(-1,1)
@@ -484,7 +482,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
 
         individual = self.update_individual(individual, gamma, descent_direction, measurement_info, pulse_or_gate)
         signal_t = self.calculate_signal_t(individual, transform_arr, measurement_info)
-        error_new = self.calculate_PIE_error(self.fft(signal_t.signal_t, sk, rn), measured_trace)
+        error_new = self.calculate_PIE_error(signal_t.signal_f, measured_trace)
         return error_new
     
 
@@ -496,7 +494,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         
         individual = self.update_individual(individual, gamma, descent_direction, measurement_info, pulse_or_gate)
         signal_t = jax.vmap(self.calculate_signal_t, in_axes=(None,0,None))(individual, transform_arr, measurement_info)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,None,None, None))(signal_t.signal_t, measured_trace, 1, measurement_info, 
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,0,None,None,None, None))(signal_t.signal_t,signal_t.signal_f, measured_trace, 1, measurement_info, 
                                                                                        descent_info, local_or_global)
 
         grad_all_m, U = self.calculate_PIE_descent_direction(individual, signal_t, signal_t_new, transform_arr, descent_info.pie_method, 
@@ -599,10 +597,9 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
     def local_iteration(self, descent_state, transform_arr_m, trace_line, measurement_info, descent_info):
         """ Peforms one local iteration. Calls do_iteration() with the appropriate (randomized) signal fields. """
         signal_t = jax.vmap(self.calculate_signal_t, in_axes=(0,0,None))(descent_state.population, transform_arr_m, measurement_info)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,None,None,None))(signal_t.signal_t, trace_line, 1, measurement_info, descent_info, "_local")
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,0,None,None,None,None))(signal_t.signal_t,signal_t.signal_f, trace_line, 1, measurement_info, descent_info, "_local")
 
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        pie_error = jax.vmap(self.calculate_PIE_error, in_axes=(0,None))(signal_f, trace_line)
+        pie_error = jax.vmap(self.calculate_PIE_error, in_axes=(0,None))(signal_t.signal_f, trace_line)
 
         local_state, population = descent_state._local, descent_state.population
         local_state, population = self.do_iteration(signal_t, signal_t_new, transform_arr_m, trace_line, pie_error, population, local_state, 
@@ -648,8 +645,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
 
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f=self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        trace=calculate_trace(signal_f)
+        trace=calculate_trace(signal_t.signal_f)
         trace_error=jax.vmap(calculate_trace_error, in_axes=(0, None))(trace, measurement_info.measured_trace)
 
         return descent_state, trace_error.reshape(-1,1)
@@ -676,11 +672,10 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         measured_trace = measurement_info.measured_trace
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,None,None,None,None))(signal_t.signal_t, measured_trace, 1, measurement_info, 
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,None,None,None,None))(signal_t.signal_t,signal_t.signal_f, measured_trace, 1, measurement_info, 
                                                                                          descent_info, "_global")
         
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        pie_error = jax.vmap(self.calculate_PIE_error, in_axes=(0,None))(signal_f, measured_trace)
+        pie_error = jax.vmap(self.calculate_PIE_error, in_axes=(0,None))(signal_t.signal_f, measured_trace)
 
         global_state, population = descent_state._global, descent_state.population 
         global_state, population = self.do_iteration(signal_t, signal_t_new, measurement_info.transform_arr, measured_trace, pie_error, 
@@ -702,8 +697,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         descent_state = tree_at(lambda x: x._global, descent_state, global_state)
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f=self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        trace=calculate_trace(signal_f)
+        trace=calculate_trace(signal_t.signal_f)
         trace_error=jax.vmap(calculate_trace_error, in_axes=(0, None))(trace, measured_trace)
 
         return descent_state, trace_error.reshape(-1,1)
@@ -954,7 +948,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
     def local_iteration(self, descent_state, transform_arr_m, trace_line, measurement_info, descent_info):
         """ Peforms one local iteration. Calls do_iteration() with the appropriate (randomized) signal fields. """
         signal_t = jax.vmap(self.calculate_signal_t, in_axes=(0,0,None))(descent_state.population, transform_arr_m, measurement_info)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,0,None,None,None))(signal_t.signal_t, trace_line, descent_state._local.mu, measurement_info, 
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,0,0,None,None,None))(signal_t.signal_t,signal_t.signal_f, trace_line, descent_state._local.mu, measurement_info, 
                                                                                    descent_info, "_local")
 
 
@@ -996,7 +990,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
         sk, rn = measurement_info.sk, measurement_info.rn
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
+        trace = calculate_trace(signal_t.signal_f)
         local_mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measurement_info.measured_trace)
         descent_state = tree_at(lambda x: x._local.mu, descent_state, local_mu)
 
@@ -1008,7 +1002,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
 
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
+        trace = calculate_trace(signal_t.signal_f)
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measurement_info.measured_trace)
 
         return descent_state, trace_error.reshape(-1,1)
@@ -1034,9 +1028,9 @@ class COPRABASE(ClassicAlgorithmsBASE):
         measured_trace, sk, rn = measurement_info.measured_trace, measurement_info.sk, measurement_info.rn 
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        trace = calculate_trace(self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn))
+        trace = calculate_trace(signal_t.signal_f)
         mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None,None,None))(signal_t.signal_t, measured_trace, mu, measurement_info, 
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,0,None,None,None))(signal_t.signal_t,signal_t.signal_f, measured_trace, mu, measurement_info, 
                                                                                       descent_info, "_global")
 
 
@@ -1061,7 +1055,7 @@ class COPRABASE(ClassicAlgorithmsBASE):
 
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
+        trace = calculate_trace(signal_t.signal_f)
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measured_trace)
 
         return descent_state, trace_error.reshape(-1,1)

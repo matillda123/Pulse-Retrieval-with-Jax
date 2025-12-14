@@ -84,10 +84,10 @@ class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         population = descent_state.population
         
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
+        trace = calculate_trace(signal_t.signal_f)
 
         mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None,None,None))(signal_t.signal_t, measured_trace, mu, measurement_info, descent_info, "_global")
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,0,None,None,None))(signal_t.signal_t,signal_t.signal_f, measured_trace, mu, measurement_info, descent_info, "_global")
         
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measured_trace)
         population_pulse = self.update_pulse(population.pulse, signal_t_new, signal_t.gate_shifted, measurement_info, descent_info)
@@ -96,9 +96,8 @@ class Vanilla(ClassicAlgorithmsBASE, RetrievePulsesFROG):
 
 
         if measurement_info.doubleblind==True:
-            signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-            trace = calculate_trace(self.fft(signal_t.signal_t, sk, rn))
-
+            #signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
+            #trace = calculate_trace(signal_t.signal_f)
             #mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
             #signal_t_new = jax.vmap(calculate_S_prime_projection, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
             population_gate = self.update_gate(population.gate, signal_t_new, signal_t.pulse_t_shifted, measurement_info, descent_info)
@@ -451,7 +450,7 @@ class CPCGPA(ClassicAlgorithmsBASE, RetrievePulsesFROG):
         trace = calculate_trace(signal_f)
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measured_trace)
 
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,None,None,None,None))(signal_t, measured_trace, 1, measurement_info, descent_info, "_global")
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,None,None,None,None))(signal_t,signal_f, measured_trace, 1, measurement_info, descent_info, "_global")
         opf = jax.vmap(self.convert_signal_t_to_opf, in_axes=(0,None))(signal_t_new, idx_arr)
 
         if descent_info.antialias==True:
@@ -686,8 +685,8 @@ class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePul
 
         reverse_transform = None
 
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, probe, signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
+        # signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, probe, signal_t.signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                                                      measurement_info, descent_info, pulse_or_gate, local_or_global)
         return descent_direction, newton_state
     

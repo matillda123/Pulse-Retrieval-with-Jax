@@ -554,8 +554,8 @@ class RetrievePulsesFROG(RetrievePulses):
         else:
             signal_t = pulse*gate_shifted
             
-
-        signal_t = MyNamespace(signal_t=signal_t, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
+        signal_f = self.fft(signal_t, measurement_info.sk, measurement_info.rn)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
         return signal_t
 
 
@@ -675,8 +675,8 @@ class RetrievePulsesTDP(RetrievePulsesFROG):
         else:
             signal_t = pulse*gate_shifted
             
-
-        signal_t = MyNamespace(signal_t=signal_t, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
+        signal_f = self.fft(signal_t, sk, rn)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, pulse_t_shifted=pulse_t_shifted, gate_shifted=gate_shifted, gate_pulse_shifted=gate_pulse_shifted)
         return signal_t
 
 
@@ -826,7 +826,8 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         gate_disp = calculate_gate(pulse_t_disp, measurement_info.nonlinear_method)
         signal_t = pulse_t_disp*gate_disp
 
-        signal_t = MyNamespace(signal_t=signal_t, pulse_t_disp=pulse_t_disp, gate_disp=gate_disp)
+        signal_f = self.fft(signal_t, measurement_info.sk, measurement_info.rn)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, pulse_t_disp=pulse_t_disp, gate_disp=gate_disp)
         return signal_t
     
 
@@ -999,7 +1000,8 @@ class RetrievePulses2DSI(RetrievePulsesFROG):
 
         signal_t = pulse_t*gate
 
-        signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate, gd_correction=gd_correction)
+        signal_f = self.fft(signal_t, sk, rn)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, gate_pulses=gate_pulses, gate=gate, gd_correction=gd_correction)
         return signal_t
 
 
@@ -1111,7 +1113,8 @@ class RetrievePulsesVAMPIRE(RetrievePulsesFROG):
 
         signal_t = pulse_t*gate
 
-        signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate, gd_correction=gd_correction)
+        signal_f = self.fft(signal_t, sk, rn)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, gate_pulses=gate_pulses, gate=gate, gd_correction=gd_correction)
         return signal_t
 
 

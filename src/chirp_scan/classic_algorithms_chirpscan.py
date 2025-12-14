@@ -71,8 +71,7 @@ class MIIPS(ClassicAlgorithmsBASE, RetrievePulsesCHIRPSCAN):
 
         descent_state = tree_at(lambda x: x.population, descent_state, population)
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        trace = calculate_trace(signal_f)
+        trace = calculate_trace(signal_t.signal_f)
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measurement_info.measured_trace)
 
         descent_state = tree_at(lambda x: x.phases, descent_state, phase_prime)
@@ -177,12 +176,10 @@ class Basic(ClassicAlgorithmsBASE, RetrievePulsesCHIRPSCAN):
         measured_trace = measurement_info.measured_trace
 
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = self.fft(signal_t.signal_t, sk, rn)
-        trace = calculate_trace(signal_f)
+        trace = calculate_trace(signal_t.signal_f)
 
         mu = jax.vmap(calculate_mu, in_axes=(0,None))(trace, measured_trace)
-        #signal_t_new = jax.vmap(calculate_S_prime_projection, in_axes=(0,None,0,None))(signal_t.signal_t, measured_trace, mu, measurement_info)
-        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,None,0,None,None,None))(signal_t.signal_t, measured_trace, mu, measurement_info, descent_info, "_global")
+        signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,None,0,None,None,None))(signal_t.signal_t,signal_t.signal_f, measured_trace, mu, measurement_info, descent_info, "_global")
         trace_error = jax.vmap(calculate_trace_error, in_axes=(0,None))(trace, measured_trace)
         
         pulse = jax.vmap(self.update_pulse, in_axes=(0,0,None,None,None,None))(signal_t_new, signal_t.gate_disp, phase_matrix, nonlinear_method, sk, rn)
@@ -355,8 +352,8 @@ class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePul
         # reverse_transform = Partial(reverse_transform_hessian[getattr(descent_info.newton, local_or_global)], measurement_info=measurement_info)
         reverse_transform = None
 
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_f, phase_matrix, measured_trace, reverse_transform, 
+        #signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, signal_t.gate_disp, signal_t.signal_f, phase_matrix, measured_trace, reverse_transform, 
                                                                      newton_direction_prev, measurement_info, descent_info, "gate", local_or_global)
         return descent_direction, newton_state
 

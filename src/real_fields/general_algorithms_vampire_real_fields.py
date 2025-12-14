@@ -36,14 +36,9 @@ class LSF(RetrievePulsesRealFields, LSFVAMPIRE, RetrievePulsesVAMPIREwithRealFie
         """
         pulse_t_arr, gate_t_arr = super().get_pulses_from_population(population, measurement_info, descent_info)
 
-        pulse_f_arr = self.fft(pulse_t_arr, measurement_info.sk, measurement_info.rn)
-        pulse_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, pulse_f_arr)
-        pulse_t_arr = self.ifft(pulse_f_arr, measurement_info.sk_big, measurement_info.rn_big)
-
+        pulse_t_arr, pulse_f_arr = self.interpolate_signal_to_big(pulse_t_arr, measurement_info)
         if measurement_info.doubleblind==True:
-            gate_f_arr = self.fft(gate_t_arr, measurement_info.sk, measurement_info.rn)
-            gate_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, gate_f_arr)
-            gate_t_arr = self.ifft(gate_f_arr, measurement_info.sk_big, measurement_info.rn_big)
+            gate_t_arr, gate_f_arr = self.interpolate_signal_to_big(gate_t_arr, measurement_info)
         else:
             gate_t_arr = pulse_t_arr
 
@@ -58,14 +53,10 @@ class LSF(RetrievePulsesRealFields, LSFVAMPIRE, RetrievePulsesVAMPIREwithRealFie
         The optimization is likely more efficient when the pulses are defined on time. Thus the interpolation.
         """
         population = super().convert_population(population, measurement_info, descent_info)
-        pulse_f_arr = self.fft(population.pulse, measurement_info.sk_big, measurement_info.rn_big)
-        pulse_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency, measurement_info.frequency_big, pulse_f_arr)
-        pulse_t_arr = self.ifft(pulse_f_arr, measurement_info.sk, measurement_info.rn)
 
+        pulse_t_arr, pulse_f_arr = self.interpolate_signal_from_big(population.pulse, measurement_info)
         if measurement_info.doubleblind==True:
-            gate_f_arr = self.fft(population.gate, measurement_info.sk_big, measurement_info.rn_big)
-            gate_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency, measurement_info.frequency_big, gate_f_arr)
-            gate_t_arr = self.ifft(gate_f_arr, measurement_info.sk, measurement_info.rn)
+            gate_t_arr, gate_f_arr = self.interpolate_signal_from_big(population.gate, measurement_info)
         else:
             gate_t_arr = pulse_t_arr
 
@@ -79,14 +70,9 @@ class LSF(RetrievePulsesRealFields, LSFVAMPIRE, RetrievePulsesVAMPIREwithRealFie
         """
         population = super().make_population_bisection_search(E_arr, population, measurement_info, descent_info, pulse_or_gate)
 
-        pulse_f_arr = self.fft(population.pulse, measurement_info.sk, measurement_info.rn)
-        pulse_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, pulse_f_arr)
-        pulse_t_arr = self.ifft(pulse_f_arr, measurement_info.sk_big, measurement_info.rn_big)
-
+        pulse_t_arr, pulse_f_arr = self.interpolate_signal_to_big(population.pulse, measurement_info)
         if measurement_info.doubleblind==True:
-            gate_f_arr = self.fft(population.gate, measurement_info.sk, measurement_info.rn)
-            gate_f_arr = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(measurement_info.frequency_big, measurement_info.frequency, gate_f_arr)
-            gate_t_arr = self.ifft(gate_f_arr, measurement_info.sk_big, measurement_info.rn_big)
+            gate_t_arr, gate_f_arr = self.interpolate_signal_to_big(population.gate, measurement_info)
         else:
             gate_t_arr = pulse_t_arr
 
@@ -97,16 +83,11 @@ class LSF(RetrievePulsesRealFields, LSFVAMPIRE, RetrievePulsesVAMPIREwithRealFie
         """ Another interpolation onto time_big/frequency_big to calculate the signal field for the final trace. """
         pulse_t, gate_t, pulse_f, gate_f = super().post_process_get_pulse_and_gate(descent_state, measurement_info, descent_info, idx=idx)
         
-        pulse_f = self.fft(pulse_t, measurement_info.sk, measurement_info.rn)
-        pulse_f = do_interpolation_1d(measurement_info.frequency_big, measurement_info.frequency, pulse_f)
-        pulse_t = self.ifft(pulse_f, measurement_info.sk_big, measurement_info.rn_big)
-
+        pulse_t, pulse_f = self.interpolate_signal_to_big(pulse_t, measurement_info)
         if measurement_info.doubleblind==True:
-            gate_f = self.fft(gate_t, measurement_info.sk, measurement_info.rn)
-            gate_f = do_interpolation_1d(measurement_info.frequency_big, measurement_info.frequency, gate_f)
-            gate_t = self.ifft(gate_f, measurement_info.sk_big, measurement_info.rn_big)
+            gate_t, gate_f = self.interpolate_signal_to_big(gate_t, measurement_info)
         else:
-            gate_t = pulse_t
+            gate_t, gate_f = pulse_t, pulse_f
 
         return pulse_t, gate_t, pulse_f, gate_f
 

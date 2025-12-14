@@ -111,8 +111,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
     def calc_error_of_reconstruction(self, descent_state, measurement_info, descent_info):
         """ Calculates the error of the reconstruction. """
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        trace = calculate_trace(signal_f)
+        trace = calculate_trace(signal_t.signal_f)
         # if population is larger than one this may cause an error or bug ? 
         trace_error = calculate_trace_error(trace, measurement_info.measured_trace)
         return trace_error
@@ -291,8 +290,8 @@ class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePul
         probe = signal_t.gate
 
         reverse_transform = None
-        signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
-        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, probe, signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
+        # signal_f = self.fft(signal_t.signal_t, measurement_info.sk, measurement_info.rn)
+        descent_direction, newton_state = PIE_get_pseudo_newton_direction(grad, probe, signal_t.signal_f, tau_arr, measured_trace, reverse_transform, newton_direction_prev, 
                                                                      measurement_info, descent_info, pulse_or_gate, local_or_global)
         return descent_direction, newton_state
     

@@ -6,35 +6,45 @@ from src.utilities import MyNamespace
 
 
 
-def split_population_real_imag(population, doubleblind):
+def split_population_real_imag(population, pulse_or_gate):
     """ Splits population into real/imag. """
-    pulse_real, pulse_imag = jnp.real(population.pulse), jnp.imag(population.pulse)
-    pulse = MyNamespace(real=pulse_real, imag=pulse_imag)
-    if doubleblind==True:
+    if pulse_or_gate=="pulse":
+        pulse_real, pulse_imag = jnp.real(population.pulse), jnp.imag(population.pulse)
+        pulse = MyNamespace(real=pulse_real, imag=pulse_imag)
+        gate = population.gate
+
+    elif pulse_or_gate=="gate":
         gate_real, gate_imag = jnp.real(population.gate), jnp.imag(population.gate)
         gate = MyNamespace(real=gate_real, imag=gate_imag)
+        pulse = population.pulse
+
     else:
-        gate = None
+        raise ValueError()
     return MyNamespace(pulse=pulse, gate=gate)
 
 
-def merge_real_imag_population(population, doubleblind):
+def merge_real_imag_population(population, pulse_or_gate):
     """ Merges a population from real/imag into a complex valued one. """
-    pulse_real, pulse_imag = population.pulse.real, population.pulse.imag
-    pulse = pulse_real + 1j*pulse_imag
-    if doubleblind==True:
+    if pulse_or_gate=="pulse":
+        pulse_real, pulse_imag = population.pulse.real, population.pulse.imag
+        pulse = pulse_real + 1j*pulse_imag
+        gate = population.gate
+
+    elif pulse_or_gate=="gate":
         gate_real, gate_imag = population.gate.real, population.gate.imag
         gate = gate_real + 1j*gate_imag
+        pulse = population.pulse
+
     else:
-        gate = None
+        raise ValueError()
     return MyNamespace(pulse=pulse, gate=gate)
 
 
 
 
-def calc_z_error(individual, transform_arr, signal_t_new, measurement_info, descent_info, calc_signal_t):
+def calc_z_error(pulse, gate, transform_arr, signal_t_new, measurement_info, descent_info, calc_signal_t, pulse_or_gate):
     """ Calculates the Z-error for an individual. """
-    individual = merge_real_imag_population(individual, measurement_info.doubleblind)
+    individual = merge_real_imag_population(MyNamespace(pulse=pulse, gate=gate), pulse_or_gate)
     signal_t = calc_signal_t(individual, transform_arr, measurement_info)
     error = jnp.sum(jnp.abs(signal_t_new-signal_t.signal_t)**2)
     return error
@@ -42,15 +52,13 @@ def calc_z_error(individual, transform_arr, signal_t_new, measurement_info, desc
 
 
 
-
-def calc_Z_grad_AD(population, transform_arr, signal_t_new, measurement_info, descent_info, calculate_signal_t):
+def calc_Z_grad_AD(individual, transform_arr, signal_t_new, measurement_info, descent_info, calculate_signal_t, pulse_or_gate):
     """
     Calculates the Z-error gradient with respect to pulse and gate using jax.grad. 
-    To do this the complex valued population is split into real/imag. The resulting gradients are 
-    merged again to form complex values
+    To do this the complex valued population is split into real/imag. The resulting gradient are merged into a complex one.
 
     Args:
-        population (Pytree): the current population
+        individual (Pytree): an individual of the current population
         transform_arr (jnp.array): the applied transform to get signal_t_new
         signal_t_new (jnp.array): the current signal field projected onto the measured intensity
         measurement_info (Pytree): contains measurement data and parameters
@@ -60,12 +68,16 @@ def calc_Z_grad_AD(population, transform_arr, signal_t_new, measurement_info, de
     Returns:
         tuple[jnp.array, jnp.array|None], the gradient with respect to the pulse and gate
     """
-    population = split_population_real_imag(population, measurement_info.doubleblind)
+    individual = split_population_real_imag(individual, pulse_or_gate)
 
     loss_func = Partial(calc_z_error, measurement_info=measurement_info, descent_info=descent_info, 
-                        calc_signal_t=calculate_signal_t)
-    calc_grad = jax.grad(loss_func, argnums=0)
-    grad = jax.vmap(calc_grad, in_axes=(0,None,None))(population, transform_arr, signal_t_new)
+                        calc_signal_t=calculate_signal_t, pulse_or_gate=pulse_or_gate)
+    if pulse_or_gate=="pulse":
+        argnums=0
+    elif pulse_or_gate=="gate":
+        argnums=1
+    else:
+        raise ValueError(f"pulse_or_gate has to be pulse or gate. Not {pulse_or_gate}")
 
-    grad = merge_real_imag_population(grad, measurement_info.doubleblind)
-    return grad.pulse, grad.gate
+    grad = jax.grad(loss_func, argnums=argnums)(individual.pulse, individual.gate, transform_arr, signal_t_new)
+    return grad.real + 1j*grad.imag

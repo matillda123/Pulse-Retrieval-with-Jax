@@ -34,108 +34,54 @@ class RetrievePulsesRealFields:
         self._fmin, self._fmax = f_range_fields
         super().__init__(*args, **kwargs)
 
-        self.measurement_info = self.measurement_info.expand(frequency_exp = self.frequency_exp, 
-                                                             real_fields = True)
+        self.measurement_info = self.measurement_info.expand(real_fields = True)
         
-
-        f = jnp.abs(self.measurement_info.frequency_exp)
-        df = jnp.mean(jnp.diff(self.measurement_info.frequency_exp))
+        f = jnp.abs(self.measurement_info.frequency)
+        df = jnp.mean(jnp.diff(self.measurement_info.frequency))
         self.frequency_big = jnp.arange(-1*jnp.max(f), jnp.max(f)+df, df)
         self.time_big = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(self.frequency_big), jnp.mean(jnp.diff(self.frequency_big))))
         self.sk_big, self.rn_big = get_sk_rn(self.time_big, self.frequency_big)
-        self.measurement_info = self.measurement_info.expand(time_big=self.time_big, frequency_big=self.frequency_big, sk_big=self.sk_big, rn_big=self.rn_big)
+        self.measurement_info = self.measurement_info.expand(time_big=self.time_big, frequency_big=self.frequency_big, 
+                                                             sk_big=self.sk_big, rn_big=self.rn_big)
 
 
 
-    def get_data(self, x_arr, frequency, measured_trace):
+    def get_data(self, x_arr, frequency_exp, measured_trace):
         """ Prepare/Convert data. """
         measured_trace = measured_trace/jnp.linalg.norm(measured_trace)
 
         self.x_arr = jnp.asarray(x_arr)
-
-        self.frequency_exp = jnp.asarray(frequency)
-        df = jnp.mean(jnp.diff(jnp.asarray(frequency)))
+        df = jnp.mean(jnp.diff(jnp.asarray(frequency_exp)))
         self.frequency = jnp.arange(self._fmin, self._fmax+df, df)
-        N = jnp.size(self.frequency)
+        self.time = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(self.frequency), df))
         
-        self.time = jnp.fft.fftshift(jnp.fft.fftfreq(N, df))
-        self.measured_trace = jnp.asarray(measured_trace)
-
+        assert self._fmax >= jnp.max(frequency_exp) and self._fmin <= jnp.min(frequency_exp), "the frequency range needs to include the frequency range of the trace."
+        self.measured_trace = do_interpolation_1d(self.frequency, frequency_exp, jnp.asarray(measured_trace).T).T
         return self.x_arr, self.time, self.frequency, self.measured_trace
     
 
 
+    def interpolate_signal_from_big(self, signal_t, measurement_info):
+        frequency, frequency_big = measurement_info.frequency, measurement_info.frequency_big
+        sk, rn, sk_big, rn_big = measurement_info.sk, measurement_info.rn, measurement_info.sk_big, measurement_info.rn_big
+        signal_f = self.fft(signal_t, sk_big, rn_big)
+        signal_f = do_interpolation_1d(frequency, frequency_big, signal_f.T).T
+        signal_t = self.ifft(signal_f, sk, rn)
+        return signal_t, signal_f
+    
 
-    def construct_trace(self, individual, measurement_info, descent_info):
-        """ Generates a trace for a given individual. Calls the method specific function for calculating the nonlinear signal fields. """
-        x_arr = measurement_info.x_arr
-        frequency_exp = measurement_info.frequency_exp
-        frequency_big = measurement_info.frequency_big
-        sk_big, rn_big = measurement_info.sk_big, measurement_info.rn_big
-
-        
-        signal_t = self.calculate_signal_t(individual, measurement_info.transform_arr, measurement_info)
-        signal_f = self.fft(signal_t.signal_t, sk_big, rn_big)
-        trace = calculate_trace(signal_f)
-
-        trace = do_interpolation_1d(frequency_exp, frequency_big, trace.T, method="linear").T
-        return x_arr, frequency_exp, trace
+    def interpolate_signal_to_big(self, signal_t, measurement_info):
+        frequency, frequency_big = measurement_info.frequency, measurement_info.frequency_big
+        sk, rn, sk_big, rn_big = measurement_info.sk, measurement_info.rn, measurement_info.sk_big, measurement_info.rn_big
+        signal_f = self.fft(signal_t, sk_big, rn_big)
+        signal_f = do_interpolation_1d(frequency_big, frequency, signal_f.T).T
+        signal_t = self.ifft(signal_f, sk, rn)
+        return signal_t, signal_f
     
 
 
 
-    def post_process_center_pulse_and_gate(self, pulse_t, gate_t):
-        """ This essentially removes the linear phase. But only approximately since no fits are done. """
-        sk_big, rn_big = self.measurement_info.sk_big, self.measurement_info.rn_big
-
-        pulse_t = center_signal(pulse_t)
-        gate_t = center_signal(gate_t)
-
-        pulse_f = self.fft(pulse_t, sk_big, rn_big)
-        gate_f = self.fft(gate_t, sk_big, rn_big)
-
-        return pulse_t, gate_t, pulse_f, gate_f
     
-
-    
-
-    def post_process_create_trace(self, individual):
-        """ Post processing to get the final trace """
-        sk_big, rn_big = self.measurement_info.sk_big, self.measurement_info.rn_big
-        transform_arr = self.measurement_info.transform_arr
-    
-        signal_t = self.calculate_signal_t(individual, transform_arr, self.measurement_info)
-        signal_f = self.fft(signal_t.signal_t, sk_big, rn_big)
-        trace = calculate_trace(signal_f)
-        return trace
-
-
-    def post_process(self, descent_state, error_arr):
-        """ Creates the final_result object from the final descent_state. """
-        final_result = super().post_process(descent_state, error_arr)
-
-        frequency_exp, frequency, frequency_big = self.measurement_info.frequency_exp, self.measurement_info.frequency, self.measurement_info.frequency_big
-        trace = final_result.trace
-        trace = do_interpolation_1d(frequency_exp, frequency_big, trace.T, method="linear").T
-        trace = trace/jnp.linalg.norm(trace)
-
-        final_result = final_result.expand(frequency_exp = self.measurement_info.frequency_exp, 
-                                           trace = trace)
-
-
-        pulse_f = do_interpolation_1d(frequency, frequency_big, final_result.pulse_f)
-        pulse_t = self.ifft(pulse_f, self.measurement_info.sk, self.measurement_info.rn)
-        final_result = final_result.expand(pulse_t=pulse_t, pulse_f=pulse_f)
-
-        if self.measurement_info.doubleblind==True:
-            gate_f = do_interpolation_1d(frequency, frequency_big, final_result.gate_f)
-            gate_t = self.ifft(gate_f, self.measurement_info.sk, self.measurement_info.rn)
-            final_result = final_result.expand(gate_t=gate_t, gate_f=gate_f)
-
-        return final_result
-    
-
-
 
     def make_pulse_f_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
         """ Evaluates an individual onto the frequency domain. Interpolates it onto frequency_big. """
@@ -146,12 +92,34 @@ class RetrievePulsesRealFields:
         return signal_f
     
 
+
     def make_pulse_t_from_individual(self, individual, measurement_info, descent_info, pulse_or_gate="pulse"):
         """ Evaluates an individual onto the time domain. Onto time_big. """
         signal_f = self.make_pulse_f_from_individual(individual, measurement_info, descent_info, pulse_or_gate)
         signal = self.ifft(signal_f, measurement_info.sk_big, measurement_info.rn_big)
         return signal
     
+
+
+
+
+
+    def construct_trace(self, individual, measurement_info, descent_info):
+        """ Generates a trace for a given individual. Calls the method specific function for calculating the nonlinear signal fields. """
+        x_arr = measurement_info.x_arr
+        frequency = measurement_info.frequency
+
+        signal_t = self.calculate_signal_t(individual, measurement_info.transform_arr, measurement_info)
+        trace = calculate_trace(signal_t.signal_f)
+        return x_arr, frequency, trace
+
+    
+
+    def post_process_create_trace(self, individual):
+        """ Post processing to get the final trace """
+        _, _, trace = self.construct_trace(individual, self.measurement_info, self.descent_info)
+        return trace
+
 
 
 
@@ -217,9 +185,12 @@ class RetrievePulsesFROGwithRealFields(RetrievePulsesFROG):
             signal_t = jnp.real(pulse + gate_pulse_shifted)*calculate_gate_with_Real_Fields(pulse + gate_pulse_shifted, frogmethod)
         else:
             signal_t = jnp.real(pulse)*gate_shifted
-            
+
+
+        signal_t, signal_f = self.interpolate_signal_from_big(signal_t, measurement_info)
 
         signal_t = MyNamespace(signal_t = signal_t, 
+                               signal_f = signal_f,
                                pulse_t_shifted = pulse_t_shifted, 
                                gate_shifted = gate_shifted, 
                                gate_pulse_shifted = gate_pulse_shifted)
@@ -302,9 +273,12 @@ class RetrievePulsesTDPwithRealFields(RetrievePulsesTDP):
             signal_t = jnp.real(pulse + gate_pulse_shifted)*calculate_gate_with_Real_Fields(pulse + gate_pulse_shifted, frogmethod)
         else:
             signal_t = jnp.real(pulse)*gate_shifted
-            
 
+
+        signal_t, signal_f = self.interpolate_signal_from_big(signal_t, measurement_info)
+        
         signal_t = MyNamespace(signal_t = signal_t, 
+                               signal_f = signal_f,
                                pulse_t_shifted = pulse_t_shifted, 
                                gate_shifted = gate_shifted, 
                                gate_pulse_shifted = gate_pulse_shifted)
@@ -355,7 +329,9 @@ class RetrievePulsesCHIRPSCANwithRealFields(RetrievePulsesCHIRPSCAN):
         gate_disp = calculate_gate_with_Real_Fields(pulse_t_disp, measurement_info.nonlinear_method)
         signal_t = jnp.real(pulse_t_disp)*gate_disp
 
+        signal_t, signal_f = self.interpolate_signal_from_big(signal_t, measurement_info)
         signal_t = MyNamespace(signal_t = signal_t, 
+                               signal_f = signal_f,
                                pulse_t_disp = pulse_t_disp, 
                                gate_disp = gate_disp)
         return signal_t
@@ -441,8 +417,9 @@ class RetrievePulses2DSIwithRealFields(RetrievePulses2DSI):
         gate = calculate_gate_with_Real_Fields(gate_pulses, nonlinear_method)
 
         signal_t = jnp.real(pulse_t)*gate
+        signal_t, signal_f = self.interpolate_signal_from_big(signal_t, measurement_info)
 
-        signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate, delay=delay)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, gate_pulses=gate_pulses, gate=gate, delay=delay)
         return signal_t
 
 
@@ -520,5 +497,6 @@ class RetrievePulsesVAMPIREwithRealFields(RetrievePulsesVAMPIRE):
 
         signal_t = jnp.real(pulse_t)*gate
 
-        signal_t = MyNamespace(signal_t=signal_t, gate_pulses=gate_pulses, gate=gate, delay=delay)
+        signal_t, signal_f = self.interpolate_signal_from_big(signal_t, measurement_info)
+        signal_t = MyNamespace(signal_t=signal_t, signal_f=signal_f, gate_pulses=gate_pulses, gate=gate, delay=delay)
         return signal_t
