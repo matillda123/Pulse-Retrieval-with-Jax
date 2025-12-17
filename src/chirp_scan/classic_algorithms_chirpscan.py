@@ -311,7 +311,7 @@ class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePul
     #     return hessian_all_m
 
 
-    def calculate_PIE_descent_direction_m(self, signal_t, signal_t_new, phase_matrix_m, population, pie_method, measurement_info, descent_info, pulse_or_gate):
+    def calculate_PIE_descent_direction_m(self, signal_t, signal_t_new, phase_matrix_m, measured_trace, population, pie_method, measurement_info, descent_info, pulse_or_gate):
         """ Calculates the PIE direction for a given shift. """
         alpha = descent_info.alpha
 

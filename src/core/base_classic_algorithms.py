@@ -265,8 +265,6 @@ class GeneralizedProjectionBASE(ClassicAlgorithmsBASE):
         """ Does one Z-error descent step. Calls descent_Z_error_step for pulse and or gate. """
         signal_t = self.generate_signal_t(descent_state, measurement_info, descent_info)
         Z_error = jax.vmap(calculate_Z_error, in_axes=(0,0))(signal_t.signal_t, signal_t_new)
-        
-        jax.debug.print("{error}", error=Z_error)
 
         descent_state = self.descent_Z_error_step(signal_t, signal_t_new, Z_error, descent_state, measurement_info, descent_info, "pulse")
         population_pulse = descent_state.population.pulse/jnp.linalg.norm(descent_state.population.pulse,axis=-1)[:,jnp.newaxis]

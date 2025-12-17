@@ -615,7 +615,7 @@ class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePul
         return grad_all_m
 
 
-    def calculate_PIE_descent_direction_m(self, signal_t, signal_t_new, tau, population, pie_method, measurement_info, descent_info, pulse_or_gate):
+    def calculate_PIE_descent_direction_m(self, signal_t, signal_t_new, tau, measured_trace, population, pie_method, measurement_info, descent_info, pulse_or_gate):
         """ Calculates the PIE direction for pulse or gate-pulse for a given shift. """
         alpha = descent_info.alpha
 

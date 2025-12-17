@@ -1,7 +1,7 @@
-core
-====
+real_fields
+===========
 
 .. toctree::
    :maxdepth: 4
 
-   core
+   real_fields

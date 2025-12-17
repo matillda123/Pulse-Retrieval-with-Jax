@@ -1,6 +1,18 @@
 real\_fields package
 ====================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   real_fields.chirp_scan
+   real_fields.frog
+   real_fields.tdp
+   real_fields.twodsi
+   real_fields.vampire
+
 Submodules
 ----------
 
@@ -8,46 +20,6 @@ real\_fields.base\_classes\_methods module
 ------------------------------------------
 
 .. automodule:: real_fields.base_classes_methods
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-real\_fields.general\_algorithms\_2dsi\_real\_fields module
------------------------------------------------------------
-
-.. automodule:: real_fields.general_algorithms_2dsi_real_fields
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-real\_fields.general\_algorithms\_chirpscan\_real\_fields module
-----------------------------------------------------------------
-
-.. automodule:: real_fields.general_algorithms_chirpscan_real_fields
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-real\_fields.general\_algorithms\_frog\_real\_fields module
------------------------------------------------------------
-
-.. automodule:: real_fields.general_algorithms_frog_real_fields
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-real\_fields.general\_algorithms\_tdp\_real\_fields module
-----------------------------------------------------------
-
-.. automodule:: real_fields.general_algorithms_tdp_real_fields
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-real\_fields.general\_algorithms\_vampire\_real\_fields module
---------------------------------------------------------------
-
-.. automodule:: real_fields.general_algorithms_vampire_real_fields
    :members:
    :show-inheritance:
    :undoc-members:
