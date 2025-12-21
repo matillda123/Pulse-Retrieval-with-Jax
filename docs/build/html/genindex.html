@@ -48,17 +48,17 @@
 <li class="toctree-l1"><a class="reference internal" href="twodsi.html">twodsi</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vampire.html">vampire</a></li>
 <li class="toctree-l1"><a class="reference internal" href="simulate_trace.html">simulate_trace</a></li>
-<li class="toctree-l1"><a class="reference internal" href="real_fields.html">real_fields package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="real_fields.chirp_scan.html">real_fields.chirp_scan package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="real_fields.frog.html">real_fields.frog package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="real_fields.tdp.html">real_fields.tdp package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="real_fields.twodsi.html">real_fields.twodsi package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="real_fields.vampire.html">real_fields.vampire package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="real_fields.html">real_fields</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="real_fields.chirp_scan.html">real_fields.chirp_scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="real_fields.frog.html">real_fields.frog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="real_fields.tdp.html">real_fields.tdp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="real_fields.twodsi.html">real_fields.twodsi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="real_fields.vampire.html">real_fields.vampire</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="core.html">core</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="core.gradients.html">core.gradients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians package</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">utilities</a></li>
@@ -165,14 +165,14 @@
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_trace.apply_noise">apply_noise() (in module simulate_trace.make_trace)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses2DSI.apply_phase">apply_phase() (core.base_classes_methods.RetrievePulses2DSI method)</a>
 
       <ul>
         <li><a href="core.html#core.base_classes_methods.RetrievePulsesVAMPIRE.apply_phase">(core.base_classes_methods.RetrievePulsesVAMPIRE method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses2DSI.apply_spectral_filter">apply_spectral_filter() (core.base_classes_methods.RetrievePulses2DSI method)</a>
 
       <ul>
@@ -195,6 +195,8 @@
         <li><a href="real_fields.chirp_scan.html#real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.AutoDiff">(class in real_fields.chirp_scan.general_algorithms_chirpscan_real_fields)</a>
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.AutoDiff">(class in real_fields.frog.general_algorithms_frog_real_fields)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.AutoDiff">(class in real_fields.tdp.general_algorithms_tdp_real_fields)</a>
 </li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.AutoDiff">(class in real_fields.twodsi.general_algorithms_2dsi_real_fields)</a>
 </li>
@@ -283,13 +285,23 @@
 </li>
       <li><a href="core.html#core.phase_matrix_funcs.calc_GDD">calc_GDD() (in module core.phase_matrix_funcs)</a>
 </li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.calc_grad_AD">calc_grad_AD() (in module core.gradients.gradients_via_AD)</a>
+</li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.calc_grad_AD_pie_error">calc_grad_AD_pie_error() (in module core.gradients.gradients_via_AD)</a>
+</li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.calc_grad_AD_z_error">calc_grad_AD_z_error() (in module core.gradients.gradients_via_AD)</a>
+</li>
       <li><a href="core.html#core.base_classic_algorithms.PtychographicIterativeEngineBASE.calc_grad_for_linesearch">calc_grad_for_linesearch() (core.base_classic_algorithms.PtychographicIterativeEngineBASE method)</a>
 </li>
       <li><a href="core.html#core.phase_matrix_funcs.calc_MIIPS_phase">calc_MIIPS_phase() (in module core.phase_matrix_funcs)</a>
 </li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.calc_pie_error">calc_pie_error() (in module core.gradients.gradients_via_AD)</a>
+</li>
       <li><a href="core.html#core.phase_matrix_funcs.calc_sine_phase">calc_sine_phase() (in module core.phase_matrix_funcs)</a>
 </li>
       <li><a href="core.html#core.phase_matrix_funcs.calc_tanh_phase">calc_tanh_phase() (in module core.phase_matrix_funcs)</a>
+</li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.calc_z_error">calc_z_error() (in module core.gradients.gradients_via_AD)</a>
 </li>
       <li><a href="core.html#core.base_classic_algorithms.COPRABASE.calc_Z_error_for_linesearch">calc_Z_error_for_linesearch() (core.base_classic_algorithms.COPRABASE method)</a>
 
@@ -557,14 +569,14 @@
         <li><a href="vampire.html#vampire.classic_algorithms_vampire.GeneralizedProjection.calculate_Z_gradient_individual">(vampire.classic_algorithms_vampire.GeneralizedProjection method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.gradients.html#core.gradients.frog_z_error_gradients.calculate_Z_gradient_pulse">calculate_Z_gradient_pulse() (in module core.gradients.frog_z_error_gradients)</a>
 
       <ul>
         <li><a href="core.gradients.html#core.gradients.twodsi_z_error_gradients.calculate_Z_gradient_pulse">(in module core.gradients.twodsi_z_error_gradients)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="chirp_scan.html#chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection.calculate_Z_newton_direction">calculate_Z_newton_direction() (chirp_scan.classic_algorithms_chirpscan.GeneralizedProjection method)</a>
 
       <ul>
@@ -652,6 +664,8 @@
         <li><a href="real_fields.chirp_scan.html#real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.LSF.convert_population">(real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.LSF method)</a>
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.LSF.convert_population">(real_fields.frog.general_algorithms_frog_real_fields.LSF method)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.LSF.convert_population">(real_fields.tdp.general_algorithms_tdp_real_fields.LSF method)</a>
 </li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.LSF.convert_population">(real_fields.twodsi.general_algorithms_2dsi_real_fields.LSF method)</a>
 </li>
@@ -765,6 +779,13 @@
 
       <ul>
         <li><a href="core.gradients.html#module-core.gradients.frog_z_error_gradients">module</a>
+</li>
+      </ul></li>
+      <li>
+    core.gradients.gradients_via_AD
+
+      <ul>
+        <li><a href="core.gradients.html#module-core.gradients.gradients_via_AD">module</a>
 </li>
       </ul></li>
       <li>
@@ -956,6 +977,8 @@
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.DifferentialEvolution">(class in real_fields.frog.general_algorithms_frog_real_fields)</a>
 </li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.DifferentialEvolution">(class in real_fields.tdp.general_algorithms_tdp_real_fields)</a>
+</li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.DifferentialEvolution">(class in real_fields.twodsi.general_algorithms_2dsi_real_fields)</a>
 </li>
         <li><a href="real_fields.vampire.html#real_fields.vampire.general_algorithms_vampire_real_fields.DifferentialEvolution">(class in real_fields.vampire.general_algorithms_vampire_real_fields)</a>
@@ -1045,6 +1068,8 @@
         <li><a href="real_fields.chirp_scan.html#real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.Evosax">(class in real_fields.chirp_scan.general_algorithms_chirpscan_real_fields)</a>
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.Evosax">(class in real_fields.frog.general_algorithms_frog_real_fields)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.Evosax">(class in real_fields.tdp.general_algorithms_tdp_real_fields)</a>
 </li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.Evosax">(class in real_fields.twodsi.general_algorithms_2dsi_real_fields)</a>
 </li>
@@ -1316,8 +1341,6 @@
         <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.get_phase">(core.base_general_optimization.AutoDiffBASE method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classes_methods.RetrievePulses2DSI.get_phase_matrix">get_phase_matrix() (core.base_classes_methods.RetrievePulses2DSI method)</a>
 
       <ul>
@@ -1326,6 +1349,8 @@
         <li><a href="core.html#core.base_classes_methods.RetrievePulsesVAMPIRE.get_phase_matrix">(core.base_classes_methods.RetrievePulsesVAMPIRE method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_classic_algorithms.PtychographicIterativeEngineBASE.get_PIE_weights">get_PIE_weights() (core.base_classic_algorithms.PtychographicIterativeEngineBASE method)</a>
 </li>
       <li><a href="core.html#core.bsplines_1d.get_prefactor">get_prefactor() (in module core.bsplines_1d)</a>
@@ -1376,6 +1401,14 @@
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.Evosax.get_pulses_from_population">(real_fields.frog.general_algorithms_frog_real_fields.Evosax method)</a>
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.LSF.get_pulses_from_population">(real_fields.frog.general_algorithms_frog_real_fields.LSF method)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.AutoDiff.get_pulses_from_population">(real_fields.tdp.general_algorithms_tdp_real_fields.AutoDiff method)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.DifferentialEvolution.get_pulses_from_population">(real_fields.tdp.general_algorithms_tdp_real_fields.DifferentialEvolution method)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.Evosax.get_pulses_from_population">(real_fields.tdp.general_algorithms_tdp_real_fields.Evosax method)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.LSF.get_pulses_from_population">(real_fields.tdp.general_algorithms_tdp_real_fields.LSF method)</a>
 </li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.AutoDiff.get_pulses_from_population">(real_fields.twodsi.general_algorithms_2dsi_real_fields.AutoDiff method)</a>
 </li>
@@ -1591,9 +1624,9 @@
       <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTrace2DSI.interpolate_trace">interpolate_trace() (simulate_trace.make_trace.MakeTrace2DSI method)</a>
 
       <ul>
-        <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTraceCHIRPSCAN.interpolate_trace">(simulate_trace.make_trace.MakeTraceCHIRPSCAN method)</a>
+        <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTraceBASE.interpolate_trace">(simulate_trace.make_trace.MakeTraceBASE method)</a>
 </li>
-        <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTraceFROG.interpolate_trace">(simulate_trace.make_trace.MakeTraceFROG method)</a>
+        <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTraceCHIRPSCAN.interpolate_trace">(simulate_trace.make_trace.MakeTraceCHIRPSCAN method)</a>
 </li>
         <li><a href="simulate_trace.html#simulate_trace.make_trace.MakeTraceTDP.interpolate_trace">(simulate_trace.make_trace.MakeTraceTDP method)</a>
 </li>
@@ -1656,10 +1689,10 @@
 </li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.lorentzian_term">lorentzian_term() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.LorentzianAmplitude">LorentzianAmplitude (class in simulate_trace.make_pulse)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.loss_function">loss_function() (core.base_general_optimization.AutoDiffBASE method)</a>
 </li>
       <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.loss_function_amp">loss_function_amp() (core.base_general_optimization.AutoDiffBASE method)</a>
@@ -1676,6 +1709,8 @@
         <li><a href="real_fields.chirp_scan.html#real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.LSF">(class in real_fields.chirp_scan.general_algorithms_chirpscan_real_fields)</a>
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.LSF">(class in real_fields.frog.general_algorithms_frog_real_fields)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.LSF">(class in real_fields.tdp.general_algorithms_tdp_real_fields)</a>
 </li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.LSF">(class in real_fields.twodsi.general_algorithms_2dsi_real_fields)</a>
 </li>
@@ -1720,6 +1755,8 @@
         <li><a href="real_fields.chirp_scan.html#real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.AutoDiff.make_pulse_from_individual">(real_fields.chirp_scan.general_algorithms_chirpscan_real_fields.AutoDiff method)</a>
 </li>
         <li><a href="real_fields.frog.html#real_fields.frog.general_algorithms_frog_real_fields.AutoDiff.make_pulse_from_individual">(real_fields.frog.general_algorithms_frog_real_fields.AutoDiff method)</a>
+</li>
+        <li><a href="real_fields.tdp.html#real_fields.tdp.general_algorithms_tdp_real_fields.AutoDiff.make_pulse_from_individual">(real_fields.tdp.general_algorithms_tdp_real_fields.AutoDiff method)</a>
 </li>
         <li><a href="real_fields.twodsi.html#real_fields.twodsi.general_algorithms_2dsi_real_fields.AutoDiff.make_pulse_from_individual">(real_fields.twodsi.general_algorithms_2dsi_real_fields.AutoDiff method)</a>
 </li>
@@ -1772,6 +1809,8 @@
 </li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.merge_population_from_amp_and_phase">merge_population_from_amp_and_phase() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
 </li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.merge_real_imag_population">merge_real_imag_population() (in module core.gradients.gradients_via_AD)</a>
+</li>
       <li><a href="chirp_scan.html#chirp_scan.classic_algorithms_chirpscan.MIIPS">MIIPS (class in chirp_scan.classic_algorithms_chirpscan)</a>
 </li>
       <li><a href="simulate_trace.html#simulate_trace.make_pulse.RandomPhase.minval_phase">minval_phase (simulate_trace.make_pulse.RandomPhase attribute)</a>
@@ -1809,6 +1848,8 @@
         <li><a href="core.gradients.html#module-core.gradients.chirpscan_z_error_gradients">core.gradients.chirpscan_z_error_gradients</a>
 </li>
         <li><a href="core.gradients.html#module-core.gradients.frog_z_error_gradients">core.gradients.frog_z_error_gradients</a>
+</li>
+        <li><a href="core.gradients.html#module-core.gradients.gradients_via_AD">core.gradients.gradients_via_AD</a>
 </li>
         <li><a href="core.gradients.html#module-core.gradients.tdp_z_error_gradients">core.gradients.tdp_z_error_gradients</a>
 </li>
@@ -1864,7 +1905,11 @@
 </li>
         <li><a href="real_fields.frog.html#module-real_fields.frog.general_algorithms_frog_real_fields">real_fields.frog.general_algorithms_frog_real_fields</a>
 </li>
+        <li><a href="real_fields.tdp.html#module-real_fields.tdp">real_fields.tdp</a>
+</li>
         <li><a href="real_fields.tdp.html#module-real_fields.tdp.classical_algorithms_tdp_real_fields">real_fields.tdp.classical_algorithms_tdp_real_fields</a>
+</li>
+        <li><a href="real_fields.tdp.html#module-real_fields.tdp.general_algorithms_tdp_real_fields">real_fields.tdp.general_algorithms_tdp_real_fields</a>
 </li>
         <li><a href="real_fields.twodsi.html#module-real_fields.twodsi">real_fields.twodsi</a>
 </li>
@@ -2178,10 +2223,24 @@
 </li>
       </ul></li>
       <li>
+    real_fields.tdp
+
+      <ul>
+        <li><a href="real_fields.tdp.html#module-real_fields.tdp">module</a>
+</li>
+      </ul></li>
+      <li>
     real_fields.tdp.classical_algorithms_tdp_real_fields
 
       <ul>
         <li><a href="real_fields.tdp.html#module-real_fields.tdp.classical_algorithms_tdp_real_fields">module</a>
+</li>
+      </ul></li>
+      <li>
+    real_fields.tdp.general_algorithms_tdp_real_fields
+
+      <ul>
+        <li><a href="real_fields.tdp.html#module-real_fields.tdp.general_algorithms_tdp_real_fields">module</a>
 </li>
       </ul></li>
       <li>
@@ -2191,6 +2250,8 @@
         <li><a href="real_fields.twodsi.html#module-real_fields.twodsi">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     real_fields.twodsi.classical_algorithms_2dsi_real_fields
 
@@ -2198,8 +2259,6 @@
         <li><a href="real_fields.twodsi.html#module-real_fields.twodsi.classical_algorithms_2dsi_real_fields">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     real_fields.twodsi.general_algorithms_2dsi_real_fields
 
@@ -2355,10 +2414,10 @@
       </ul></li>
       <li><a href="real_fields.html#real_fields.base_classes_methods.RetrievePulsesRealFields.sk_big">sk_big (real_fields.base_classes_methods.RetrievePulsesRealFields attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="core.html#core.base_general_optimization.DifferentialEvolutionBASE.smooth_crossover">smooth_crossover() (core.base_general_optimization.DifferentialEvolutionBASE method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="utilities.html#utilities.solve_linear_system">solve_linear_system() (in module utilities)</a>
 </li>
       <li><a href="core.html#core.base_general_optimization.AutoDiffBASE.solver">solver (core.base_general_optimization.AutoDiffBASE attribute)</a>
@@ -2384,6 +2443,8 @@
 </li>
       </ul></li>
       <li><a href="core.html#core.base_classes_algorithms.GeneralOptimizationBASE.split_population_in_amp_and_phase">split_population_in_amp_and_phase() (core.base_classes_algorithms.GeneralOptimizationBASE method)</a>
+</li>
+      <li><a href="core.gradients.html#core.gradients.gradients_via_AD.split_population_real_imag">split_population_real_imag() (in module core.gradients.gradients_via_AD)</a>
 </li>
       <li><a href="chirp_scan.html#chirp_scan.classic_algorithms_chirpscan.Basic.step">step() (chirp_scan.classic_algorithms_chirpscan.Basic method)</a>
 

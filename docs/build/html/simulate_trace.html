@@ -59,9 +59,9 @@
 <li class="toctree-l2"><a class="reference internal" href="real_fields.vampire.html">real_fields.vampire</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="core.html">core</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="core.html">core package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="core.gradients.html">core.gradients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians package</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">utilities</a></li>
@@ -781,9 +781,10 @@ Inherits from make_pulse.MakePulse.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="simulate_trace.make_trace.MakeTrace.maketrace">
 <span class="sig-name descname"><span class="pre">maketrace</span></span><a class="headerlink" href="#simulate_trace.make_trace.MakeTrace.maketrace" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>defined via the respective <a href="#id28"><span class="problematic" id="id29">generate_</span></a> … () method</p>
+<dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None, <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceFROG" title="simulate_trace.make_trace.MakeTraceFROG">MakeTraceFROG</a>, <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceCHIRPSCAN" title="simulate_trace.make_trace.MakeTraceCHIRPSCAN">MakeTraceCHIRPSCAN</a>, <a class="reference internal" href="#simulate_trace.make_trace.MakeTrace2DSI" title="simulate_trace.make_trace.MakeTrace2DSI">MakeTrace2DSI</a>, <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceTDP" title="simulate_trace.make_trace.MakeTraceTDP">MakeTraceTDP</a>, or <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceVAMPIRE" title="simulate_trace.make_trace.MakeTraceVAMPIRE">MakeTraceVAMPIRE</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#simulate_trace.make_trace.MakeTraceFROG" title="simulate_trace.make_trace.MakeTraceFROG">MakeTraceFROG</a>, <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceCHIRPSCAN" title="simulate_trace.make_trace.MakeTraceCHIRPSCAN">MakeTraceCHIRPSCAN</a>, <a class="reference internal" href="#simulate_trace.make_trace.MakeTrace2DSI" title="simulate_trace.make_trace.MakeTrace2DSI">MakeTrace2DSI</a>, <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceTDP" title="simulate_trace.make_trace.MakeTraceTDP">MakeTraceTDP</a>, or <a class="reference internal" href="#simulate_trace.make_trace.MakeTraceVAMPIRE" title="simulate_trace.make_trace.MakeTraceVAMPIRE">MakeTraceVAMPIRE</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -794,39 +795,26 @@ Inherits from make_pulse.MakePulse.</p>
 <dd><p>Generates a FROG trace using the provide pulse/gate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>time</strong></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>jnp.array</em>) – the time axis of pulse_t</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis of pulse_f</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the input pulse in the time domain</p></li>
+<li><p><strong>pulse_f</strong> (<em>jnp.array</em>) – the input pulse in the frequency domain</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>cross_correlation</strong> (<em>bool</em>) – whether cross_correlation should be used</p></li>
+<li><p><strong>interferometric</strong> (<em>bool</em>) – whether interferometric setup should be used</p></li>
+<li><p><strong>gate</strong> (<em>tuple</em><em>[</em><em>jnp.array</em><em>, </em><em>jnp.array</em><em>]</em>) – a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True</p></li>
+<li><p><strong>real_fields</strong> (<em>bool</em>) – whether the nonlinear signal should be generated using real fields</p></li>
+<li><p><strong>frequency_range</strong> (<em>tuple</em><em>[</em><em>Scalar</em><em>,</em><em>Scalar</em><em>]</em>) – defines the frequenyc range of the trace</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – defines the number of points along the frequency axis of the trace</p></li>
+<li><p><strong>cut_off_val</strong> (<em>float</em>) – defines how far the trace is zoomed in. Should be between zero and one.</p></li>
+<li><p><strong>interpolate_fft_conform</strong> (<em>bool</em>) – whether the time axis of the trace is interpolated to conform to the fft requirements.</p></li>
+<li><p><strong>scale_time_range</strong> (<em>float</em>) – scales the time range of the trace by the provided factor</p></li>
+<li><p><strong>plot_stuff</strong> (<em>bool</em>) – whether the trace and pulse should be plotted</p></li>
+</ul>
 </dd>
-</dl>
-<p>:param :
-:param frequency:
-:param :
-:param pulse_t:
-:param pulse_f:
-:param nonlinear_method:
-:param :
-:param cross_correlation:
-:param :
-:param interferometric:
-:param :
-:param gate:
-:param :
-:param real_fields:
-:param :
-:param frequency_range:
-:param :
-:param N:
-:param :
-:param cut_off_val:
-:param :
-:param interpolate_fft_conform:
-:param :
-:param scale_time_range:
-:param :
-:param plot_stuff:
-:param :</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra</p>
 </dd>
 </dl>
 </dd></dl>
@@ -837,41 +825,27 @@ Inherits from make_pulse.MakePulse.</p>
 <dd><p>Generates a TDP trace using the provide pulse/gate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>time</strong></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>jnp.array</em>) – the time axis of pulse_t</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis of pulse_f</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the input pulse in the time domain</p></li>
+<li><p><strong>pulse_f</strong> (<em>jnp.array</em>) – the input pulse in the frequency domain</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>spectral_filter</strong> (<em>jnp.array</em>) – the spectral filter used in the setup</p></li>
+<li><p><strong>cross_correlation</strong> (<em>bool</em>) – whether cross_correlation should be used</p></li>
+<li><p><strong>interferometric</strong> (<em>bool</em>) – whether interferometric setup should be used</p></li>
+<li><p><strong>gate</strong> (<em>tuple</em><em>[</em><em>jnp.array</em><em>, </em><em>jnp.array</em><em>]</em>) – a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True</p></li>
+<li><p><strong>real_fields</strong> (<em>bool</em>) – whether the nonlinear signal should be generated using real fields</p></li>
+<li><p><strong>frequency_range</strong> (<em>tuple</em><em>[</em><em>Scalar</em><em>,</em><em>Scalar</em><em>]</em>) – defines the frequenyc range of the trace</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – defines the number of points along the frequency axis of the trace</p></li>
+<li><p><strong>cut_off_val</strong> (<em>float</em>) – defines how far the trace is zoomed in. Should be between zero and one.</p></li>
+<li><p><strong>interpolate_fft_conform</strong> (<em>bool</em>) – whether the time axis of the trace is interpolated to conform to the fft requirements.</p></li>
+<li><p><strong>scale_time_range</strong> (<em>float</em>) – scales the time range of the trace by the provided factor</p></li>
+<li><p><strong>plot_stuff</strong> (<em>bool</em>) – whether the trace and pulse should be plotted</p></li>
+</ul>
 </dd>
-</dl>
-<p>:param :
-:param frequency:
-:param :
-:param pulse_t:
-:param pulse_f:
-:param nonlinear_method:
-:param :
-:param spectral_filter:
-:param :
-:param cross_correlation:
-:param :
-:param interferometric:
-:param :
-:param gate:
-:param :
-:param real_fields:
-:param :
-:param frequency_range:
-:param :
-:param N:
-:param :
-:param cut_off_val:
-:param :
-:param interpolate_fft_conform:
-:param :
-:param scale_time_range:
-:param :
-:param plot_stuff:
-:param :</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra</p>
 </dd>
 </dl>
 </dd></dl>
@@ -882,35 +856,24 @@ Inherits from make_pulse.MakePulse.</p>
 <dd><p>Generates a Chirp-Scan trace using the provide pulse/gate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>time</strong></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>jnp.array</em>) – the time axis of pulse_t</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis of pulse_f</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the input pulse in the time domain</p></li>
+<li><p><strong>pulse_f</strong> (<em>jnp.array</em>) – the input pulse in the frequency domain</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>z_arr</strong> (<em>jnp.array</em>) – defines the shift arr of the chirp scan. (e.g. material thickness, phase_shift in MIIPS, …)</p></li>
+<li><p><strong>phase_type</strong> (<em>str</em><em>, </em><em>Callable</em>) – defines how the applied phase is created, (e.g. material, MIIPS, … )</p></li>
+<li><p><strong>parameters</strong> (<em>tuple</em>) – defines further necessary input parameters to the function that calculates phase_matrix</p></li>
+<li><p><strong>real_fields</strong> (<em>bool</em>) – whether the nonlinear signal should be generated using real fields</p></li>
+<li><p><strong>frequency_range</strong> (<em>tuple</em><em>[</em><em>Scalar</em><em>,</em><em>Scalar</em><em>]</em>) – defines the frequenyc range of the trace</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – defines the number of points along the frequency axis of the trace</p></li>
+<li><p><strong>cut_off_val</strong> (<em>float</em>) – defines how far the trace is zoomed in. Should be between zero and one.</p></li>
+<li><p><strong>plot_stuff</strong> (<em>bool</em>) – whether the trace and pulse should be plotted</p></li>
+</ul>
 </dd>
-</dl>
-<p>:param :
-:param frequency:
-:param :
-:param pulse_t:
-:param pulse_f:
-:param nonlinear_method:
-:param :
-:param z_arr:
-:param :
-:param phase_type:
-:param :
-:param parameters:
-:param :
-:param real_fields:
-:param :
-:param frequency_range:
-:param :
-:param N:
-:param :
-:param cut_off_val:
-:param :
-:param plot_stuff:
-:param :</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the shift and frequency axis, the trace, the spectra</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the shift and frequency axis, the trace, the spectra</p>
 </dd>
 </dl>
 </dd></dl>
@@ -922,25 +885,25 @@ Inherits from make_pulse.MakePulse.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time</strong></p></li>
-<li><p><strong>frequency</strong></p></li>
-<li><p><strong>pulse_t</strong></p></li>
-<li><p><strong>pulse_f</strong></p></li>
-<li><p><strong>nonlinear_method</strong></p></li>
-<li><p><strong>spectral_filter1</strong></p></li>
-<li><p><strong>spectral_filter2</strong></p></li>
-<li><p><strong>tau_pulse_anc1</strong></p></li>
-<li><p><strong>material_thickness</strong></p></li>
-<li><p><strong>refractive_index</strong></p></li>
-<li><p><strong>cross_correlation</strong></p></li>
-<li><p><strong>gate</strong></p></li>
-<li><p><strong>real_fields</strong></p></li>
-<li><p><strong>frequency_range</strong></p></li>
-<li><p><strong>N</strong></p></li>
-<li><p><strong>cut_off_val</strong></p></li>
-<li><p><strong>interpolate_fft_conform</strong></p></li>
-<li><p><strong>scale_time_range</strong></p></li>
-<li><p><strong>plot_stuff</strong></p></li>
+<li><p><strong>time</strong> (<em>jnp.array</em>) – the time axis of pulse_t</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis of pulse_f</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the input pulse in the time domain</p></li>
+<li><p><strong>pulse_f</strong> (<em>jnp.array</em>) – the input pulse in the frequency domain</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>spectral_filter1</strong> (<em>jnp.array</em>) – the first spectral filter in the interferometer</p></li>
+<li><p><strong>spectral_filter2</strong> (<em>jnp.array</em>) – the second spectral filter in the interferometer</p></li>
+<li><p><strong>tau_pulse_anc1</strong> (<em>int</em><em>, </em><em>float</em>) – the delay of the fixed interferometer arm and the external pulse</p></li>
+<li><p><strong>material_thickness</strong> (<em>int</em><em>, </em><em>float</em>) – material thickness in the interferometer</p></li>
+<li><p><strong>refractive_index</strong> (<em>refractiveindex.RefractiveIndexMaterial</em>) – refractive index of the material in the interferometer</p></li>
+<li><p><strong>cross_correlation</strong> (<em>bool</em>) – whether cross_correlation should be used</p></li>
+<li><p><strong>gate</strong> (<em>tuple</em><em>[</em><em>jnp.array</em><em>, </em><em>jnp.array</em><em>]</em>) – a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True</p></li>
+<li><p><strong>real_fields</strong> (<em>bool</em>) – whether the nonlinear signal should be generated using real fields</p></li>
+<li><p><strong>frequency_range</strong> (<em>tuple</em><em>[</em><em>Scalar</em><em>,</em><em>Scalar</em><em>]</em>) – defines the frequenyc range of the trace</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – defines the number of points along the frequency axis of the trace</p></li>
+<li><p><strong>cut_off_val</strong> (<em>float</em>) – defines how far the trace is zoomed in. Should be between zero and one.</p></li>
+<li><p><strong>interpolate_fft_conform</strong> (<em>bool</em>) – whether the time axis of the trace is interpolated to conform to the fft requirements.</p></li>
+<li><p><strong>scale_time_range</strong> (<em>float</em>) – scales the time range of the trace by the provided factor</p></li>
+<li><p><strong>plot_stuff</strong> (<em>bool</em>) – whether the trace and pulse should be plotted</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -955,43 +918,28 @@ Inherits from make_pulse.MakePulse.</p>
 <dd><p>Generates a VAMPIRE trace using the provide pulse/gate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>time</strong></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>jnp.array</em>) – the time axis of pulse_t</p></li>
+<li><p><strong>frequency</strong> (<em>jnp.array</em>) – the frequency axis of pulse_f</p></li>
+<li><p><strong>pulse_t</strong> (<em>jnp.array</em>) – the input pulse in the time domain</p></li>
+<li><p><strong>pulse_f</strong> (<em>jnp.array</em>) – the input pulse in the frequency domain</p></li>
+<li><p><strong>nonlinear_method</strong> (<em>str</em>) – the nonlinear method</p></li>
+<li><p><strong>tau_interferometer</strong> (<em>int</em><em>, </em><em>float</em>) – the delay inside the interferometer</p></li>
+<li><p><strong>material_thickness</strong> (<em>int</em><em>, </em><em>float</em>) – material thickness in the interferometer</p></li>
+<li><p><strong>refractive_index</strong> (<em>refractiveindex.RefractiveIndexMaterial</em>) – refractive index of the material in the interferometer</p></li>
+<li><p><strong>cross_correlation</strong> (<em>bool</em>) – whether cross_correlation should be used</p></li>
+<li><p><strong>gate</strong> (<em>tuple</em><em>[</em><em>jnp.array</em><em>, </em><em>jnp.array</em><em>]</em>) – a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True</p></li>
+<li><p><strong>real_fields</strong> (<em>bool</em>) – whether the nonlinear signal should be generated using real fields</p></li>
+<li><p><strong>frequency_range</strong> (<em>tuple</em><em>[</em><em>Scalar</em><em>,</em><em>Scalar</em><em>]</em>) – defines the frequenyc range of the trace</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – defines the number of points along the frequency axis of the trace</p></li>
+<li><p><strong>cut_off_val</strong> (<em>float</em>) – defines how far the trace is zoomed in. Should be between zero and one.</p></li>
+<li><p><strong>interpolate_fft_conform</strong> (<em>bool</em>) – whether the time axis of the trace is interpolated to conform to the fft requirements.</p></li>
+<li><p><strong>scale_time_range</strong> (<em>float</em>) – scales the time range of the trace by the provided factor</p></li>
+<li><p><strong>plot_stuff</strong> (<em>bool</em>) – whether the trace and pulse should be plotted</p></li>
+</ul>
 </dd>
-</dl>
-<p>:param :
-:param frequency:
-:param :
-:param pulse_t:
-:param pulse_f:
-:param nonlinear_method:
-:param :
-:param tau_interferometer:
-:param :
-:param material_thickness:
-:param :
-:param refractive_index:
-:param :
-:param cross_correlation:
-:param :
-:param gate:
-:param :
-:param real_fields:
-:param :
-:param frequency_range:
-:param :
-:param N:
-:param :
-:param cut_off_val:
-:param :
-:param interpolate_fft_conform:
-:param :
-:param scale_time_range:
-:param :
-:param plot_stuff:
-:param :</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1010,6 +958,11 @@ Inherits from make_pulse.MakePulse.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="simulate_trace.make_trace.MakeTraceBASE.generate_trace">
 <span class="sig-name descname"><span class="pre">generate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate_trace.make_trace.MakeTraceBASE.generate_trace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate_trace.make_trace.MakeTraceBASE.interpolate_trace">
+<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_delay_based</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate_trace.make_trace.MakeTraceBASE.interpolate_trace" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1032,11 +985,6 @@ Inherits from make_pulse.MakePulse.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="simulate_trace.make_trace.MakeTraceFROG.get_parameters_to_make_signal_t">
 <span class="sig-name descname"><span class="pre">get_parameters_to_make_signal_t</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate_trace.make_trace.MakeTraceFROG.get_parameters_to_make_signal_t" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="simulate_trace.make_trace.MakeTraceFROG.interpolate_trace">
-<span class="sig-name descname"><span class="pre">interpolate_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate_trace.make_trace.MakeTraceFROG.interpolate_trace" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

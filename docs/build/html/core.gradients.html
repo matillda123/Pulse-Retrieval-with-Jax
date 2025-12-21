@@ -20,8 +20,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="core.hessians" href="core.hessians.html" />
-    <link rel="prev" title="core" href="core.html" /> 
+    <link rel="next" title="core.hessians package" href="core.hessians.html" />
+    <link rel="prev" title="core package" href="core.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -59,9 +59,9 @@
 <li class="toctree-l2"><a class="reference internal" href="real_fields.vampire.html">real_fields.vampire</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="core.html">core</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="core.html">core package</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">core.gradients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians package</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">utilities</a></li>
@@ -91,7 +91,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="core.html">core</a></li>
+          <li class="breadcrumb-item"><a href="core.html">core package</a></li>
       <li class="breadcrumb-item active">core.gradients</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/core.gradients.rst.txt" rel="nofollow"> View page source</a>
@@ -273,6 +273,67 @@ The gradient is calculated in the frequency domain.</p>
 </dd></dl>
 
 </section>
+<section id="module-core.gradients.gradients_via_AD">
+<span id="core-gradients-gradients-via-ad-module"></span><h2>core.gradients.gradients_via_AD module<a class="headerlink" href="#module-core.gradients.gradients_via_AD" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.split_population_real_imag">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">split_population_real_imag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.split_population_real_imag" title="Link to this definition"></a></dt>
+<dd><p>Splits population into real/imag.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.merge_real_imag_population">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">merge_real_imag_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.merge_real_imag_population" title="Link to this definition"></a></dt>
+<dd><p>Merges a population from real/imag into a complex valued one.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.calc_grad_AD">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">calc_grad_AD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.calc_grad_AD" title="Link to this definition"></a></dt>
+<dd><p>Calculates the gradient of a loss function with respect to pulse and gate using jax.grad.
+To do this the complex valued population is split into real/imag. The resulting gradient are merged into a complex one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>individual</strong> (<em>Pytree</em>) – an individual of the current population</p></li>
+<li><p><strong>transform_arr</strong> (<em>jnp.array</em>) – the applied transform to get signal_t_new</p></li>
+<li><p><strong>signal_t_new</strong> (<em>jnp.array</em>) – the current signal field projected onto the measured intensity</p></li>
+<li><p><strong>measured_trace</strong> (<em>jnp.array</em>) – the measured intensity</p></li>
+<li><p><strong>measurement_info</strong> (<em>Pytree</em>) – contains measurement data and parameters</p></li>
+<li><p><strong>descent_info</strong> (<em>Pytree</em>) – contains parameters for the retrieval</p></li>
+<li><p><strong>calculate_signal_t</strong> (<em>Callable</em>) – the method depended function to calculate the nonlinear signal</p></li>
+<li><p><strong>pulse_or_gate</strong> (<em>str</em>) – the variable of with which to differentiate with respect to</p></li>
+<li><p><strong>loss_func</strong> (<em>Callable</em>) – the loss function</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>jnp.array, the gradient with respect to the pulse and gate</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.calc_z_error">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">calc_z_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.calc_z_error" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Z-error for an individual.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.calc_pie_error">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">calc_pie_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.calc_pie_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.calc_grad_AD_z_error">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">calc_grad_AD_z_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.calc_grad_AD_z_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="core.gradients.gradients_via_AD.calc_grad_AD_pie_error">
+<span class="sig-prename descclassname"><span class="pre">core.gradients.gradients_via_AD.</span></span><span class="sig-name descname"><span class="pre">calc_grad_AD_pie_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">individual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_t_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_signal_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulse_or_gate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#core.gradients.gradients_via_AD.calc_grad_AD_pie_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
 <section id="module-core.gradients.tdp_z_error_gradients">
 <span id="core-gradients-tdp-z-error-gradients-module"></span><h2>core.gradients.tdp_z_error_gradients module<a class="headerlink" href="#module-core.gradients.tdp_z_error_gradients" title="Link to this heading"></a></h2>
 <dl class="py function">
@@ -420,8 +481,8 @@ The gradient is calculated in the frequency domain.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="core.html" class="btn btn-neutral float-left" title="core" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="core.hessians.html" class="btn btn-neutral float-right" title="core.hessians" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="core.html" class="btn btn-neutral float-left" title="core package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core.hessians.html" class="btn btn-neutral float-right" title="core.hessians package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -20,6 +20,14 @@ core.gradients.frog\_z\_error\_gradients module
    :show-inheritance:
    :undoc-members:
 
+core.gradients.gradients\_via\_AD module
+----------------------------------------
+
+.. automodule:: core.gradients.gradients_via_AD
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 core.gradients.tdp\_z\_error\_gradients module
 ----------------------------------------------
 

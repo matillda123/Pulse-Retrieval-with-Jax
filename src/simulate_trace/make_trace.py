@@ -51,7 +51,7 @@ class MakeTrace(MakePulseBase):
     Inherits from make_pulse.MakePulse.
 
     Attributes:
-        maketrace (None, MakeTraceFROG, MakeTraceCHIRPSCAN, MakeTrace2DSI, MakeTraceTDP, or MakeTraceVAMPIRE): 
+        maketrace (MakeTraceFROG, MakeTraceCHIRPSCAN, MakeTrace2DSI, MakeTraceTDP, or MakeTraceVAMPIRE): defined via the respective generate_ ... () method
 
     """
     def __init__(self, *args, **kwargs):
@@ -65,21 +65,21 @@ class MakeTrace(MakePulseBase):
         Generates a FROG trace using the provide pulse/gate. 
 
         Args:
-            time,
-            frequency,
-            pulse_t
-            pulse_f
-            nonlinear_method,
-            cross_correlation,
-            interferometric,
-            gate,
-            real_fields,
-            frequency_range,
-            N,
-            cut_off_val,
-            interpolate_fft_conform,
-            scale_time_range,
-            plot_stuff, 
+            time (jnp.array): the time axis of pulse_t
+            frequency (jnp.array): the frequency axis of pulse_f
+            pulse_t (jnp.array): the input pulse in the time domain
+            pulse_f (jnp.array): the input pulse in the frequency domain
+            nonlinear_method (str): the nonlinear method
+            cross_correlation (bool): whether cross_correlation should be used
+            interferometric (bool): whether interferometric setup should be used
+            gate (tuple[jnp.array, jnp.array]): a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True
+            real_fields (bool): whether the nonlinear signal should be generated using real fields
+            frequency_range (tuple[Scalar,Scalar]): defines the frequenyc range of the trace
+            N (int): defines the number of points along the frequency axis of the trace
+            cut_off_val (float): defines how far the trace is zoomed in. Should be between zero and one.
+            interpolate_fft_conform (bool): whether the time axis of the trace is interpolated to conform to the fft requirements.
+            scale_time_range (float): scales the time range of the trace by the provided factor
+            plot_stuff (bool): whether the trace and pulse should be plotted
 
         Returns:
             tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra
@@ -116,22 +116,22 @@ class MakeTrace(MakePulseBase):
         Generates a TDP trace using the provide pulse/gate. 
 
         Args:
-            time,
-            frequency,
-            pulse_t
-            pulse_f
-            nonlinear_method,
-            spectral_filter,
-            cross_correlation,
-            interferometric,
-            gate,
-            real_fields,
-            frequency_range,
-            N,
-            cut_off_val,
-            interpolate_fft_conform,
-            scale_time_range,
-            plot_stuff, 
+            time (jnp.array): the time axis of pulse_t
+            frequency (jnp.array): the frequency axis of pulse_f
+            pulse_t (jnp.array): the input pulse in the time domain
+            pulse_f (jnp.array): the input pulse in the frequency domain
+            nonlinear_method (str): the nonlinear method
+            spectral_filter (jnp.array): the spectral filter used in the setup
+            cross_correlation (bool): whether cross_correlation should be used
+            interferometric (bool): whether interferometric setup should be used
+            gate (tuple[jnp.array, jnp.array]): a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True
+            real_fields (bool): whether the nonlinear signal should be generated using real fields
+            frequency_range (tuple[Scalar,Scalar]): defines the frequenyc range of the trace
+            N (int): defines the number of points along the frequency axis of the trace
+            cut_off_val (float): defines how far the trace is zoomed in. Should be between zero and one.
+            interpolate_fft_conform (bool): whether the time axis of the trace is interpolated to conform to the fft requirements.
+            scale_time_range (float): scales the time range of the trace by the provided factor
+            plot_stuff (bool): whether the trace and pulse should be plotted
 
         Returns:
             tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra
@@ -169,19 +169,19 @@ class MakeTrace(MakePulseBase):
         Generates a Chirp-Scan trace using the provide pulse/gate. 
 
         Args:
-            time,
-            frequency,
-            pulse_t
-            pulse_f
-            nonlinear_method,
-            z_arr,
-            phase_type,
-            parameters,
-            real_fields,
-            frequency_range,
-            N,
-            cut_off_val,
-            plot_stuff, 
+            time (jnp.array): the time axis of pulse_t
+            frequency (jnp.array): the frequency axis of pulse_f
+            pulse_t (jnp.array): the input pulse in the time domain
+            pulse_f (jnp.array): the input pulse in the frequency domain
+            nonlinear_method (str): the nonlinear method
+            z_arr (jnp.array): defines the shift arr of the chirp scan. (e.g. material thickness, phase_shift in MIIPS, ...)
+            phase_type (str, Callable): defines how the applied phase is created, (e.g. material, MIIPS, ... )
+            parameters (tuple): defines further necessary input parameters to the function that calculates phase_matrix
+            real_fields (bool): whether the nonlinear signal should be generated using real fields
+            frequency_range (tuple[Scalar,Scalar]): defines the frequenyc range of the trace
+            N (int): defines the number of points along the frequency axis of the trace
+            cut_off_val (float): defines how far the trace is zoomed in. Should be between zero and one.
+            plot_stuff (bool): whether the trace and pulse should be plotted
 
         Returns:
             tuple[jnp.array, jnp.array, jnp.array, Pytree], the shift and frequency axis, the trace, the spectra
@@ -217,25 +217,25 @@ class MakeTrace(MakePulseBase):
         Generates a 2DSI trace using the provide pulse/gate. 
 
         Args:
-            time:
-            frequency:
-            pulse_t:
-            pulse_f:
-            nonlinear_method:
-            spectral_filter1:
-            spectral_filter2:
-            tau_pulse_anc1:
-            material_thickness:
-            refractive_index:
-            cross_correlation:
-            gate:
-            real_fields:
-            frequency_range:
-            N:
-            cut_off_val:
-            interpolate_fft_conform:
-            scale_time_range:
-            plot_stuff:
+            time (jnp.array): the time axis of pulse_t
+            frequency (jnp.array): the frequency axis of pulse_f
+            pulse_t (jnp.array): the input pulse in the time domain
+            pulse_f (jnp.array): the input pulse in the frequency domain
+            nonlinear_method (str): the nonlinear method
+            spectral_filter1 (jnp.array): the first spectral filter in the interferometer
+            spectral_filter2 (jnp.array): the second spectral filter in the interferometer
+            tau_pulse_anc1 (int, float): the delay of the fixed interferometer arm and the external pulse
+            material_thickness (int, float): material thickness in the interferometer
+            refractive_index (refractiveindex.RefractiveIndexMaterial): refractive index of the material in the interferometer
+            cross_correlation (bool): whether cross_correlation should be used
+            gate (tuple[jnp.array, jnp.array]): a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True
+            real_fields (bool): whether the nonlinear signal should be generated using real fields
+            frequency_range (tuple[Scalar,Scalar]): defines the frequenyc range of the trace
+            N (int): defines the number of points along the frequency axis of the trace
+            cut_off_val (float): defines how far the trace is zoomed in. Should be between zero and one.
+            interpolate_fft_conform (bool): whether the time axis of the trace is interpolated to conform to the fft requirements.
+            scale_time_range (float): scales the time range of the trace by the provided factor
+            plot_stuff (bool): whether the trace and pulse should be plotted
 
         Returns:
             tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra
@@ -276,23 +276,23 @@ class MakeTrace(MakePulseBase):
         Generates a VAMPIRE trace using the provide pulse/gate. 
 
         Args:
-            time,
-            frequency,
-            pulse_t
-            pulse_f
-            nonlinear_method,
-            tau_interferometer,
-            material_thickness,
-            refractive_index,
-            cross_correlation,
-            gate,
-            real_fields,
-            frequency_range,
-            N,
-            cut_off_val,
-            interpolate_fft_conform,
-            scale_time_range,
-            plot_stuff, 
+            time (jnp.array): the time axis of pulse_t
+            frequency (jnp.array): the frequency axis of pulse_f
+            pulse_t (jnp.array): the input pulse in the time domain
+            pulse_f (jnp.array): the input pulse in the frequency domain
+            nonlinear_method (str): the nonlinear method
+            tau_interferometer (int, float): the delay inside the interferometer
+            material_thickness (int, float): material thickness in the interferometer
+            refractive_index (refractiveindex.RefractiveIndexMaterial): refractive index of the material in the interferometer
+            cross_correlation (bool): whether cross_correlation should be used
+            gate (tuple[jnp.array, jnp.array]): a tuple containing the frequency axis and the gate-pulse in the frequency domain. Is used as gate if cross_correlation=True
+            real_fields (bool): whether the nonlinear signal should be generated using real fields
+            frequency_range (tuple[Scalar,Scalar]): defines the frequenyc range of the trace
+            N (int): defines the number of points along the frequency axis of the trace
+            cut_off_val (float): defines how far the trace is zoomed in. Should be between zero and one.
+            interpolate_fft_conform (bool): whether the time axis of the trace is interpolated to conform to the fft requirements.
+            scale_time_range (float): scales the time range of the trace by the provided factor
+            plot_stuff (bool): whether the trace and pulse should be plotted
 
         Returns:
             tuple[jnp.array, jnp.array, jnp.array, Pytree], the time and frequency axis, the trace, the spectra
@@ -383,6 +383,72 @@ class MakeTraceBASE:
 
 
 
+    
+    def interpolate_trace(self, is_delay_based=True):
+        max_val = np.max(self.trace)
+
+        idx = np.where(self.trace>max_val*self.cut_off_val)
+        idx_0, idx_1 = np.sort(idx)
+
+        idx_0_min, idx_0_max = idx_0[0], idx_0[-1]+1
+        idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
+
+
+        time_zoom = self.time[idx_0_min:idx_0_max]
+        frequency_zoom = self.frequency[idx_1_min:idx_1_max]
+
+        if self.frequency_range!=None:
+            fmin, fmax = self.frequency_range
+            if self.nonlinear_method=="sd":
+                fmin, fmax = np.sort([-1*fmin, -1*fmax])
+        else:
+            fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
+        if is_delay_based==True:
+            if self.interpolate_fft_conform==True:
+                central_f = (fmin+fmax)/2
+                df = 1/np.abs((time_zoom[-1]-time_zoom[0])*self.scale_time_range)
+
+                frequency_min = central_f-df*self.N/2
+                frequency_max = central_f+df*self.N/2
+
+                frequency_interpolate = np.linspace(frequency_min, frequency_max, self.N)
+                time_interpolate = np.fft.fftshift(np.fft.fftfreq(len(frequency_interpolate), df))
+
+            else:
+                frequency_interpolate = np.linspace(fmin, fmax, self.N)
+
+                t_central = (time_zoom[0]+time_zoom[-1])/2
+                Delta_t = np.abs(time_zoom[-1]-time_zoom[0])*self.scale_time_range
+                time_interpolate = np.linspace(t_central-Delta_t/2, t_central+Delta_t/2, self.N)
+        else:		
+            frequency_interpolate=np.linspace(fmin, fmax, self.N)
+            time_interpolate=self.time
+		
+
+
+        trace_interpolate_freq = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_interpolate, self.frequency, self.trace)
+
+        if is_delay_based==True:
+            trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, self.time, trace_interpolate_freq)
+
+        if self.nonlinear_method=="sd":
+            frequency_interpolate = -1*np.flip(frequency_interpolate)
+            trace_interpolate = np.flip(trace_interpolate, axis=0)
+
+
+        frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
+        if self.cross_correlation==True:
+            gate_f = self.fft(self.gate, self.sk, self.rn)
+            frequency_gate_spectrum, spectrum_gate = interpolate_spectrum(self.frequency, gate_f, self.N)
+        else:
+            frequency_gate_spectrum, spectrum_gate = None, None
+            spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
+            gate=(frequency_gate_spectrum, spectrum_gate))
+
+        return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
+
+
+
     def plot_trace(self, time, pulse_t, frequency, pulse_f, x_arr, frequency_trace, trace, spectra):
         
         fig=plt.figure(figsize=(18,8))
@@ -469,69 +535,6 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
                                        nonlinear_method=self.nonlinear_method, doubleblind=False)
         individual = MyNamespace(pulse=self.pulse_t, gate=self.gate)
         return individual, measurement_info, self.time
-        
-    
-    def interpolate_trace(self):
-        max_val = np.max(self.trace)
-
-        idx = np.where(self.trace>max_val*self.cut_off_val)
-        idx_0, idx_1 = np.sort(idx)
-
-        idx_0_min, idx_0_max = idx_0[0], idx_0[-1]+1
-        idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
-
-
-        time_zoom=self.time[idx_0_min:idx_0_max]
-        frequency_zoom=self.frequency[idx_1_min:idx_1_max]
-
-        if self.frequency_range!=None:
-            fmin, fmax = self.frequency_range
-            if self.nonlinear_method=="sd":
-                fmin, fmax = np.sort([-1*fmin, -1*fmax])
-        else:
-            fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
-            deltaf = fmax - fmin
-            fmin = fmin - deltaf/2
-            fmax = fmax + deltaf/2
-
-
-        if self.interpolate_fft_conform==True:
-            central_f=(fmin+fmax)/2
-            df=1/np.abs((time_zoom[-1]-time_zoom[0])*self.scale_time_range)
-
-            frequency_min=central_f-df*self.N/2
-            frequency_max=central_f+df*self.N/2
-
-            frequency_interpolate=np.linspace(frequency_min, frequency_max, self.N)
-            time_interpolate=np.fft.fftshift(np.fft.fftfreq(len(frequency_interpolate), df))
-
-        else:
-            frequency_interpolate = np.linspace(fmin, fmax, self.N)
-
-            t_central = (time_zoom[0]+time_zoom[-1])/2
-            Delta_t = np.abs(time_zoom[-1]-time_zoom[0])*self.scale_time_range
-            time_interpolate = np.linspace(t_central-Delta_t/2, t_central+Delta_t/2, self.N)
-        
-
-        trace_interpolate_freq = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_interpolate, self.frequency, self.trace)
-        trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, self.time, trace_interpolate_freq)
-
-        if self.nonlinear_method=="sd":
-            frequency_interpolate = -1*np.flip(frequency_interpolate)
-            trace_interpolate = np.flip(trace_interpolate, axis=0)
-        
-
-        frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
-        if self.cross_correlation==True:
-            gate_f = self.fft(self.gate, self.sk, self.rn)
-            frequency_gate_spectrum, spectrum_gate = interpolate_spectrum(self.frequency, gate_f, self.N)
-        else:
-            frequency_gate_spectrum, spectrum_gate = None, None
-        spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
-                              gate=(frequency_gate_spectrum, spectrum_gate))
-
-        return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
-
 
 
 
@@ -629,41 +632,10 @@ class MakeTraceCHIRPSCAN(MakeTraceBASE, RetrievePulsesCHIRPSCAN):
 
         self.phase_matrix = self.get_phase_matrix(self.parameters)
         return individual, self.measurement_info, self.phase_matrix
-
-
+    
     
     def interpolate_trace(self):
-        max_val=np.max(self.trace)
-        idx=np.where(self.trace>max_val*self.cut_off_val)
-        idx_0, idx_1 = np.sort(idx)
-        
-        idx_0_min, idx_0_max = idx_0[0], idx_0[-1]+1
-        idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
-
-        frequency_zoom=self.frequency[idx_1_min:idx_1_max]
-
-        if self.frequency_range!=None:
-            fmin, fmax = self.frequency_range
-            if self.nonlinear_method=="sd":
-                fmin, fmax = np.sort([-1*fmin, -1*fmax])
-        else:
-            fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
-            deltaf=fmax-fmin
-            fmin=fmin-deltaf/2
-            fmax=fmax+deltaf/2
-
-        frequency_interpolate=np.linspace(fmin, fmax, self.N)
-
-        trace_interpolate=jax.vmap(do_interpolation_1d, in_axes=(None, None, 0))(frequency_interpolate, self.frequency, self.trace)
-
-        if self.nonlinear_method=="sd":
-            frequency_interpolate = -1*np.flip(frequency_interpolate)
-            trace_interpolate = np.flip(trace_interpolate, axis=1)
-
-        frequency_interpolate_spectrum, spectrum = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
-        spectra = MyNamespace(pulse=(frequency_interpolate_spectrum, spectrum), gate=None)
-        
-        return self.time, frequency_interpolate, np.abs(trace_interpolate), spectra
+        return super().interpolate_trace(is_delay_based=False)
 
 
 
