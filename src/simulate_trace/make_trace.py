@@ -438,8 +438,8 @@ class MakeTraceBASE:
 
         frequency_pulse_spectrum, spectrum_pulse = interpolate_spectrum(self.frequency, self.pulse_f, self.N)
         if self.cross_correlation==True:
-            gate_f = self.fft(self.gate, self.sk, self.rn)
-            frequency_gate_spectrum, spectrum_gate = interpolate_spectrum(self.frequency, gate_f, self.N)
+            self.gate_f = self.fft(self.gate, self.sk, self.rn)
+            frequency_gate_spectrum, spectrum_gate = interpolate_spectrum(self.frequency, self.gate_f, self.N)
         else:
             frequency_gate_spectrum, spectrum_gate = None, None
             
@@ -464,6 +464,10 @@ class MakeTraceBASE:
         ax2.set_ylabel(r"Phase [$\pi$]")
         ax2.legend(loc=1)
 
+        if self.cross_correlation==True:
+            ax1.plot(time, np.abs(self.gate), label="Gate-Pulse", c="tab:red")
+            ax2.plot(time, np.unwrap(np.angle(self.gate))*1/np.pi, label="Gate-Pulse", c="tab:green")
+
         ax1=plt.subplot(2,2,2)
         ax1.plot(frequency, np.abs(pulse_f), label="Amplitude")
         ax1.set_xlabel("Frequency [PHz]")
@@ -474,6 +478,10 @@ class MakeTraceBASE:
         ax2.plot(frequency, np.unwrap(np.angle(pulse_f))*1/np.pi, c="tab:orange", label="Phase")
         ax2.set_ylabel(r"Phase [$\pi$]")
         ax2.legend(loc=1)
+
+        if self.cross_correlation==True:
+            ax1.plot(frequency, np.abs(self.gate_f), label="Gate-Pulse", c="tab:red")
+            ax2.plot(frequency, np.unwrap(np.angle(self.gate_f))*1/np.pi, label="Gate-Pulse", c="tab:green")
 
 
         plt.subplot(2,2,3)

@@ -120,31 +120,6 @@ class RetrievePulses:
         self.measurement_info = self.measurement_info.expand(gate = self.gate)
         return self.gate
     
-
-
-    def create_initial_population(self, population_size=1, guess_type="random"):
-        """ 
-        Creates an initial population.
-
-        Args:
-            population_size (int):
-            guess_type (str): can be one of random, random_phase, constant or constant_phase
-
-        Returns:
-            tuple[jnp.array, jnp.array or None], initial populations for the pulse and possibly the gate-pulse
-
-        """
-        self.key, subkey = jax.random.split(self.key, 2)
-        pulse_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
-
-        if self.doubleblind==True:
-            self.key, subkey = jax.random.split(self.key, 2)
-            gate_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
-        else:
-            gate_f_arr = None
-
-        self.descent_info = self.descent_info.expand(population_size=population_size)
-        return pulse_f_arr, gate_f_arr
     
 
     def get_individual_from_idx(self, idx, population):
@@ -427,34 +402,6 @@ class RetrievePulsesFROG(RetrievePulses):
                                                              transform_arr = self.transform_arr,
                                                              x_arr = self.x_arr)
         
-
-
-    def create_initial_population(self, population_size=1, guess_type="random"):
-        """ 
-        Creates an initial guess. The guess is in the time domain.
-
-        Args:
-            population_size (int): the number of guesses
-            guess_type (str): the guess type. Can be one of random, random_phase, constant or constant_phase.
-
-        Returns:
-            Pytree, the initial population
-        
-        """
-
-        pulse_f_arr, gate_f_arr = super().create_initial_population(population_size, guess_type)
-
-        sk, rn = self.sk, self.rn
-        pulse_t_arr = self.ifft(pulse_f_arr, sk, rn)
-
-        if self.measurement_info.doubleblind==True:
-            gate_t_arr = self.ifft(gate_f_arr, sk, rn)
-        else:
-            gate_t_arr = None
-
-        population = MyNamespace(pulse=pulse_t_arr, gate=gate_t_arr)
-        return population
-
 
 
     def create_initial_population_doublepulse(self, population_size, **kwargs):
@@ -771,33 +718,6 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
                                                              transform_arr = self.transform_arr)
         return self.phase_matrix
         
-
-
-
-
-
-    def create_initial_population(self, population_size=1, guess_type="random"):
-        """ 
-        Creates an initial guess. The guess is in the frequency domain.
-
-        Args:
-            population_size (int): the number of guesses
-            guess_type (str): the guess type. Can be one of random, random_phase, constant or constant_phase.
-
-        Returns:
-            Pytree
-        
-        """
-
-        pulse_f_arr, gate_f_arr = super().create_initial_population(population_size, guess_type)
-
-        if self.doubleblind==True:
-            gate_arr = gate_f_arr
-        else:
-            gate_arr = None
-
-        population = MyNamespace(pulse=pulse_f_arr, gate=gate_arr)
-        return population
     
 
 

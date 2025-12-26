@@ -7,9 +7,9 @@ from equinox import tree_at
 
 from src.utilities import MyNamespace, do_fft, do_ifft, calculate_trace, run_scan, get_com, loss_function_modifications, project_onto_amplitude, do_checks_before_running
 from .bsplines_1d import get_prefactor, get_M, make_bsplines
-from .create_population import create_population_general
+from .create_population import create_population_general, create_population_classic
 
-from .base_classes_methods import RetrievePulsesFROG, RetrievePulsesCHIRPSCAN, RetrievePulsesTDP, RetrievePulses2DSI, RetrievePulsesVAMPIRE
+from .base_classes_methods import RetrievePulsesCHIRPSCAN
 
 
 class AlgorithmsBASE:
@@ -113,16 +113,11 @@ class AlgorithmsBASE:
             return self
         
 
-
-
     def apply_spectrum(self, pulse, spectrum, sk, rn):
-        if isinstance(self, (RetrievePulsesFROG, RetrievePulsesTDP, RetrievePulses2DSI, RetrievePulsesVAMPIRE)):
-            pulse = self.apply_spectrum_time_domain(pulse, spectrum, sk, rn)
-        elif isinstance(self, RetrievePulsesCHIRPSCAN):
+        if isinstance(self, RetrievePulsesCHIRPSCAN):
             pulse = self.apply_spectrum_frequency_domain(pulse, spectrum, sk, rn)
         else:
-            raise ValueError(f"""self needs to be one of RetrievePulsesFROG, RetrievePulsesTDP, RetrievePulses2DSI, 
-                             RetrievePulsesVAMPIRE or RetrievePulsesChripScan. Not {self}""")
+            pulse = self.apply_spectrum_time_domain(pulse, spectrum, sk, rn)
         return pulse
 
     
@@ -251,6 +246,39 @@ class ClassicAlgorithmsBASE(AlgorithmsBASE):
         self.xi = 1e-12
 
         self.momentum_is_being_used = False
+
+
+    def create_initial_population(self, population_size=1, guess_type="random"):
+        """ 
+        Creates an initial population.
+
+        Args:
+            population_size (int):
+            guess_type (str): can be one of random, random_phase, constant or constant_phase
+
+        Returns:
+            tuple[jnp.array, jnp.array, jnp.array or None, jnp.array or None], initial populations for the pulse and possibly the gate-pulse in time and frequency domain
+
+        """
+        self.key, subkey = jax.random.split(self.key, 2)
+        pulse_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
+        pulse_t_arr = self.ifft(pulse_f_arr, self.measurement_info.sk, self.measurement_info.rn)
+
+        if self.doubleblind==True:
+            self.key, subkey = jax.random.split(self.key, 2)
+            gate_f_arr = create_population_classic(subkey, population_size, guess_type, self.measurement_info)
+            gate_t_arr = self.ifft(gate_f_arr, self.measurement_info.sk, self.measurement_info.rn)
+        else:
+            gate_t_arr, gate_f_arr = None, None
+
+        self.descent_info = self.descent_info.expand(population_size=population_size)
+
+        if isinstance(self, RetrievePulsesCHIRPSCAN):
+            population = MyNamespace(pulse=pulse_f_arr, gate=gate_f_arr)
+        else:
+            population = MyNamespace(pulse=pulse_t_arr, gate=gate_t_arr)
+
+        return population
 
 
 

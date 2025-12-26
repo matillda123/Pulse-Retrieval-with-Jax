@@ -551,7 +551,7 @@ class LSFBASE(GeneralOptimizationBASE):
     Attributes:
         number_of_bisection_iterations (int): as the name says
         random_direction_mode (str): can be random or continuous
-        no_points_for_continuous (int): smaller value means less continuous
+        ratio_points_for_continuous (int): smaller value means less continuous
 
     """
 
@@ -563,7 +563,7 @@ class LSFBASE(GeneralOptimizationBASE):
         self.number_of_bisection_iterations = 12
 
         self.random_direction_mode = "random"
-        self.no_points_for_continuous = 5
+        self.ratio_points_for_continuous = 0.25
 
         self.boundary = 1 
 
@@ -572,14 +572,14 @@ class LSFBASE(GeneralOptimizationBASE):
     def get_random_values(self, key, shape, minval, maxval, descent_info):
         """ LSF requires random directions. These are produced here. """
         mode = descent_info.random_direction_mode
-        no_points_for_continuous = descent_info.no_points_for_continuous
+        ratio_points_for_continuous = descent_info.ratio_points_for_continuous
 
         if mode=="random":
             values = jax.random.uniform(key, shape, minval=minval, maxval=maxval)
 
         elif mode=="continuous":
             x_new = jnp.linspace(0, 1, shape[0])
-            N = shape[0]//no_points_for_continuous
+            N = (ratio_points_for_continuous*shape[0]).astype(jnp.int16)
 
             key1, key2 = jax.random.split(key, 2)
             x = jnp.sort(jax.random.choice(key1, x_new, (N, ), replace=False))
@@ -796,13 +796,11 @@ class LSFBASE(GeneralOptimizationBASE):
         population_pulse = jax.vmap(lambda x: x/jnp.linalg.norm(x))(population.pulse)
         population = tree_at(lambda x: x.pulse, population, population_pulse)
 
-        assert (jnp.shape(population_pulse)[1]//self.no_points_for_continuous > 1) | (self.random_direction_mode!="continuous"), "N_points/N_points_cont must not be smaller than 2." 
-
+        assert (0 < self.ratio_points_for_continuous < 1) | (self.random_direction_mode!="continuous")
 
         measurement_info = self.measurement_info
-
         self.descent_info = self.descent_info.expand(number_of_bisection_iterations = self.number_of_bisection_iterations,
-                                                     no_points_for_continuous = self.no_points_for_continuous,
+                                                     ratio_points_for_continuous = self.ratio_points_for_continuous,
                                                      random_direction_mode = self.random_direction_mode,
                                                      boundary = self.boundary)
         descent_info = self.descent_info
@@ -865,7 +863,7 @@ class AutoDiffBASE(GeneralOptimizationBASE):
 
         self._name = "AutoDiff"
 
-        self.solver = optimistix.BFGS
+        self.solver = None
         self.alternating_optimization = False
 
 
