@@ -1,4 +1,4 @@
-real\_fields.chirp\_scan
+real\_fields.chirp\_scan package
 ================================
 
 Submodules

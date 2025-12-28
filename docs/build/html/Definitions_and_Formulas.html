@@ -61,7 +61,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="core.html">core package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="core.gradients.html">core.gradients package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.gradients.html">core.gradients</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.hessians.html">core.hessians package</a></li>
 </ul>
 </li>
@@ -118,6 +118,9 @@
 </li>
 <li><p>SD (This definition causes a flip in delay and frequency-sign)</p>
 <p><span class="math notranslate nohighlight">\(G(E) = (E^*)^2\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(G(E) = E^{n-1}\)</span></p>
 </li>
 </ol>
 </section>
@@ -244,6 +247,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn} (A_{mk}^*)^2\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn}\cdot(A_{mk}^{n-1} + (n-1)e^{-i\tau_m\omega_n} E_k A_{mk}^{n-2})\)</span></p>
+</li>
 </ol>
 </section>
 <section id="X-Frog-(with-respect-to-Pulse)">
@@ -281,6 +290,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 0\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = (n-1) \cdot D_{kn} E_k A_{mk}^{n-2} e^{-i\tau_m\omega_n}\)</span></p>
+</li>
 </ol>
 </section>
 <section id="I-Frog-(with-respect-to-pulse)">
@@ -303,6 +318,12 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = D_{nk}(1+e^{i\tau_m\omega_n})\cdot (E_k + A_{mk})^2\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 2D_{kn}(1+e^{-i\tau_m\omega_n})\cdot |E_k + A_{mk}|^2\)</span></p>
+</li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = n\cdot D_{kn}(1+e^{-i\tau_m\omega_n})\cdot (E_k + A_{mk})^{n-1}\)</span></p>
 </li>
 </ol>
 </section>
@@ -327,6 +348,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 2D_{kn}|E_k + A_{mk}|^2\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = n\cdot D_{kn} (E_k + A_{mk})^{n-1}\)</span></p>
+</li>
 </ol>
 </section>
 <section id="I-Frog-+-XFrog-(with-respect-to-gate-pulse)">
@@ -349,6 +376,12 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = D_{nk}e^{i\tau_m\omega_n}(E_k + A_{mk})^2\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 2D_{kn}e^{-i\tau_m\omega_n}|E_k + A_{mk}|^2\)</span></p>
+</li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = n\cdot D_{kn}e^{-i\tau_m\omega_n} (E_k + A_{mk})^{n-1}\)</span></p>
 </li>
 </ol>
 </section>
@@ -379,6 +412,12 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 2 D_{nk} B_n^*\cdot E_k A_{mk}'^* e^{i\tau_m\omega_n}\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn} (A_{mk}'^*)^2\)</span></p>
+</li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn}\cdot(A_{mk}'^{n-1} + (n-1)B_n\cdot e^{-i\tau_m\omega_n} E_k A_{mk}^{n-2})\)</span></p>
 </li>
 </ol>
 </section>
@@ -417,6 +456,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 0\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = (n-1) \cdot D_{kn} B_n\cdot E_k \left(A_{mk}'\right)^{n-2} e^{-i\tau_m\omega_n}\)</span></p>
+</li>
 </ol>
 </section>
 <section id="I-Time-Domain-Ptychography-(with-respect-to-pulse)">
@@ -439,6 +484,12 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = D_{nk}(1+B_n^*\cdot e^{i\tau_m\omega_n})\cdot (E_k + A_{mk}')^2\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 2D_{kn}(1+B_n\cdot e^{-i\tau_m\omega_n})\cdot |E_k + A_{mk}'|^2\)</span></p>
+</li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = n\cdot D_{kn}(1+B_n\cdot e^{-i\tau_m\omega_n})\cdot (E_k + A_{mk}')^{n-1}\)</span></p>
 </li>
 </ol>
 </section>
@@ -463,6 +514,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 2D_{kn}B_n\cdot e^{-i\tau_m\omega_n}|E_k + A_{mk}'|^2\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = n\cdot D_{kn}B_n\cdot e^{-i\tau_m\omega_n}(E_k + A_{mk}')^{n-1}\)</span></p>
+</li>
 </ol>
 </section>
 <section id="Chirp-Scan-(with-respect-to-Pulse)">
@@ -485,6 +542,14 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = D_{nk} A_{mk}^2 e^{-i\phi_{mn}}\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = 2 D_{kn} |A_{mk}|^2 e^{i\phi_{mn}}\)</span></p>
+</li>
+</ol>
+<ol class="arabic" start="5">
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = n\cdot D_{kn} A_{mk}^{n-1} e^{i\phi_{mn}}\)</span></p>
 </li>
 </ol>
 </section>
@@ -515,6 +580,12 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 2D_{nk}E_k\cdot(B_n'e^{-i\tau_0\omega_n}+e^{-i\tau_m\omega_n}B_n'')^*\cdot e^{-i\phi_n}\cdot(E_k' + A_{mk}'')^*\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn}\left((E_k'+A_{mk}'')^*\right)^2\)</span></p>
+</li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn}\left((E_k'+A_{mk}'')^{n-1}+(n-1)E_k\cdot(E_k'+A_{mk}'')^{n-2}(B_n'e^{-i\tau_0\omega_n}+e^{-i\tau_m\omega_n}B_n'')\cdot e^{i\phi_n}\cdot E_k\right)\)</span></p>
 </li>
 </ol>
 </section>
@@ -551,6 +622,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dA_n} = 0\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = (n-1)D_{kn}E_k\cdot(B_n'e^{-i\tau_0\omega_n}+e^{-i\tau_m\omega_n}B_n'')\cdot e^{i\phi_n}\cdot(A_k + A_{mk})^{n-2}\)</span></p>
+</li>
 </ol>
 </section>
 <section id="VAMPIRE-(with-respect-to-pulse,-autocorrelation-setup)">
@@ -580,6 +657,12 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 2 D_{nk}E_k (A_{mk}+A_{mk}')^*\cdot e^{i\tau_m\omega_n}(e^{i\tau_0\omega_n}+e^{-i\phi_n})\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn}\left((A_{mk}+A_{mk}')^*\right)^2\)</span></p>
+</li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = D_{kn}(A_{mk}+A_{mk}')^{n-2}\cdot\left(A_{mk}+A_{mk}'+(n-1)E_k\cdot e^{-i\tau_m\omega_n}\cdot(e^{-i\tau_0\omega_n} + e^{i\phi_n})\right)\)</span></p>
 </li>
 </ol>
 </section>
@@ -616,6 +699,12 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dA_n} = 0\)</span></p>
 </li>
+<li><div class="line-block">
+<div class="line">nth-HG</div>
+<div class="line"><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n^*} = 0\)</span></div>
+</div>
+<p><span class="math notranslate nohighlight">\(\frac{dS_{mk}}{dE_n} = (n-1) D_{kn}E_k (A_{mk}+A_{mk}')^{n-2}\cdot e^{-i\tau_m\omega_n}(e^{-i\tau_0\omega_n}+e^{i\phi_n})\)</span></p>
+</li>
 </ol>
 </section>
 </section>
@@ -645,6 +734,9 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2\cdot D_{nk}D_{kp} \cdot A_{mk} e^{-i\tau_m\omega_n}\)</span></p>
 </li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
 </ol>
 </section>
 <section id="id2">
@@ -673,6 +765,9 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 0\)</span></p>
 </li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
 </ol>
 </section>
 <section id="id4">
@@ -689,6 +784,9 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = 2D_{nk}D_{kp} (E_k+A_{mk})^* (1+e^{i\tau_m\omega_n}) (1+e^{-i\tau_m\omega_p})\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} (E_k+A_{mk})^* (1+e^{-i\tau_m\omega_n}) (1+e^{i\tau_m\omega_p})\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -707,6 +805,9 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} (E_k+A_{mk})^*\)</span></p>
 </li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
 </ol>
 </section>
 <section id="id6">
@@ -723,6 +824,9 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = 2D_{nk}D_{kp} (E_k+A_{mk})^* e^{i\tau_m\omega_n}e^{-i\tau_m\omega_p}\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} (E_k+A_{mk})^*e^{-i\tau_m\omega_n}e^{i\tau_m\omega_p}\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -746,6 +850,9 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = 2\cdot D_{pk}D_{kn} \cdot A_{mk}' B_p e^{-i\tau_m\omega_p}\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2\cdot D_{nk}D_{kp} \cdot A_{mk}' B_n e^{-i\tau_m\omega_n}\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -775,6 +882,9 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 0\)</span></p>
 </li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
 </ol>
 </section>
 <section id="id8">
@@ -791,6 +901,11 @@
 <div class="line"><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = 2D_{nk}D_{kp} (E_k+A_{mk}')^* (1+B_n^*e^{i\tau_m\omega_n}) (1+B_p e^{-i\tau_m\omega_p})\)</span></div>
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} (E_k+A_{mk}')^* (1+B_n e^{-i\tau_m\omega_n}) (1+B_p^*e^{i\tau_m\omega_p})\)</span></p>
+</li>
+</ol>
+<ol class="arabic" start="5">
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -810,6 +925,11 @@
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} (E_k+A_{mk}')^*\)</span></p>
 </li>
 </ol>
+<ol class="arabic" start="5">
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
+</ol>
 </section>
 <section id="I+X-Time-Domain-Ptychography-(with-respect-to-gate-pulse)">
 <h2>I+X Time-Domain-Ptychography (with respect to gate-pulse)<a class="headerlink" href="#I+X-Time-Domain-Ptychography-(with-respect-to-gate-pulse)" title="Link to this heading"></a></h2>
@@ -826,6 +946,9 @@
 </div>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} (E_k+A_{mk}')^* B_nB_p^* e^{-i\tau_m\omega_n}e^{i\tau_m\omega_p}\)</span></p>
 </li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
 </ol>
 </section>
 <section id="Chirp-Scan-(with-respect-to-pulse)">
@@ -840,6 +963,9 @@
 <li><p>PG/SD</p>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = 2D_{nk}D_{kp} A_{mk}^* e^{-i \phi_{mn}} e^{i \phi_{mp}}\)</span></p>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = 2D_{kn}D_{pk} A_{mk}^* e^{i \phi_{mn}} e^{-i \phi_{mp}}\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -860,6 +986,9 @@
 <li><p>SD</p>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = D_{nk}D_{kp}\cdot 2(E_k'+A_{mk}'')(B_p'e^{-i\tau_0\omega_p}+B_p''e^{-i\tau_m\omega_p})\cdot e^{i\phi_p}\)</span></p>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = D_{pk}D_{kn}\cdot 2(E_k'+A_{mk}'')(B_n'e^{-i\tau_0\omega_n}+B_n''e^{-i\tau_m\omega_n})\cdot e^{i\phi_n}\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -884,6 +1013,9 @@
 <li><p>SD</p>
 <p><span class="math notranslate nohighlight">\(V_{zz}=0\)</span></p>
 </li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
+</li>
 </ol>
 </section>
 <section id="id12">
@@ -903,6 +1035,9 @@
 <li><p>SD</p>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p}\left(\frac{dS_{mk}}{dE_n}\right)^* = D_{nk}D_{kp}\cdot 2(E_k'+A_{mk}'')e^{i\tau_m\omega_p}(e^{-i\tau_0\omega_p} + e^{i\phi_p})^*\)</span></p>
 <p><span class="math notranslate nohighlight">\(\frac{d}{dE_p^*}\left(\frac{dS_{mk}}{dE_n^*}\right)^* = D_{pk}D_{kn}\cdot 2(E_k'+A_{mk}'')e^{-i\tau_m\omega_n}(e^{-i\tau_0\omega_n} + e^{i\phi_n})\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -926,6 +1061,9 @@
 </li>
 <li><p>SD</p>
 <p><span class="math notranslate nohighlight">\(V_{zz}=0\)</span></p>
+</li>
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(V_{zz} = 0\)</span></p>
 </li>
 </ol>
 </section>
@@ -954,6 +1092,11 @@
 </li>
 <li><p>SD</p>
 <p><span class="math notranslate nohighlight">\(\frac{dL_m}{dA_{mk}^*} = -1\cdot E_{k}\cdot 2 A_{mk}^* \cdot \Delta S_{mk}^* = \left(-1\cdot E_{k}^*\cdot 2 A_{mk} \cdot \Delta S_{mk}\right)^*\)</span></p>
+</li>
+</ol>
+<ol class="arabic" start="2">
+<li><p>nth-HG</p>
+<p><span class="math notranslate nohighlight">\(\frac{dL_m}{dA_{mk}^*} = -2\cdot E_k^*\cdot \left((n-1)A_{mk}^*\right)^{n-2}\cdot \Delta S_{mk}\)</span></p>
 </li>
 </ol>
 </section>
@@ -986,6 +1129,7 @@
 <li><p>THG: <span class="math notranslate nohighlight">\(\frac{dP_{mk}}{dA_{mk}} = 2A_{mk}\)</span></p></li>
 <li><p>PG: <span class="math notranslate nohighlight">\(\frac{dP_{mk}}{dA_{mk}} = A_{mk}^*\)</span></p></li>
 <li><p>SD: <span class="math notranslate nohighlight">\(\frac{dP_{mk}^*}{dA_{mk}} = 2A_{mk}\)</span> (the conjugate is no mistake, the other wirtinger derivative is zero.)</p></li>
+<li><p>nth-HG: <span class="math notranslate nohighlight">\(\frac{dP_{mk}}{dA_{mk}} = (n-1)A_{mk}^{n-2}\)</span></p></li>
 </ol>
 </section>
 </section>
@@ -1024,7 +1168,7 @@
 <ol class="arabic simple" start="2">
 <li><p>Order</p></li>
 </ol>
-<p><span class="math notranslate nohighlight">\(L'=L + 2\cdot \Re\left\{\sum_n (E_n'-E_n)^\dagger \nabla_nL\right\} + \Re\left\{\sum_n (E_n'-E_n)^\dagger H_L^n(E_n'-E_n)\right\}\)</span></p>
+<p><span class="math notranslate nohighlight">\(L'=L + 2\cdot \Re\left\{\sum_n (E_n'-E_n)^\dagger \nabla_nL\right\} + \Re\left\{\sum_{np} (E_n'-E_n)^\dagger H_{np}(E_p'-E_p)\right\}\)</span></p>
 <p><span class="math notranslate nohighlight">\(E_n'-E_n = \eta\cdot d_n\)</span></p>
 <div class="line-block">
 <div class="line">For gradient-descent-like methods: <span class="math notranslate nohighlight">\(d=-1\cdot\nabla L\)</span></div>

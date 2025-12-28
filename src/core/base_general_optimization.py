@@ -364,6 +364,7 @@ class EvosaxBASE(GeneralOptimizationBASE):
 
     Attributes:
         solver (evosax-solver): any evosax-solver should work
+        solver_params (any): user defined parameters for the evosax-solver, if None the default params set in evosax are used
 
     """
     def __init__(self, *args, **kwargs):
@@ -371,6 +372,7 @@ class EvosaxBASE(GeneralOptimizationBASE):
         
         self._name = "Evosax"
         self.solver = None
+        self.solver_params = None
         
 
 
@@ -399,7 +401,7 @@ class EvosaxBASE(GeneralOptimizationBASE):
         population_eval = self.merge_population_from_amp_and_phase(population_amp, population_phase)
 
         fitness = self.calculate_error_population(population_eval, measurement_info, descent_info)
-        state, metrics = solver.tell(key_tell, population, fitness, state, params)
+        state, _ = solver.tell(key_tell, population, fitness, state, params)
         population, state = solver.ask(key_ask_2, state, params)
 
         descent_state = tree_at(lambda x: getattr(x.evosax.state, amp_or_phase), descent_state, state)
@@ -447,7 +449,11 @@ class EvosaxBASE(GeneralOptimizationBASE):
 
         key, subkey = jax.random.split(key, 2)
 
-        params = solver.default_params
+        if self.solver_params==None:
+            params = solver.default_params
+        else:
+            params = self.solver_params
+
         class_str = str(self.solver)
         if class_str.split(".")[2]=="population_based":
             fitness = self.calculate_error_population(population, self.measurement_info, self.descent_info)
@@ -495,14 +501,7 @@ class EvosaxBASE(GeneralOptimizationBASE):
         individual = self.get_individual_from_idx(0, population)
         individual_amp, individual_phase = self.split_population_in_amp_and_phase(individual)
 
-        if type(self.solver)!=tuple or type(self.solver)!=list:
-            solver_amp = self.solver
-            solver_phase = self.solver
-        elif len(self.solver)==2:
-            solver_amp, solver_phase = self.solver
-        else:
-            raise ValueError(f"solver needs to be an evosax class or a list/tuple of two of its solvers. Got {self.solver}.")
-
+        solver_amp, solver_phase = self.solver, self.solver
         self.descent_info = self.descent_info.expand(solver = MyNamespace(amp=solver_amp(population_size=population_size, solution=individual_amp), 
                                                                           phase=solver_phase(population_size=population_size, solution=individual_phase)))
         descent_info=self.descent_info

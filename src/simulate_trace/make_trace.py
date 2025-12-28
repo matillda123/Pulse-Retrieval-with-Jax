@@ -403,6 +403,7 @@ class MakeTraceBASE:
                 fmin, fmax = np.sort([-1*fmin, -1*fmax])
         else:
             fmin, fmax = np.min(frequency_zoom), np.max(frequency_zoom)
+
         if is_delay_based==True:
             if self.interpolate_fft_conform==True:
                 central_f = (fmin+fmax)/2
@@ -421,15 +422,19 @@ class MakeTraceBASE:
                 Delta_t = np.abs(time_zoom[-1]-time_zoom[0])*self.scale_time_range
                 time_interpolate = np.linspace(t_central-Delta_t/2, t_central+Delta_t/2, self.N)
         else:		
-            frequency_interpolate=np.linspace(fmin, fmax, self.N)
-            time_interpolate=self.time
+            frequency_interpolate = np.linspace(fmin, fmax, self.N)
+            time_interpolate = self.time
 		
 
 
-        trace_interpolate_freq = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_interpolate, self.frequency, self.trace)
+        trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_interpolate, self.frequency, self.trace)
 
         if is_delay_based==True:
-            trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, self.time, trace_interpolate_freq)
+            trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,1))(time_interpolate, self.time, trace_interpolate)
+            trace_interpolate = np.abs(trace_interpolate).T
+        else:
+            trace_interpolate = np.abs(trace_interpolate)
+
 
         if self.nonlinear_method=="sd":
             frequency_interpolate = -1*np.flip(frequency_interpolate)
@@ -446,7 +451,7 @@ class MakeTraceBASE:
         spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
                               gate = (frequency_gate_spectrum, spectrum_gate))
 
-        return time_interpolate, frequency_interpolate, np.abs(trace_interpolate).T, spectra
+        return time_interpolate, frequency_interpolate, trace_interpolate, spectra
 
 
 
@@ -635,7 +640,7 @@ class MakeTraceCHIRPSCAN(MakeTraceBASE, RetrievePulsesCHIRPSCAN):
     def get_parameters_to_make_signal_t(self):
         self.measurement_info = MyNamespace(z_arr=self.z_arr, frequency=self.frequency, 
                                             frequency_exp=self.frequency, time_big=self.time, frequency_big=self.frequency, 
-                                            sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, 
+                                            sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, sk_exp=self.sk, rn_exp=self.rn, 
                                             nonlinear_method=self.nonlinear_method, doubleblind=False)
         individual = MyNamespace(pulse=self.pulse_f, gate=None)
 

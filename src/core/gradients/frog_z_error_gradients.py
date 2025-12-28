@@ -5,30 +5,35 @@ from src.utilities import do_fft
 
 def Z_gradient_shg(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     term1=do_fft(deltaS*jnp.conjugate(pulse_t_shifted), sk, rn)
+    #term1=do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     term2=do_fft(deltaS*jnp.conjugate(pulse_t), sk, rn)
     grad=term1+term2*exp_arr
     return -2*grad
 
 def Z_gradient_thg(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     term1=do_fft(deltaS*jnp.conjugate(pulse_t_shifted)**2, sk, rn)
+    #term1=do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     term2=do_fft(deltaS*jnp.conjugate(pulse_t*pulse_t_shifted), sk, rn)
     grad=term1+2*term2*exp_arr
     return -2*grad
 
 def Z_gradient_pg(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     term1=do_fft(deltaS*jnp.abs(pulse_t_shifted)**2, sk, rn)
+    #term1=do_fft(deltaS*gate_shifted, sk, rn)
     term2=do_fft(pulse_t_shifted*jnp.real(deltaS*jnp.conjugate(pulse_t)), sk, rn)
     grad=term1+2*term2*exp_arr
     return -2*grad
 
 def Z_gradient_sd(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     term1=do_fft(deltaS*pulse_t_shifted**2, sk, rn)
+    #term1=do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     term2=do_fft(jnp.conjugate(deltaS*pulse_t_shifted)*pulse_t, sk, rn)
     grad=term1+2*term2*exp_arr
     return -2*grad
 
 def Z_gradient_nhg(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     term1=do_fft(deltaS*jnp.conjugate(pulse_t_shifted)**(n-1), sk, rn)
+    #term1=do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     term2=do_fft(deltaS*jnp.conjugate(pulse_t*pulse_t_shifted**(n-2)), sk, rn)
     grad=term1+(n-1)*term2*exp_arr
     return -2*grad
@@ -82,12 +87,14 @@ def Z_gradient_nhg_cross_correlation_gate(deltaS, pulse_t, pulse_t_shifted, gate
 
 def Z_gradient_shg_interferometric(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     grad=2*(1+exp_arr)*do_fft(deltaS*jnp.conjugate(pulse_t+pulse_t_shifted), sk, rn)
+    # grad=2*(1+exp_arr)*do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     return -2*grad
 
 
 
 def Z_gradient_thg_interferometric(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     grad=3*(1+exp_arr)*do_fft(deltaS*jnp.conjugate(pulse_t+pulse_t_shifted)**2, sk, rn)
+    #grad=3*(1+exp_arr)*do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     return -2*grad
 
 
@@ -96,12 +103,14 @@ def Z_gradient_pg_interferometric(deltaS, pulse_t, pulse_t_shifted, gate_shifted
     # is the same as sd
     term1=jnp.conjugate(deltaS)*(pulse_t+pulse_t_shifted)**2
     term2=deltaS*jnp.abs(pulse_t+pulse_t_shifted)**2
+    #term2=deltaS*gate_shifted
     grad=(1+exp_arr)*do_fft(term1+2*term2, sk, rn)
     return -2*grad
 
 
 def Z_gradient_nhg_interferometric(deltaS, pulse_t, pulse_t_shifted, gate_shifted, exp_arr, sk, rn, n):
     grad=n*(1+exp_arr)*do_fft(deltaS*jnp.conjugate(pulse_t+pulse_t_shifted)**(n-1), sk, rn)
+    # grad=n*(1+exp_arr)*do_fft(deltaS*jnp.conjugate(gate_shifted), sk, rn)
     return -2*grad
 
 

@@ -8,91 +8,69 @@ import jax
 from src.utilities import get_sk_rn, do_fft, do_ifft, MyNamespace, do_interpolation_1d, generate_random_continuous_function, get_com
 
 
-def check_dataclass_types(self):
-    """ Makes sure the correct types are used in the dataclasses. """
-    for (name, field) in self.__dataclass_fields__.items():
-        field_type = field.type
-        if not isinstance(self.__dict__[name], field_type):
-            current_type = type(self.__dict__[name])
-            raise TypeError(f"The field `{name}` was assigned by `{current_type}` instead of `{field_type}`")
+
+    
 
 class SpectralAmplitude:
     """ A base for all spectral amplitudes. """
-    def __post_init__(self):
-        check_dataclass_types(self)
         
 
 class SpectralPhase:
     """ A base for all spectral phases"""
-    def __post_init__(self):
-        check_dataclass_types(self)
 
 
 @dataclass
-class GaussianAmplitude(SpectralAmplitude): # can be used for single or multiple gaussians
-    """ 
-    Defines a Gaussian envelope. Multiple parameters can be provided per attribute. Final gaussians will be added up.
-
-    Attributes:
-        amplitude: scales the gaussian by a factor
-        central_frequency: the position of the maximum on the frequency axis
-        fwhm: the Full-Width-Half-Maximum of the gaussian
-        p: defines a super-gaussian (needs to be bigger or equal to one), if None a normal gaussian is assumed.
-    """
+class GaussianAmplitude(SpectralAmplitude):
     amplitude: Union[np.ndarray,tuple,float,int]
+    """ scales the gaussian by a factor """
+
     central_frequency: Union[np.ndarray,tuple,float,int]
+    """ the position of the maximum on the frequency axis """
+
     fwhm: Union[np.ndarray,tuple,float,int]
+    """ the Full-Width-Half-Maximum of the gaussian """
+
     p: Union[np.ndarray,tuple,float,int,None] = None
+    """ defines a super-gaussian (needs to be bigger or equal to one), if None a normal gaussian is assumed. """
 
 
 @dataclass
-class LorentzianAmplitude(SpectralAmplitude): # can be used for single or multiple lorentzians
-    """ 
-    Defines a Lorentzian envelope. Multiple parameters can be provided per attribute. Final lorentzians will be added up.
-
-    Attributes:
-        amplitude: scales the lorentzian by a factor
-        central_frequency: the position of the maximum on the frequency axis
-        fwhm: the Full-Width-Half-Maximum of the lorentzian
-        p: defines a super-lorentzian (needs to be bigger or equal to one), if None a normal lorentzian is assumed.
-    """
+class LorentzianAmplitude(SpectralAmplitude):
     amplitude: Union[np.ndarray,tuple,float,int]
-    central_frequency: Union[np.ndarray,tuple,float,int]
-    fwhm: Union[np.ndarray,tuple,float,int]
-    p: Union[np.ndarray,tuple,float,int,None] = None
+    """ scales the lorentzian by a factor """
 
+    central_frequency: Union[np.ndarray,tuple,float,int]
+    """ the position of the maximum on the frequency axis """
+
+    fwhm: Union[np.ndarray,tuple,float,int]
+    """ the Full-Width-Half-Maximum of the lorentzian """
+
+    p: Union[np.ndarray,tuple,float,int,None] = None
+    """ defines a super-lorentzian (needs to be bigger or equal to one), if None a normal lorentzian is assumed. """
 
 
 @dataclass
 class PolynomialPhase(SpectralPhase):
-    """ 
-    Defines a polynomial phase in the frequency domain.
-
-    Attributes:
-        central_frequency: the central frequency, if None it will be calculated from the spectral amplitude.
-        coefficients: the taylor coefficients in fs, need to include all orders. (e.g. for a TOD pulse the input needs to be (0,0,0,TOD))
-    
-    """
     central_frequency: Union[float,int,None]
+    """ the central frequency, if None it will be calculated from the spectral amplitude. """
+
     coefficients: Union[np.ndarray,tuple,float,int]
+    """ the taylor coefficients in fs, need to include all orders. (e.g. for a TOD pulse the input needs to be (0,0,0,TOD)) """
 
 
 @dataclass
 class SinusoidalPhase(SpectralPhase):
-    """
-    Defines a sinusoidal phase in the frequency domain. Multiple parameters can be provided per attribute. Will cause addition of sinusoids.
-
-    Attributes:
-        amplitude: the amplitude of the sinusoid (in units of 2*pi)
-        central_frequency: the base-shift of the sinusoid (in PHz)
-        peridoicity: the periodicity of the sinusoid (in fs)
-        phase_shift: the phase of the sinusoid
-    
-    """
     amplitude: Union[np.ndarray,tuple,float,int]
+    """ the amplitude of the sinusoid (in units of 2*pi) """
+
     central_frequency: Union[np.ndarray,tuple,float,int]
+    """ the base-shift of the sinusoid (in PHz) """
+
     periodicity: Union[np.ndarray,tuple,float,int]
+    """ the periodicity of the sinusoid (in fs) """
+
     phase_shift: Union[np.ndarray,tuple,float,int]
+    """ the phase of the sinusoid """
 
 
 @dataclass
@@ -109,71 +87,62 @@ class RandomPhase(SpectralPhase):
 
 @dataclass
 class CustomPulse:
-    """
-    Defines an arbitrary pulse via arrays. Or a mixture of a discretized and parametrized amplitude or phase.
-
-    Attributes:
-        frequency: the frequency axis
-        amplitude: the spectral amplitude, can be an array or a SpectralAmplitude
-        phase: the spectral phase, can be an array or a SpectralPhase
-    """
     frequency: np.ndarray
+    """ the frequency axis """
+
     amplitude: Union[np.ndarray,SpectralAmplitude]
+    """ the spectral amplitude """
+
     phase: Union[np.ndarray,SpectralPhase]
-
-    def __post_init__(self):
-        check_dataclass_types(self)
+    """ the spectral phase """
 
 
 
-
+@dataclass
 class TemporalAmplitude:
-    """ 
-    Defines a pulse envelope in the time domain. Is only used/accepted by MultiPulse.
-
-    Attributes:
-        gaussian_or_lorentzian: defines the envelope shape, needs to be gaussian or lorentzian.
-        ampitude: the amplitude 
-        duration: the duration
-        central_frequency: the central_frequency
-        p: the super-gaussian/lorentzian exponent
-    
-    """
     gaussian_or_lorentzian: str
-    amplitude: Union[float, int]
-    duration: Union[float, int]
-    central_frequency: Union[float, int]
-    p: Union[float, int, None] = None
+    """ defines the envelope shape, needs to be gaussian or lorentzian. """
 
-    def __post_init__(self):
-        check_dataclass_types(self)
-        
+    amplitude: Union[float, int]
+    """ the amplitude  """
+
+    duration: Union[float, int]
+    """ the duration """
+
+    central_frequency: Union[float, int]
+    """ the central_frequency """
+
+    p: Union[float, int, None] = None
+    """ the super-gaussian/lorentzian exponent """
+
+
 
 @dataclass
 class MultiPulse:
-    """ 
-    Constructs/Defines a pulse sequence in the time domain. 
-
-    Attributes:
-        gaussian_or_lorentzian: only "gaussian" or "lorentzian" are accepted
-        amplitude: the relative scale of the envelopes
-        delay: the relative delay (not position) of each pulse, has to be one less than the total number of pulses
-        duration: the FWHM of each envelope in the time domain
-        central_frequency: the central frequency of each pulse
-        p: the super-gaussian/lorentzian of each pulse in the time domain
-        phase: the spectral phase of each pulse
-        envelope: is constructed from the given attributes
-    """
-
     gaussian_or_lorentzian: Union[list,tuple,np.ndarray,str]
-    amplitude: Union[list,tuple,np.ndarray,float,int]
-    delay: Union[list,np.ndarray,tuple,float,int]
-    duration: Union[list,tuple,np.ndarray,float, int]
-    central_frequency: Union[list,tuple,np.ndarray,float,int]
-    p: Union[list,tuple,np.ndarray,float,int,None]
-    phase: Union[list[SpectralPhase],tuple[SpectralPhase], SpectralPhase]
-    envelope: Union[list[TemporalAmplitude],tuple[TemporalAmplitude], TemporalAmplitude] = field(compare=False)
+    """ only "G" for gaussian or "L" for lorentzian are accepted """
 
+    amplitude: Union[list,tuple,np.ndarray,float,int]
+    """ the relative scale of the envelopes """
+
+    delay: Union[list,np.ndarray,tuple,float,int]
+    """ the relative delay (not position) of each pulse, has to be one less than the total number of pulses """
+
+    duration: Union[list,tuple,np.ndarray,float, int]
+    """ the FWHM of each envelope in the time domain """
+
+    central_frequency: Union[list,tuple,np.ndarray,float,int]
+    """ the central frequency of each pulse """
+
+    p: Union[list,tuple,np.ndarray,float,int,None]
+    """ the super-gaussian/lorentzian of each pulse in the time domain """
+
+    phase: Union[list[SpectralPhase],tuple[SpectralPhase], SpectralPhase]
+    """ the spectral phase of each pulse """
+
+    envelope: Union[list[TemporalAmplitude], tuple[TemporalAmplitude], TemporalAmplitude] = field(init=False)
+    """ is constructed from the given attributes """
+    
     def __post_init__(self):
         g_or_l = np.squeeze(np.asarray([self.gaussian_or_lorentzian]))
         amp = self.amplitude
@@ -189,11 +158,17 @@ class MultiPulse:
         env_list = []
         n = len(amp)
         for i in range(n):
-            env_list.append(TemporalAmplitude(g_or_l[i],amp[i],dt[i],cf[i],p[i]))
+            g_or_l_val = g_or_l[i]
+            if g_or_l_val=="G":
+                g_or_l_val = "gaussian"
+            elif g_or_l_val=="L":
+                g_or_l_val="lorentzian"
+            else:
+                raise ValueError
+            env_list.append(TemporalAmplitude(g_or_l_val,amp[i],dt[i],cf[i],p[i]))
 
         self.envelope = env_list
 
-        check_dataclass_types(self)
 
 
 
@@ -208,18 +183,19 @@ def check_and_correct_if_scalar(parameters):
             temp.append([np.squeeze(np.asarray([param]))])
     return temp
 
+
 class MakePulse:
     """ 
     Is supposed to generate pulses based on input parameters from GaussianAmplitude, PolynomialPhase, SinusoidalPhase, RandomPhase, CustomPulse or MultiPulse.
 
     Attributes:
         N (int): the number of points on the time/frequency-grid
-        Delta_f (float): the frequency range which is used. Extends from -Delta_f to +Delta_f (so it should actually be named f_max?)
+        f_max (float): the frequency range which is used. Extends from -f_max to +f_max (so it should actually be named f_max?)
 
     """
-    def __init__(self, N=256, Delta_f=None):
+    def __init__(self, N=256, f_max=None):
         self.N = N
-        self.Delta_f = Delta_f
+        self.f_max = f_max
 
 
     def gaussian(self, x, amp, fwhm, shift, p):
@@ -329,7 +305,7 @@ class MakePulse:
 
             assert env_t.gaussian_or_lorentzian=="gaussian" or env_t.gaussian_or_lorentzian=="lorentzian"
             amp_t = getattr(self, env_t.gaussian_or_lorentzian)(self.time, env_t.amplitude, env_t.duration, deltat, env_t.p)
-            pulse_t = amp_t*np.exp(1j*2*np.pi*env_t.central_frequency)
+            pulse_t = amp_t*np.exp(1j*2*np.pi*env_t.central_frequency*self.time)
             pulse_f = do_fft(pulse_t, self.sk, self.rn)
 
             phase_f = self.get_spectral_phase(phase_f, np.abs(pulse_f))
@@ -345,32 +321,32 @@ class MakePulse:
             amplitude, phase = parameters
             assert isinstance(amplitude, SpectralAmplitude) and isinstance(phase, SpectralPhase)
 
-            if self.Delta_f == None:
+            if self.f_max == None:
                 f = amplitude.fwhm + amplitude.central_frequency
                 fmax = np.maximum(np.abs(np.min(f)), np.abs(np.max(f)))
                 fmin, fmax = -4*fmax, 4*fmax
             else:
-                fmin, fmax = -1*self.Delta_f, self.Delta_f
+                fmin, fmax = -1*self.f_max, self.f_max
 
         elif isinstance(parameters, CustomPulse):
-            assert self.Delta_f != None, "Please predefine a suitable Delta_f for CustomPulse."
-            fmin, fmax = -1*self.Delta_f, self.Delta_f
+            assert self.f_max != None, "Please predefine a suitable f_max for CustomPulse."
+            fmin, fmax = -1*self.f_max, self.f_max
             parameters = parameters, parameters
 
         elif isinstance(parameters, MultiPulse):
-            if self.Delta_f == None:
+            if self.f_max == None:
                 Delta_t = 2*(np.max(parameters.delay) - np.min(parameters.delay))
                 df = 1/Delta_t
-                self.Delta_f = self.N*df
+                self.f_max = self.N*df
             else:
                 pass
             
-            fmin, fmax = -1*self.Delta_f, self.Delta_f
+            fmin, fmax = -1*self.f_max, self.f_max
 
         else:
             raise TypeError(f"The input {parameters} has to be a tuple[SpectralAmplitude, SpectralPhase], CustomPulse or MultiPulse. Not {type(parameters)}.")
 
-        assert type(fmax)==int or type(fmax)==float, "There is a type issue with Delta_f."
+        assert type(fmax)==int or type(fmax)==float, "There is a type issue with f_max."
         self.frequency = np.linspace(fmin, fmax, self.N)
         self.df = np.mean(np.diff(self.frequency))
         self.time = np.fft.fftshift(np.fft.fftfreq(self.N, self.df))
@@ -404,14 +380,13 @@ class MakePulse:
 
 
 
-    def plot_pulses(self):
+    def plot_envelopes(self):
         fig = plt.figure(figsize=(9,4))
 
         plt.subplot(1,2,1)
         plt.plot(self.pulses.time, np.abs(self.pulses.pulse_t))
         plt.xlabel("Time [fs]")
         plt.ylabel("Amplitude [arb. u.]")
-
 
         plt.subplot(1,2,2)
         plt.plot(self.pulses.frequency, np.abs(self.pulses.pulse_f))
