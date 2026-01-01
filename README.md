@@ -1,6 +1,14 @@
 # Pulse-Retrieval with JAX
 
 Uses Jax to implement various algorithms for pulse-retrieval in ultrafast optics.  
+
+## Installation  
+To install (create a new environment and) run:
+```
+pip install git+https://github.com/matillda123/pulse-retrieval-with-jax.git
+```
+
+## Description  
 Available methods are FROG, Chirp-Scans (material dispersion or pulse-shaping), Time-Domain-Ptychography, Two-Dimensional Spectral-Shearing Interferometry (2D-SI) and VAMPIRE.  
 For each method SHG, THG, PG/TG and SD as well as cross-correlation and interferometric retrievals are implemented (with some exceptions).  
 
@@ -35,7 +43,7 @@ For some methods, specific additional algorithms are implemented:
 
 
 
-If you end up using this code for a publication, please use the citation below:
+If you end up using this code for a publication, please use the citation below as well as the appropriate citations for the algorithm used.
 
 ```bibtex
 @software{pulseretrievalwithjax,
@@ -45,6 +53,7 @@ If you end up using this code for a publication, please use the citation below:
   year = {2025}
 }
 ```
+
 
 
 
