@@ -30,7 +30,7 @@ de = DifferentialEvolution(delay, frequency_trace, trace, "pg")
 de.strategy = "best1_smooth"
 de.selection_mechanism = "global"
 
-population = de.create_initial_population(150, "continuous", "continuous")
+population = de.create_initial_population(150, amp_type="continuous", phase_type="continuous")
 
 final_result = de.run(population, 100)
 de.plot_results(final_result)

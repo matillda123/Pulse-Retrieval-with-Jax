@@ -5,7 +5,7 @@ from jax.tree_util import Partial
 from equinox import tree_at
 
 from src.core.base_classes_methods import RetrievePulses2DSI
-from src.core.base_classes_algorithms import AlgorithmsBASE
+from src.core.base_classes_algorithms import ClassicAlgorithmsBASE
 from src.core.base_classic_algorithms import GeneralizedProjectionBASE, PtychographicIterativeEngineBASE, COPRABASE
 from src.utilities import scan_helper, center_signal, do_interpolation_1d, integrate_signal_1D, calculate_trace, calculate_trace_error
 
@@ -15,7 +15,7 @@ from src.core.hessians.pie_pseudo_hessian import PIE_get_pseudo_newton_direction
 
 
 
-class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
+class DirectReconstruction(ClassicAlgorithmsBASE, RetrievePulses2DSI):
     """ 
     Reconstructs a 2DSI trace non-iteratively by extracting the relative phase of the fringes for each frequency.
 
@@ -39,7 +39,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
 
         super().__init__(delay, frequency, measured_trace, nonlinear_method, spectral_filter1=spectral_filter1, spectral_filter2=spectral_filter2, **kwargs)
 
-        self.name = "DirectReconstruction"
+        self._name = "DirectReconstruction"
 
         self.integration_method = "euler_maclaurin_3"
         self.integration_order = None
@@ -150,7 +150,7 @@ class DirectReconstruction(AlgorithmsBASE, RetrievePulses2DSI):
 
         """
         assert self.descent_info.measured_spectrum_is_provided.pulse==True, "You need to provide a spectrum for the pulse."
-        assert len(population.pulse)==1, "DirectReconstruction has no inherent randomness, so its not sensible to use or expect more than one result."
+        assert self.descent_info.population_size==1, "DirectReconstruction has no inherent randomness, so its not sensible to use or expect more than one result."
 
         self.measurement_info = self.measurement_info.expand(cut_off_intensity = self.cut_off_intensity_for_GD)
         measurement_info = self.measurement_info

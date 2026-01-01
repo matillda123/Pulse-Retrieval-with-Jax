@@ -339,10 +339,9 @@ class MakeTrace(MakePulseBase):
 
 
 def interpolate_spectrum(frequency, pulse_f, N):
-    spectrum=jnp.abs(pulse_f)**2
-    spectrum=spectrum/jnp.max(spectrum)
+    spectrum = jnp.abs(pulse_f)**2
 
-    idx=np.where(spectrum>1e-5)
+    idx=np.where(spectrum/jnp.max(spectrum)>1e-5)
     idx_1 = np.sort(idx)[0]
     idx_1_min, idx_1_max = idx_1[0], idx_1[-1]+1
     
@@ -350,7 +349,6 @@ def interpolate_spectrum(frequency, pulse_f, N):
     frequency_interpolate_spectrum = np.linspace(frequency_zoom[0], frequency_zoom[-1], N)
     
     spectrum = do_interpolation_1d(frequency_interpolate_spectrum, frequency, spectrum, method="linear")
-    spectrum = spectrum/np.max(spectrum)
     return frequency_interpolate_spectrum, spectrum
 
 
@@ -406,24 +404,18 @@ class MakeTraceBASE:
 
         if is_delay_based==True:
             if self.interpolate_fft_conform==True:
-                central_f = (fmin+fmax)/2
-                df = 1/np.abs((self.x_arr[-1]-self.x_arr[0]))
+                central_t = (self.x_arr[0] + self.x_arr[-1])/2
+                dt = 1/np.abs((fmax-fmin))
 
-                frequency_min = central_f-df*self.N/2
-                frequency_max = central_f+df*self.N/2
-
-                frequency_interpolate = np.linspace(frequency_min, frequency_max, self.N)
-                time_interpolate = np.fft.fftshift(np.fft.fftfreq(len(frequency_interpolate), df))
-
+                tmin = central_t - dt*self.N/2
+                tmax = central_t + dt*self.N/2
+                time_interpolate = np.linspace(tmin, tmax, self.N)
             else:
-                frequency_interpolate = np.linspace(fmin, fmax, self.N)
                 time_interpolate = self.x_arr
         else:		
-            frequency_interpolate = np.linspace(fmin, fmax, self.N)
             time_interpolate = self.x_arr
-		
 
-
+        frequency_interpolate = np.linspace(fmin, fmax, self.N)
         trace_interpolate = jax.vmap(do_interpolation_1d, in_axes=(None,None,0))(frequency_interpolate, self.frequency, self.trace)
 
         if is_delay_based==True:
@@ -445,7 +437,7 @@ class MakeTraceBASE:
         else:
             frequency_gate_spectrum, spectrum_gate = None, None
             
-        spectra = MyNamespace(pulse=(frequency_pulse_spectrum, spectrum_pulse), 
+        spectra = MyNamespace(pulse = (frequency_pulse_spectrum, spectrum_pulse), 
                               gate = (frequency_gate_spectrum, spectrum_gate))
 
         return time_interpolate, frequency_interpolate, trace_interpolate, spectra
@@ -529,6 +521,8 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
 
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
 
+        self.central_frequency = jnp.sum(jnp.abs(pulse_f)*frequency)/jnp.sum(jnp.abs(pulse_f))
+
 
     def get_gate_pulse(self, frequency_gate, gate_f):
         gate_f = do_interpolation_1d(self.frequency, frequency_gate, gate_f)
@@ -542,7 +536,7 @@ class MakeTraceFROG(MakeTraceBASE, RetrievePulsesFROG):
                                        time_big=self.time, frequency_big=self.frequency, sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn,
                                        sk_exp=self.sk, rn_exp=self.rn,
                                        cross_correlation=self.cross_correlation, interferometric=self.interferometric, 
-                                       nonlinear_method=self.nonlinear_method, doubleblind=False)
+                                       nonlinear_method=self.nonlinear_method, doubleblind=False, central_frequency = self.central_frequency)
         individual = MyNamespace(pulse=self.pulse_t, gate=self.gate)
         return individual, measurement_info, self.x_arr
 
@@ -574,6 +568,8 @@ class MakeTraceTDP(MakeTraceBASE, RetrievePulsesTDP):
             self.spectral_filter = jnp.ones(jnp.size(frequency))
         else:
             self.spectral_filter = spectral_filter
+
+        self.central_frequency = jnp.sum(jnp.abs(pulse_f)*frequency)/jnp.sum(jnp.abs(pulse_f))
         
         
 
@@ -617,26 +613,17 @@ class MakeTraceCHIRPSCAN(MakeTraceBASE, RetrievePulsesCHIRPSCAN):
 
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
 
+        self.central_frequency = jnp.sum(jnp.abs(pulse_f)*frequency)/jnp.sum(jnp.abs(pulse_f))
+
         self.phase_type = phase_type
         self.parameters = parameters
-
-
-
-    def get_dispersed_pulse_t(self, pulse_f, phase_matrix, sk, rn, do_centering=True):
-        pulse_t_disp, phase_matrix = super().get_dispersed_pulse_t(pulse_f, phase_matrix, sk, rn)
-
-        if do_centering==True:
-            pulse_t_disp = jax.vmap(center_signal_to_max)(pulse_t_disp)   # This FUCKS the retrieval. Only use in generation of traces
-        #pulse_t_disp = jax.vmap(center_signal)(pulse_t_disp)
-        return pulse_t_disp, phase_matrix
-
 
 
     def get_parameters_to_make_signal_t(self):
         self.measurement_info = MyNamespace(z_arr=self.z_arr, frequency=self.frequency, 
                                             frequency_exp=self.frequency, time_big=self.time, frequency_big=self.frequency, 
                                             sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, sk_exp=self.sk, rn_exp=self.rn, 
-                                            nonlinear_method=self.nonlinear_method, doubleblind=False)
+                                            nonlinear_method=self.nonlinear_method, doubleblind=False, central_frequency = self.central_frequency)
         individual = MyNamespace(pulse=self.pulse_f, gate=None)
 
         self.phase_matrix = self.get_phase_matrix(self.parameters)
@@ -677,6 +664,8 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
         self.refractive_index, self.material_thickness = refractive_index, material_thickness
 
+        self.central_frequency = jnp.sum(jnp.abs(pulse_f)*frequency)/jnp.sum(jnp.abs(pulse_f))
+
         if spectral_filter1==None:
             self.spectral_filter1 = jnp.ones(jnp.size(self.frequency))
         else:
@@ -699,7 +688,8 @@ class MakeTrace2DSI(MakeTraceBASE, RetrievePulses2DSI):
         measurement_info = MyNamespace(time=self.time, frequency=self.frequency, frequency_exp=self.frequency, tau_pulse_anc1 = self.tau_pulse_anc1,
                                        time_big=self.time, frequency_big=self.frequency, sk_big=self.sk, rn_big=self.rn, sk=self.sk, rn=self.rn, 
                                        cross_correlation=self.cross_correlation, gate=self.gate,
-                                       nonlinear_method=self.nonlinear_method, doubleblind=False, c0=self.c0, spectral_filter1=self.spectral_filter1, spectral_filter2=self.spectral_filter2)
+                                       nonlinear_method=self.nonlinear_method, doubleblind=False, c0=self.c0, 
+                                       spectral_filter1=self.spectral_filter1, spectral_filter2=self.spectral_filter2, central_frequency = self.central_frequency)
         
         self.phase_matrix = self.get_phase_matrix(self.refractive_index, self.material_thickness, measurement_info)
         measurement_info = measurement_info.expand(phase_matrix = self.phase_matrix)
@@ -739,6 +729,8 @@ class MakeTraceVAMPIRE(MakeTraceBASE, RetrievePulsesVAMPIRE):
         self.interferometric=False
         self.gate = None
         self.tau_interferometer = tau_interferometer
+
+        self.central_frequency = jnp.sum(jnp.abs(pulse_f)*frequency)/jnp.sum(jnp.abs(pulse_f))
 
         self.x_arr = delay
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)

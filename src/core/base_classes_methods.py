@@ -6,8 +6,7 @@ import refractiveindex
 import jax
 import jax.numpy as jnp
 
-from src.utilities import MyNamespace, center_signal, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_trace, calculate_trace_error, calculate_mu
-from .create_population import create_population_classic
+from src.utilities import MyNamespace, center_signal, get_sk_rn, do_interpolation_1d, calculate_gate, calculate_trace, calculate_trace_error, center_signal_to_max, center_signal
 from src.core.initial_guess_doublepulse import make_population_doublepulse
 from src.core.phase_matrix_funcs import phase_func_dict, calculate_phase_matrix, calculate_phase_matrix_material
 
@@ -46,6 +45,16 @@ class RetrievePulses:
         self.doubleblind = False 
         self.interferometric = False
 
+        if nonlinear_method=="shg":
+            self.factor = 2
+        elif nonlinear_method=="thg":
+            self.factor = 3
+        elif nonlinear_method[-2:]=="hg":
+            self.factor = int(nonlinear_method[0])
+        else:
+            self.factor = 1
+
+
         self.measurement_info = MyNamespace(nonlinear_method = self.nonlinear_method, 
                                             spectral_amplitude = MyNamespace(pulse=None, gate=None), 
                                             central_f = MyNamespace(pulse=None, gate=None),
@@ -63,14 +72,6 @@ class RetrievePulses:
 
         self.update_PRNG_key(self.prng_seed)
 
-        if nonlinear_method=="shg":
-            self.factor = 2
-        elif nonlinear_method=="thg":
-            self.factor = 3
-        elif nonlinear_method[-2:]=="hg":
-            self.factor = int(nonlinear_method[0])
-        else:
-            self.factor = 1
 
 
     def update_PRNG_key(self, seed):
@@ -86,7 +87,11 @@ class RetrievePulses:
         self.frequency = jnp.asarray(frequency)
         self.time = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(self.frequency), jnp.mean(jnp.diff(self.frequency))))
         self.measured_trace = jnp.asarray(measured_trace)
-        return self.x_arr, self.time, self.frequency, self.measured_trace
+
+        # i should do this also in 2dsi and vampire -> but there one can have cross_correlation -> this way of getting omega_0 isnt valid.
+        self.central_frequency = jnp.sum(jnp.sum(self.measured_trace,axis=0)*self.frequency)/jnp.sum(jnp.sum(self.measured_trace,axis=0))*1/self.factor
+
+        return self.x_arr, self.time, self.frequency, self.measured_trace, self.central_frequency
 
 
 
@@ -365,7 +370,7 @@ class RetrievePulsesFROG(RetrievePulses):
         
         super().__init__(nonlinear_method, **kwargs)
 
-        self.tau_arr, self.time, self.frequency, self.measured_trace = self.get_data(delay, frequency, measured_trace)
+        self.tau_arr, self.time, self.frequency, self.measured_trace, self.central_frequency = self.get_data(delay, frequency, measured_trace)
         self.gate = jnp.zeros(jnp.size(self.time))
 
         self.transform_arr = self.tau_arr
@@ -400,7 +405,8 @@ class RetrievePulsesFROG(RetrievePulses):
                                                              rn = self.rn,
                                                              gate = self.gate,
                                                              transform_arr = self.transform_arr,
-                                                             x_arr = self.x_arr)
+                                                             x_arr = self.x_arr,
+                                                             central_frequency = self.central_frequency)
         
 
 
@@ -667,7 +673,7 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_type=None, chirp_parameters=None, **kwargs):
         super().__init__(nonlinear_method, **kwargs)
 
-        self.z_arr, self.time, self.frequency, self.measured_trace = self.get_data(z_arr, frequency, measured_trace)
+        self.z_arr, self.time, self.frequency, self.measured_trace, self.central_frequency = self.get_data(z_arr, frequency, measured_trace)
 
         self.dt = jnp.mean(jnp.diff(self.time))
         self.df = jnp.mean(jnp.diff(self.frequency))
@@ -685,7 +691,8 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
                                                              df = self.df,
                                                              sk = self.sk,
                                                              rn = self.rn,
-                                                             x_arr = self.x_arr)
+                                                             x_arr = self.x_arr,
+                                                             central_frequency = self.central_frequency)
         
 
         self.phase_type = phase_type
@@ -727,7 +734,6 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         
         pulse_f = pulse_f*jnp.exp(1j*phase_matrix)
         pulse_t_disp = self.ifft(pulse_f, sk, rn)
-
         return pulse_t_disp, phase_matrix
     
 
@@ -1047,46 +1053,6 @@ class RetrievePulsesVAMPIRE(RetrievePulsesFROG):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-# class RetrievePulsesROTATIONALCHIRPSCAN(RetrievePulsesCHIRPSCAN):
-#     def __init__(self, z_arr, frequency, measured_trace, nonlinear_method, phase_type="taylor", chirp_parameters=None, **kwargs):
-#         super().__init__(z_arr, frequency, measured_trace, nonlinear_method, phase_type, chirp_parameters, **kwargs)
-
-
-
-#     def calculate_signal_t(self, individual, phase_matrix, measurement_info):
-#         """
-#         Calculates the signal field of a Chirp-Scan in the time domain. 
-
-#         Args:
-#             individual (Pytree): a population containing only one member. (jax.vmap over whole population)
-#             phase_matrix (jnp.array): the applied phases
-#             measurement_info (Pytree): contains the measurement parameters (e.g. nonlinear method, ... )
-
-#         Returns:
-#             Pytree, contains the signal field in the time domain as well as the fields used to calculate it.
-#         """
-
-#         pulse = individual.pulse
-
-#         pulse_t_disp, phase_matrix = self.get_dispersed_pulse_t(pulse, phase_matrix, measurement_info.sk, measurement_info.rn)
-#         gate_disp = calculate_gate(pulse_t_disp, measurement_info.nonlinear_method)
-
-#         pulse_t = self.ifft(pulse, measurement_info.sk, measurement_info.rn)
-#         signal_t = pulse_t*gate_disp
-
-#         signal_t = MyNamespace(signal_t=signal_t, pulse_t_disp=pulse_t_disp, gate_disp=gate_disp)
-#         return signal_t
 
 
 

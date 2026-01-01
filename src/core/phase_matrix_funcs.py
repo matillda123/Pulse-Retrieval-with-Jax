@@ -9,6 +9,23 @@ def get_parameters_material_scan(shelf="main", book="SiO2", page="Malitson"):
     return refractiveindex.RefractiveIndexMaterial(shelf=shelf, book=book, page=page)
 
 
+def calc_group_delay_phase(refractive_index, n_arr, k0_arr, wavelength_0, wavelength):
+    """ 
+    Uses finite differences to get the group index at a specfific wavelength and 
+    returns the linearized group delay per mm at that wavelength. 
+    """
+    
+    dlambda = 0.5 #nm
+    n0 = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength_0)-dlambda + 1e-9, bounds_error=False)
+    n2 = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength_0)+dlambda + 1e-9, bounds_error=False)
+    dndl = (n2-n0)/(2*dlambda)
+
+    idx = jnp.argmin(jnp.abs(wavelength-wavelength_0))
+    ng = n_arr[idx] - wavelength_0*dndl
+    k_0 = 2*jnp.pi/(wavelength_0*1e-6 + 1e-9) # in mm 
+    return ng*(k0_arr - k_0)
+
+
 def calculate_phase_matrix_material(measurement_info, parameters):
     """ 
     Calculates a phase matrix via material dispersion. Not differentiable due to usage of refractiveindex.
@@ -27,8 +44,13 @@ def calculate_phase_matrix_material(measurement_info, parameters):
     wavelength = c0/frequency*1e-6 # wavelength in nm
     n_arr = refractive_index.material.getRefractiveIndex(jnp.abs(wavelength) + 1e-9, bounds_error=False) # wavelength needs to be in nm
     n_arr = jnp.where(jnp.isnan(n_arr)==False, n_arr, 1.0)
-    k_arr = 2*jnp.pi/(wavelength*1e-6 + 1e-9)*n_arr #wavelength is needed in mm
-    phase_matrix = z_arr[:, jnp.newaxis]*k_arr[jnp.newaxis, :]
+    k0_arr = 2*jnp.pi/(wavelength*1e-6 + 1e-9) #wavelength is needed in mm
+    k_arr = k0_arr*n_arr
+
+    wavelength_0 = c0/(measurement_info.central_frequency + 1e-9)*1e-6 
+    Tg_phase = calc_group_delay_phase(refractive_index, n_arr, k0_arr, wavelength_0, wavelength)
+
+    phase_matrix = z_arr[:, jnp.newaxis]*(k_arr[jnp.newaxis, :] - Tg_phase[jnp.newaxis,:])
     return phase_matrix
 
 

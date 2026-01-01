@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 import jax
+from jax.tree_util import Partial
 
 from equinox import tree_at
 
@@ -56,7 +57,8 @@ class RetrievePulsesRealFields(RetrievePulses):
         self.time_big = jnp.fft.fftshift(jnp.fft.fftfreq(jnp.size(self.frequency_big), jnp.mean(jnp.diff(self.frequency_big))))
         self.sk_big, self.rn_big = get_sk_rn(self.time_big, self.frequency_big)
 
-        return self.x_arr, self.time, self.frequency, self.measured_trace
+        self.central_frequency = jnp.sum(jnp.sum(self.measured_trace,axis=0)*self.frequency_exp)/jnp.sum(jnp.sum(self.measured_trace,axis=0))*1/self.factor
+        return self.x_arr, self.time, self.frequency, self.measured_trace, self.central_frequency
     
 
 
@@ -71,12 +73,13 @@ class RetrievePulsesRealFields(RetrievePulses):
 
         signal_f = self.fft(signal_t, sk_1, rn_1)
 
+        interpolate = Partial(do_interpolation_1d, method="linear")
         if signal_f.ndim==0:
             raise ValueError
         elif signal_f.ndim==1:
-            signal_f = do_interpolation_1d(frequency_2, frequency_1, signal_f)
+            signal_f = interpolate(frequency_2, frequency_1, signal_f)
         else:
-            signal_f = jax.vmap(do_interpolation_1d, in_axes=(None,None,batch_axes), out_axes=batch_axes)(frequency_2, frequency_1, signal_f)
+            signal_f = jax.vmap(interpolate, in_axes=(None,None,batch_axes), out_axes=batch_axes)(frequency_2, frequency_1, signal_f)
 
         signal_t = self.ifft(signal_f, sk_2, rn_2)
         return signal_t, signal_f

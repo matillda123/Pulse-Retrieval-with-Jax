@@ -357,6 +357,16 @@ class MakePulse:
 
 
     def generate_pulse(self, parameters):
+        """
+        Returns a pulse in time and frequency domain, on a discretized grid,
+
+        Args:
+            parameters (tuple[SpectralAmplitude, SpectralPhase], CustomPulse, MultiPulse): the input parameters
+
+        Returns:
+            tuple[jnp.array, jnp.array, jnp.array, jnp.array], the pulse and correspnding axes (time, pulse_t, frequency, pulse_f)
+        """
+        
         parameters = self.init_generation(parameters)
 
         if isinstance(parameters, MultiPulse): 

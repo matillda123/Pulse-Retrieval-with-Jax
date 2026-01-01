@@ -851,9 +851,9 @@ class AutoDiffBASE(GeneralOptimizationBASE):
     [2] DeepMind et al., The DeepMind JAX Ecosystem, http://github.com/google-deepmind (2020)
 
     Attributes:
-        solver (optimistix-solver, optax-solver): optax-solvers need to be initialized
+        solver (optimistix-solver, optax-solver): solvers need to be initialized
         alternating_optimization (bool): if true, the optimizer alternates between amplitude and phase
-    
+        
     """
 
     
@@ -864,7 +864,6 @@ class AutoDiffBASE(GeneralOptimizationBASE):
 
         self.solver = None
         self.alternating_optimization = False
-
 
 
     def get_phase(self, coefficients, central_f, measurement_info, descent_info):
