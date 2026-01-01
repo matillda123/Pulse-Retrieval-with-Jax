@@ -1,5 +1,5 @@
-from src.simulate_trace import MakeTrace, apply_noise
-from src.simulate_trace import (GaussianAmplitude, LorentzianAmplitude, 
+from pulsedjax.simulate_trace import MakeTrace, apply_noise
+from pulsedjax.simulate_trace import (GaussianAmplitude, LorentzianAmplitude, 
                                 PolynomialPhase, SinusoidalPhase, RandomPhase, MultiPulse)
 import jax.numpy as jnp
 
@@ -42,7 +42,7 @@ z_arr, frequency_trace, trace, spectra = mp.generate_chirpscan(time, frequency, 
 
 
 # generate SHG TDP
-from src import spectral_filter_funcs
+from pulsedjax import spectral_filter_funcs
 spectral_filter = spectral_filter_funcs.get_filter("gaussian", frequency, (1,0.25,0.01,1))
 delay, frequency_trace, trace, spectra = mp.generate_tdp(time, frequency, pulse_t, pulse_f, "shg", delay, spectral_filter)
 

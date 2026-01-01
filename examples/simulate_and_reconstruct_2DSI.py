@@ -1,5 +1,5 @@
-from src.simulate_trace import MakeTrace
-from src.simulate_trace import GaussianAmplitude, PolynomialPhase, RandomPhase
+from pulsedjax.simulate_trace import MakeTrace
+from pulsedjax.simulate_trace import GaussianAmplitude, PolynomialPhase, RandomPhase
 import jax.numpy as jnp
 
 
@@ -12,7 +12,7 @@ time, pulse_t, frequency, pulse_f = mp.generate_pulse((amp0, phase0))
 
 
 # create lorentzian spectral filters with amp=1, central frequencies of 0.245/0.255, fwhm=0.0001 and p=1
-from src import spectral_filter_funcs
+from pulsedjax import spectral_filter_funcs
 spectral_filter1 = spectral_filter_funcs.get_filter("lorentzian", frequency, (1,0.255,0.0001,1))
 spectral_filter2 = spectral_filter_funcs.get_filter("lorentzian", frequency, (1,0.245,0.0001,1))
 
@@ -27,14 +27,14 @@ delay, frequency_trace, trace, spectra = mp.generate_2dsi(time, frequency, pulse
 
 
 # the filters need to be interpolated onto frequency_trace 
-from src.utilities import do_interpolation_1d
+from pulsedjax.utilities import do_interpolation_1d
 spectral_filter1 = do_interpolation_1d(frequency_trace, frequency, spectral_filter1)
 spectral_filter2 = do_interpolation_1d(frequency_trace, frequency, spectral_filter2)
 
 
 
 
-from src.twodsi import DirectReconstruction
+from pulsedjax.twodsi import DirectReconstruction
 
 dr = DirectReconstruction(delay, frequency_trace, trace, "shg", spectral_filter1=spectral_filter1, spectral_filter2=spectral_filter2)
 

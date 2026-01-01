@@ -1,7 +1,7 @@
-from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.twodsi import DirectReconstruction, GeneralizedProjection, PtychographicIterativeEngine, COPRA
-from src import spectral_filter_funcs
-from src.utilities import do_interpolation_1d
+from pulsedjax.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
+from pulsedjax.twodsi import DirectReconstruction, GeneralizedProjection, PtychographicIterativeEngine, COPRA
+from pulsedjax import spectral_filter_funcs
+from pulsedjax.utilities import do_interpolation_1d
 
 import numpy as np
 import lineax

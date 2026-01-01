@@ -1,5 +1,5 @@
-from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.chirp_scan import Basic, GeneralizedProjection, PtychographicIterativeEngine, COPRA
+from pulsedjax.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
+from pulsedjax.chirp_scan import Basic, GeneralizedProjection, PtychographicIterativeEngine, COPRA
 
 # only testing one phase matrix func shoud be fine. They are all tested in test_simulate_trace.py
 #from src.phase_types import phase_types

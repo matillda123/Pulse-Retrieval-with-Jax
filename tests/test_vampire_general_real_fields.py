@@ -1,5 +1,5 @@
-from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.real_fields import vampire # DifferentialEvolution, Evosax, LSF, AutoDiff
+from pulsedjax.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
+from pulsedjax.real_fields import vampire # DifferentialEvolution, Evosax, LSF, AutoDiff
 
 import numpy as np
 import optimistix

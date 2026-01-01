@@ -1,5 +1,5 @@
-from src.simulate_trace import MakeTrace
-from src.simulate_trace import GaussianAmplitude, PolynomialPhase
+from pulsedjax.simulate_trace import MakeTrace
+from pulsedjax.simulate_trace import GaussianAmplitude, PolynomialPhase
 import jax.numpy as jnp
 
 amp0 = GaussianAmplitude((1,1,1), (0.125,0.15,0.2), (0.01,0.05,0.1), (1,1,1))
@@ -17,7 +17,7 @@ delay, frequency_trace, trace, spectra = mp.generate_frog(time, frequency, pulse
 
 
 
-from src.frog import PtychographicIterativeEngine
+from pulsedjax.frog import PtychographicIterativeEngine
 
 pie = PtychographicIterativeEngine(delay, frequency_trace, trace, "pg", "rPIE")
 

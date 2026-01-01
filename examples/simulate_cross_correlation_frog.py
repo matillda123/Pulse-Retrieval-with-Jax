@@ -1,5 +1,5 @@
-from src.simulate_trace import MakeTrace
-from src.simulate_trace import GaussianAmplitude, PolynomialPhase, RandomPhase
+from pulsedjax.simulate_trace import MakeTrace
+from pulsedjax.simulate_trace import GaussianAmplitude, PolynomialPhase, RandomPhase
 import jax.numpy as jnp
 
 amp0 = GaussianAmplitude(1, 0.2, 0.05)

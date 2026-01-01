@@ -1,5 +1,5 @@
-from src.simulate_trace import MakeTrace
-from src.simulate_trace import GaussianAmplitude, RandomPhase
+from pulsedjax.simulate_trace import MakeTrace
+from pulsedjax.simulate_trace import GaussianAmplitude, RandomPhase
 import jax.numpy as jnp
 
 # create broadbandspectrum with random phase
@@ -23,7 +23,7 @@ z_arr, frequency_trace, trace, spectra = mp.generate_chirpscan(time, frequency, 
 
 
 
-from src.chirp_scan import COPRA
+from pulsedjax.chirp_scan import COPRA
 copra = COPRA(z_arr, frequency_trace, trace, "shg", phase_type="material", chirp_parameters=parameters)
 
 # stepsizes

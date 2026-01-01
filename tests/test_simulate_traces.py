@@ -1,6 +1,6 @@
 import pytest
 
-from src.simulate_trace import MakePulse, GaussianAmplitude, MultiPulse, PolynomialPhase, SinusoidalPhase, CustomPulse
+from pulsedjax.simulate_trace import MakePulse, GaussianAmplitude, MultiPulse, PolynomialPhase, SinusoidalPhase, CustomPulse
 import numpy as np
 
 
@@ -55,7 +55,7 @@ def test_generate_frog(parameters):
 
 
 
-from src.chirp_scan import phase_matrix_material, phase_matrix_miips, phase_matrix_tanh
+from pulsedjax.chirp_scan import phase_matrix_material, phase_matrix_miips, phase_matrix_tanh
 from scipy.constants import c as c0
 import refractiveindex
 

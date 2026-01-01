@@ -1,5 +1,5 @@
-from src.frog import DifferentialEvolution, Evosax, LSF, AutoDiff
-from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
+from pulsedjax.frog import DifferentialEvolution, Evosax, LSF, AutoDiff
+from pulsedjax.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
 
 import optax
 import optimistix

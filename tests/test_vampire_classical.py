@@ -1,5 +1,5 @@
-from src.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
-from src.vampire import GeneralizedProjection, PtychographicIterativeEngine, COPRA
+from pulsedjax.simulate_trace import MakePulse, GaussianAmplitude, PolynomialPhase
+from pulsedjax.vampire import GeneralizedProjection, PtychographicIterativeEngine, COPRA
 
 import numpy as np
 import lineax

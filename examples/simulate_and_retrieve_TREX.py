@@ -6,8 +6,8 @@ Using the real_fields-module, such traces can be simulated and retrieved.
 
 """
 
-from src.simulate_trace import MakeTrace
-from src.simulate_trace import GaussianAmplitude, PolynomialPhase
+from pulsedjax.simulate_trace import MakeTrace
+from pulsedjax.simulate_trace import GaussianAmplitude, PolynomialPhase
 import jax.numpy as jnp
 
 amp0 = GaussianAmplitude((1,1), (0.15,0.175), (0.05,0.075), (2,2))
@@ -34,7 +34,7 @@ delay, frequency, trace, spectra = mp.generate_frog(time, frequency, pulse_t, pu
 
 
 
-from src.real_fields import frog
+from pulsedjax.real_fields import frog
 import optax
 import optimistix
 
