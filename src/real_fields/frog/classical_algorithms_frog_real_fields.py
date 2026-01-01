@@ -96,9 +96,10 @@ class PtychographicIterativeEngine(RetrievePulsesFROGwithRealFields, Ptychograph
         elif pulse_or_gate=="gate":
             probe = jnp.broadcast_to(population.pulse, jnp.shape(signal_t.gate_shifted)[:2] + (jnp.shape(population.pulse)[-1], ))
             U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(probe, alpha, pie_method)
+            # only reverse_transfor U, grad is with respect to pulse and not Amk
             U = jax.vmap(self.reverse_transform_grad, in_axes=(0,0,None))(U, tau, measurement_info)
 
-        return grad, U
+        return grad*U
 
 
 

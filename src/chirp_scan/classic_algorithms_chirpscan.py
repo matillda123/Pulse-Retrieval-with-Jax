@@ -321,9 +321,9 @@ class PtychographicIterativeEngine(PtychographicIterativeEngineBASE, RetrievePul
         grad = -1*jnp.conjugate(probe)*difference_signal_t
         U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(probe, alpha, pie_method)
 
-        U = jax.vmap(self.reverse_transform_grad, in_axes=(0,0,None))(U, phase_matrix_m, measurement_info)
-        grad = jax.vmap(self.reverse_transform_grad, in_axes=(0,0,None))(grad, phase_matrix_m, measurement_info)
-        return grad, U
+        grad_U = jax.vmap(self.reverse_transform_grad, in_axes=(0,0,None))(grad*U, phase_matrix_m, measurement_info)
+        return grad_U
+
 
 
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):

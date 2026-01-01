@@ -75,8 +75,10 @@ class PtychographicIterativeEngine(RetrievePulsesCHIRPSCANwithRealFields, Ptycho
 
         probe, _ = jax.vmap(self.interpolate_signal, in_axes=(0,None,None,None))(signal_t.gate_disp, measurement_info, "big", "main")
         U = jax.vmap(self.get_PIE_weights, in_axes=(0,None,None))(probe, alpha, pie_method)
+
+        # reverse transform of U only because grad is with respect to pulse and not Amk. 
         U = jax.vmap(self.reverse_transform_grad, in_axes=(0,0,None))(U, phase_matrix_m, measurement_info)
-        return grad, U
+        return grad*U
 
 
     def update_individual(self, individual, gamma, descent_direction, measurement_info, pulse_or_gate):

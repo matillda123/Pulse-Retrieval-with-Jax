@@ -7,7 +7,7 @@ def Z_gradient_shg(pulse_t_dispersed, difference_signal_t, sk, rn, n):
     grad = 2*do_fft(jnp.conjugate(pulse_t_dispersed)*difference_signal_t, sk, rn)
     return grad # the -2 factor is in return of calculate_Z_gradient
 
-def Z_gradient_thg(pulse_t_dispersed, difference_signal_t, sk, rn):
+def Z_gradient_thg(pulse_t_dispersed, difference_signal_t, sk, rn, n):
     grad = 3*do_fft(jnp.conjugate(pulse_t_dispersed**2)*difference_signal_t, sk, rn)
     return grad
 

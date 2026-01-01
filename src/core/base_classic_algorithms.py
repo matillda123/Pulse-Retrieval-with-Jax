@@ -407,7 +407,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         super().__init__(*args, **kwargs)
 
         self._name = "PtychographicIterativeEngine"
-        self.alpha = 1.0
+        self.alpha = 0.5
 
 
 
@@ -453,9 +453,8 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         get_descent_direction = Partial(self.calculate_PIE_descent_direction_m, population=population, pie_method=pie_method, 
                                         measurement_info=measurement_info, descent_info=descent_info, pulse_or_gate=pulse_or_gate)
 
-        # not vmaping over m here anymore -> probably broke PIE version for all non-frog things.
-        grad_all_m, U = get_descent_direction(signal_t, signal_t_new, transform_arr, measured_trace)
-        return grad_all_m, U
+        grad_U = get_descent_direction(signal_t, signal_t_new, transform_arr, measured_trace)
+        return grad_U
 
 
 
@@ -485,9 +484,9 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         signal_t_new = jax.vmap(calculate_S_prime, in_axes=(0,0,0,None,None,None, None))(signal_t.signal_t,signal_t.signal_f, measured_trace, 1, measurement_info, 
                                                                                        descent_info, local_or_global)
 
-        grad_all_m, U = self.calculate_PIE_descent_direction(individual, signal_t, signal_t_new, transform_arr, descent_info.pie_method, 
+        grad_U = self.calculate_PIE_descent_direction(individual, signal_t, signal_t_new, transform_arr, descent_info.pie_method, 
                                                              measurement_info, descent_info, pulse_or_gate)
-        return jnp.sum(grad_all_m, axis=1)
+        return jnp.sum(grad_U, axis=1)
     
 
 
@@ -517,12 +516,11 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         conjugate_gradients = descent_info.conjugate_gradients
         newton_info = getattr(descent_info.newton, local_or_global)
 
-        grad, U = self.calculate_PIE_descent_direction(population, signal_t, signal_t_new, transform_arr, measured_trace, pie_method, measurement_info, descent_info, pulse_or_gate)
-        grad_sum = jnp.sum(grad, axis=1)
+        grad_U = self.calculate_PIE_descent_direction(population, signal_t, signal_t_new, transform_arr, measured_trace, pie_method, measurement_info, descent_info, pulse_or_gate)
+        grad_sum = jnp.sum(grad_U, axis=1)
 
         if newton_info=="diagonal" or (newton_info=="full" and pulse_or_gate=="pulse"):
-            # one could use U*grad instead of grad here
-            descent_direction, newton_state = self.calculate_PIE_newton_direction(grad, signal_t, transform_arr, measured_trace, population, local_or_global_state, 
+            descent_direction, newton_state = self.calculate_PIE_newton_direction(grad_U, signal_t, transform_arr, measured_trace, population, local_or_global_state, 
                                                                                    measurement_info, descent_info, pulse_or_gate, local_or_global)
             local_or_global_state = tree_at(lambda x: getattr(x.newton, pulse_or_gate), local_or_global_state, newton_state)
 
@@ -531,7 +529,7 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
             descent_direction, lbfgs_state = get_quasi_newton_direction(grad_sum, lbfgs_state, descent_info)
 
         else:
-            descent_direction = -1*jnp.sum(grad*U, axis=1)
+            descent_direction = -1*grad_sum #-1*jnp.sum(grad*U, axis=1)
 
 
 
@@ -670,16 +668,16 @@ class PtychographicIterativeEngineBASE(ClassicAlgorithmsBASE):
         global_state, population = self.do_iteration(signal_t, signal_t_new, measurement_info.transform_arr, measured_trace, pie_error, 
                                                       population, global_state, measurement_info, descent_info, "pulse", "_global")
         
-        population_pulse = population.pulse/jnp.linalg.norm(population.pulse,axis=-1)[:,jnp.newaxis]*jnp.linalg.norm(signal_t_new,axis=(-2,-1))[:,jnp.newaxis]
-        population = tree_at(lambda x: x.pulse, population, population_pulse)
+        # population_pulse = population.pulse/jnp.linalg.norm(population.pulse,axis=-1)[:,jnp.newaxis]*jnp.linalg.norm(signal_t_new,axis=(-2,-1))[:,jnp.newaxis]
+        # population = tree_at(lambda x: x.pulse, population, population_pulse)
 
         if measurement_info.doubleblind==True:
             global_state, population = self.do_iteration(signal_t, signal_t_new, measurement_info.transform_arr, measured_trace, pie_error, 
                                                           population, global_state, measurement_info, descent_info, "gate", "_global")
 
-            if measurement_info.interferometric==True:
-                population_gate = population.gate/jnp.linalg.norm(population.gate,axis=-1)[:,jnp.newaxis]
-                population = tree_at(lambda x: x.gate, population, population_gate)
+            # if measurement_info.interferometric==True:
+            #     population_gate = population.gate/jnp.linalg.norm(population.gate,axis=-1)[:,jnp.newaxis]
+            #     population = tree_at(lambda x: x.gate, population, population_gate)
         
 
         descent_state = tree_at(lambda x: x.population, descent_state, population)

@@ -42,6 +42,7 @@ class RetrievePulses:
 
         self.nonlinear_method = nonlinear_method
         self.f0 = 0
+        self.cross_correlation = False
         self.doubleblind = False 
         self.interferometric = False
 
@@ -678,8 +679,6 @@ class RetrievePulsesCHIRPSCAN(RetrievePulses):
         self.dt = jnp.mean(jnp.diff(self.time))
         self.df = jnp.mean(jnp.diff(self.frequency))
         self.sk, self.rn = get_sk_rn(self.time, self.frequency)
-
-        self.cross_correlation = False
 
         self.measurement_info = self.measurement_info.expand(z_arr = self.z_arr,
                                                              frequency = self.frequency,
